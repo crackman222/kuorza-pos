@@ -93,7 +93,7 @@ export default function Struk() {
         {treatment.notes && <p className="struk-notes">Catatan: {treatment.notes}</p>}
 
         <button type="button" className="btn-primary struk-done" onClick={() => navigate('/')}>
-          Selesai
+          Kembali
         </button>
       </div>
     </div>

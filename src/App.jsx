@@ -31,8 +31,8 @@ function App() {
                 <Route path="/transaksi-baru" element={<TransaksiBaru />} />
                 {/* Treatment detail and the receipt stay open to staff — they
                     are where a ticket is actually worked (assigning workers,
-                    the wash photo, taking payment), and Transaksi Baru lands
-                    on the detail page right after submitting. */}
+                    the wash photo, taking payment). Saving a new ticket from
+                    Transaksi Baru returns to the dashboard queue. */}
                 <Route path="/treatment/:id" element={<DetailTreatment />} />
                 <Route path="/struk/:id" element={<Struk />} />
                 <Route element={<SupervisorRoute />}>

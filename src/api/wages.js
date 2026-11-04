@@ -83,33 +83,46 @@ async function getServiceEarningsByName(date) {
     getServiceWageByName(),
     supabase
       .from('treatments')
-      .select('wash_staff, treatment_items(service_name, quantity, shelf_item_id)')
+      .select('wash_staff, treatment_items(service_name, quantity, subtotal, shelf_item_id)')
       .gte('created_at', start.toISOString())
       .lt('created_at', end.toISOString())
       .neq('status', 'voided'),
   ])
   if (treatmentsResult.error) throw treatmentsResult.error
 
-  const earningsByName = new Map()
+  // name -> { earnings, services: Map(serviceName -> { count, nominal }) }.
+  // nominal is the sale value of those lines (what the customer paid for
+  // them), not the wage — the wage is count x the service's fixed rate.
+  const byName = new Map()
   for (const t of treatmentsResult.data) {
     const names = parseStaffNames(t.wash_staff)
     if (names.length === 0) continue
-    const ticketWage = (t.treatment_items ?? [])
-      .filter((item) => item.shelf_item_id == null)
-      .reduce((sum, item) => sum + (wageByName.get(item.service_name) ?? 0) * item.quantity, 0)
-    if (ticketWage <= 0) continue
+    const serviceLines = (t.treatment_items ?? []).filter((item) => item.shelf_item_id == null)
+    if (serviceLines.length === 0) continue
+    const ticketWage = serviceLines.reduce(
+      (sum, item) => sum + (wageByName.get(item.service_name) ?? 0) * item.quantity,
+      0,
+    )
     for (const name of names) {
-      earningsByName.set(name, (earningsByName.get(name) || 0) + ticketWage)
+      if (!byName.has(name)) byName.set(name, { earnings: 0, services: new Map() })
+      const entry = byName.get(name)
+      entry.earnings += ticketWage
+      for (const item of serviceLines) {
+        const line = entry.services.get(item.service_name) ?? { count: 0, nominal: 0 }
+        line.count += item.quantity
+        line.nominal += Number(item.subtotal || 0)
+        entry.services.set(item.service_name, line)
+      }
     }
   }
-  return earningsByName
+  return { byName, wageByName }
 }
 
 // One row per active staff member for the given day: what the fixed-wage
 // services they washed add up to, every bonus/deduction logged against
 // that day, and the net wage. date is a "YYYY-MM-DD" string.
 export async function getDailyWageSummary(date) {
-  const [roster, earningsByName, adjustmentsResult] = await Promise.all([
+  const [roster, { byName: washByName, wageByName }, adjustmentsResult] = await Promise.all([
     getWageStaffRoster(),
     getServiceEarningsByName(date),
     supabase.from('wage_adjustments').select('*').eq('adjustment_date', date).order('created_at'),
@@ -123,7 +136,16 @@ export async function getDailyWageSummary(date) {
   }
 
   return roster.map((worker) => {
-    const serviceEarnings = earningsByName.get(worker.full_name) || 0
+    const wash = washByName.get(worker.full_name)
+    const serviceEarnings = wash?.earnings || 0
+    const serviceBreakdown = [...(wash?.services ?? [])]
+      .map(([serviceName, line]) => ({
+        serviceName,
+        count: line.count,
+        nominal: line.nominal,
+        wage: (wageByName.get(serviceName) ?? 0) * line.count,
+      }))
+      .sort((a, b) => b.count - a.count || a.serviceName.localeCompare(b.serviceName))
     const adjustments = adjustmentsByProfile.get(worker.id) || []
     const bonusTotal = adjustments.filter((a) => a.type === 'bonus').reduce((sum, a) => sum + Number(a.amount), 0)
     const deductionTotal = adjustments
@@ -134,6 +156,7 @@ export async function getDailyWageSummary(date) {
       profileId: worker.id,
       fullName: worker.full_name,
       serviceEarnings,
+      serviceBreakdown,
       adjustments,
       bonusTotal,
       deductionTotal,

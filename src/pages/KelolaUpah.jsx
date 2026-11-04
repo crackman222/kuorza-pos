@@ -275,6 +275,7 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
       </div>
       {expanded && (
         <div className="upah-adjustments-panel">
+          <ServiceBreakdown rows={row.serviceBreakdown} />
           <AddAdjustmentForm profileId={row.profileId} date={date} onAdded={onChanged} onError={onError} />
           {row.adjustments.length > 0 && (
             <ul className="upah-adjustments-list">
@@ -286,6 +287,47 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
         </div>
       )}
     </>
+  )
+}
+
+// Per-service tally behind one worker's Upah Jasa: how many of each service
+// they washed that day, the sale value of those lines, and the wage they paid.
+function ServiceBreakdown({ rows }) {
+  if (rows.length === 0) {
+    return <p className="upah-breakdown-empty">Belum ada layanan dikerjakan pada tanggal ini</p>
+  }
+  const totalCount = rows.reduce((sum, r) => sum + r.count, 0)
+  const totalNominal = rows.reduce((sum, r) => sum + r.nominal, 0)
+  const totalWage = rows.reduce((sum, r) => sum + r.wage, 0)
+  return (
+    <table className="upah-breakdown">
+      <thead>
+        <tr>
+          <th>Layanan</th>
+          <th>Jumlah</th>
+          <th>Nominal</th>
+          <th>Upah</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.serviceName}>
+            <td>{r.serviceName}</td>
+            <td>{r.count}</td>
+            <td>{formatRupiah(r.nominal)}</td>
+            <td>{formatRupiah(r.wage)}</td>
+          </tr>
+        ))}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td>{totalCount}</td>
+          <td>{formatRupiah(totalNominal)}</td>
+          <td>{formatRupiah(totalWage)}</td>
+        </tr>
+      </tfoot>
+    </table>
   )
 }
 

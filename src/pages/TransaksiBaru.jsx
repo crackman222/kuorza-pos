@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getActiveServices, getAvailableShelfItems, createTreatment } from '../api'
 import { ServicePicker } from '../components/ServicePicker'
@@ -7,12 +7,194 @@ import { formatRupiah } from '../lib/format'
 import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 
+// Workers build a ticket one page at a time — items, customer, confirmation —
+// while the desk keeps the single two-column screen. Both share the same state
+// and the same submit; only the chrome around it changes.
+const WIZARD_STEPS = [
+  { number: 1, label: 'Item' },
+  { number: 2, label: 'Pelanggan' },
+  { number: 3, label: 'Konfirmasi' },
+]
+
+function TicketLines({ items, emptyText, onQuantityChange, onRemove }) {
+  if (items.length === 0) {
+    return <p className="ticket-lines-empty">{emptyText}</p>
+  }
+
+  return (
+    <div className="ticket-lines">
+      {items.map((item) => (
+        <div key={item.key} className="ticket-line">
+          <div className="ticket-line-info">
+            <span className="ticket-line-name">{item.serviceName}</span>
+            <span className="ticket-line-unit">
+              {formatRupiah(item.unitPrice)} / item
+              {item.maxQuantity != null && ` · stok ${item.maxQuantity}`}
+            </span>
+          </div>
+          <div className="ticket-line-qty">
+            <button
+              type="button"
+              onClick={() => onQuantityChange(item.key, item.quantity - 1)}
+            >
+              -
+            </button>
+            <span>{item.quantity}</span>
+            <button
+              type="button"
+              onClick={() => onQuantityChange(item.key, item.quantity + 1)}
+              disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
+            >
+              +
+            </button>
+          </div>
+          <span className="ticket-line-total">
+            {formatRupiah(item.unitPrice * item.quantity)}
+          </span>
+          <button
+            type="button"
+            className="ticket-line-remove"
+            onClick={() => onRemove(item.key)}
+            aria-label="Hapus item"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CustomerFields({
+  needsVehicle,
+  plateNumber,
+  setPlateNumber,
+  vehicleBrand,
+  setVehicleBrand,
+  customerName,
+  setCustomerName,
+  customerPhone,
+  setCustomerPhone,
+}) {
+  return (
+    <div className="ticket-fields">
+      {needsVehicle && (
+        <>
+          <label>
+            Nomor Plat
+            <input
+              value={plateNumber}
+              onChange={(e) => setPlateNumber(e.target.value)}
+              placeholder="Contoh: B 1234 XYZ"
+              required
+            />
+          </label>
+          <label>
+            Merek Kendaraan
+            <input
+              value={vehicleBrand}
+              onChange={(e) => setVehicleBrand(e.target.value)}
+              placeholder="Contoh: Honda Vario"
+            />
+          </label>
+        </>
+      )}
+      <label>
+        Nama Pelanggan
+        <input
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          placeholder="Nama pelanggan"
+          required
+        />
+      </label>
+      <label>
+        Nomor Telepon
+        <input
+          type="tel"
+          value={customerPhone}
+          onChange={(e) => setCustomerPhone(e.target.value)}
+          placeholder="08xxxxxxxxxx"
+          // required
+        />
+      </label>
+    </div>
+  )
+}
+
+function DiscountFields({
+  discountType,
+  setDiscountType,
+  discountInput,
+  setDiscountInput,
+}) {
+  return (
+    <div className="ticket-discount">
+      <label>
+        Diskon
+        <select
+          value={discountType}
+          onChange={(e) => {
+            // A number typed as a percentage means something completely
+            // different in Rupiah, so don't carry it across.
+            setDiscountType(e.target.value)
+            setDiscountInput('')
+          }}
+        >
+          <option value="percent">Persentase (%)</option>
+          <option value="nominal">Nominal (Rp)</option>
+        </select>
+      </label>
+      <input
+        type="number"
+        min="0"
+        max={discountType === 'percent' ? 100 : undefined}
+        inputMode="numeric"
+        value={discountInput}
+        onChange={(e) => setDiscountInput(e.target.value)}
+        placeholder={discountType === 'percent' ? 'Contoh: 10' : 'Contoh: 20000'}
+        aria-label={discountType === 'percent' ? 'Diskon dalam persen' : 'Diskon dalam Rupiah'}
+      />
+    </div>
+  )
+}
+
+function NotesField({ notes, setNotes }) {
+  return (
+    <label className="ticket-notes">
+      Catatan
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Catatan tambahan (opsional)"
+      />
+    </label>
+  )
+}
+
+function TicketSummary({ subtotal, discountValue, total }) {
+  return (
+    <div className="transaksi-summary">
+      <div>
+        <span>Subtotal</span>
+        <span>{formatRupiah(subtotal)}</span>
+      </div>
+      <div>
+        <span>Diskon</span>
+        <span>{formatRupiah(discountValue)}</span>
+      </div>
+      <div className="transaksi-total">
+        <span>Total</span>
+        <span>{formatRupiah(total)}</span>
+      </div>
+    </div>
+  )
+}
+
 export default function TransaksiBaru() {
   const { profile } = useAuth()
   const navigate = useNavigate()
-  // On a phone the ticket panel sits below a long catalog, so the submit
-  // button scrolls away. Workers get a fixed bar with the running total
-  // instead; the in-panel button is hidden for them in CSS.
+  // Staff get the phone wizard; supervisors/admin keep the desk layout.
   const workerView = isStaff(profile)
 
   const [services, setServices] = useState([])
@@ -25,8 +207,10 @@ export default function TransaksiBaru() {
   const [discountType, setDiscountType] = useState('percent')
   const [discountInput, setDiscountInput] = useState('')
   const [notes, setNotes] = useState('')
+  const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const wizardRef = useRef(null)
 
   useEffect(() => {
     getActiveServices()
@@ -49,6 +233,7 @@ export default function TransaksiBaru() {
     // this branch never applies to a service line.
     if (existing?.maxQuantity != null && existing.quantity >= existing.maxQuantity) {
       setError('Stok barang ini sudah habis, tidak bisa menambah lagi')
+      scrollToTop()
       return
     }
     setError('')
@@ -75,6 +260,7 @@ export default function TransaksiBaru() {
   function addShelfItem(item, soldOut) {
     if (soldOut) {
       setError('Stok barang ini sudah habis, tidak bisa menambah lagi')
+      scrollToTop()
       return
     }
     addLine({
@@ -135,6 +321,45 @@ export default function TransaksiBaru() {
   }, [discountInput, discountType, subtotal])
   const total = subtotal - discountValue
 
+  // The screen scrolls inside `.worker-content`, not the window, so bring the
+  // wizard's own top back into view whenever the page (or error) changes.
+  function scrollToTop() {
+    requestAnimationFrame(() => {
+      wizardRef.current?.scrollIntoView({ block: 'start' })
+    })
+  }
+
+  function goToStep(next) {
+    setError('')
+    setStep(next)
+    scrollToTop()
+  }
+
+  function goNext() {
+    if (step === 1) {
+      if (selectedItems.length === 0) {
+        setError('Pilih minimal satu layanan atau barang')
+        scrollToTop()
+        return
+      }
+      goToStep(2)
+      return
+    }
+    if (step === 2) {
+      if (needsVehicle && !plateNumber.trim()) {
+        setError('Nomor plat wajib diisi')
+        scrollToTop()
+        return
+      }
+      if (!customerName.trim()) {
+        setError('Nama pelanggan wajib diisi')
+        scrollToTop()
+        return
+      }
+      goToStep(3)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -151,17 +376,17 @@ export default function TransaksiBaru() {
       setError('Nama pelanggan wajib diisi')
       return
     }
-    if (!customerPhone.trim()) {
-      setError('Nomor telepon wajib diisi')
-      return
-    }
+    // if (!customerPhone.trim()) {
+    //   setError('Nomor telepon wajib diisi')
+    //   return
+    // }
 
     setSubmitting(true)
     try {
       // No paymentMethod — a new ticket is always queued unpaid and settled
       // later from Detail Transaksi, so it lands at status 'created' with no
       // payment row.
-      const treatment = await createTreatment({
+      await createTreatment({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         plateNumber: needsVehicle ? plateNumber : null,
@@ -171,16 +396,222 @@ export default function TransaksiBaru() {
         items: selectedItems,
         discount: discountValue,
       })
-      navigate(`/treatment/${treatment.id}`)
+      navigate('/')
     } catch (err) {
       // Stock can run out between loading this form and submitting it, and
       // that message names the actual problem — don't bury it.
       setError(err.message?.includes('Stok') ? err.message : 'Gagal menyimpan transaksi, coba lagi')
+      scrollToTop()
     } finally {
       setSubmitting(false)
     }
   }
 
+  const customerFields = (
+    <CustomerFields
+      needsVehicle={needsVehicle}
+      plateNumber={plateNumber}
+      setPlateNumber={setPlateNumber}
+      vehicleBrand={vehicleBrand}
+      setVehicleBrand={setVehicleBrand}
+      customerName={customerName}
+      setCustomerName={setCustomerName}
+      customerPhone={customerPhone}
+      setCustomerPhone={setCustomerPhone}
+    />
+  )
+
+  const discountFields = (
+    <DiscountFields
+      discountType={discountType}
+      setDiscountType={setDiscountType}
+      discountInput={discountInput}
+      setDiscountInput={setDiscountInput}
+    />
+  )
+
+  // ---- Worker flow: three pages, confirmed before it is queued ----
+  if (workerView) {
+    // on the confirmation page the submit handler has to run, on the earlier
+    // pages the same submit button moves to the next page.
+    function handleWizardSubmit(e) {
+      if (step < WIZARD_STEPS.length) {
+        e.preventDefault()
+        goNext()
+        return
+      }
+      handleSubmit(e)
+    }
+
+    return (
+      <form ref={wizardRef} className="worker-wizard" onSubmit={handleWizardSubmit} noValidate>
+        <ol className="worker-wizard-steps" aria-label="Tahap transaksi baru">
+          {WIZARD_STEPS.map((item) => (
+            <li
+              key={item.number}
+              className={`worker-wizard-step ${step === item.number ? 'active' : ''} ${
+                step > item.number ? 'done' : ''
+              }`}
+              aria-current={step === item.number ? 'step' : undefined}
+            >
+              <span className="worker-wizard-step-dot">
+                {step > item.number ? '✓' : item.number}
+              </span>
+              <span className="worker-wizard-step-label">{item.label}</span>
+            </li>
+          ))}
+        </ol>
+
+        {error && <p className="form-error worker-wizard-error">{error}</p>}
+
+        {step === 1 && (
+          <section className="worker-wizard-page">
+            <header className="worker-wizard-head">
+              <h2 className="worker-wizard-title">Pilih Layanan &amp; Barang</h2>
+              <p className="worker-wizard-subtitle">
+                Ketuk kartu untuk menambah. Jumlah bisa diubah di daftar bawah.
+              </p>
+            </header>
+
+            <h2 className="transaksi-section-label">Layanan</h2>
+            <ServicePicker services={services} selectedItems={selectedItems} onAdd={addService} />
+
+            <h2 className="transaksi-section-label">Barang</h2>
+            <ShelfItemPicker
+              items={shelfItems}
+              selectedItems={selectedItems}
+              onAdd={addShelfItem}
+            />
+
+            {selectedItems.length > 0 && (
+              <div className="worker-wizard-card">
+                <div className="worker-wizard-card-title">Item dipilih</div>
+                <TicketLines
+                  items={selectedItems}
+                  emptyText="Belum ada item dipilih"
+                  onQuantityChange={changeQuantity}
+                  onRemove={removeLine}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {step === 2 && (
+          <section className="worker-wizard-page">
+            <header className="worker-wizard-head">
+              <h2 className="worker-wizard-title">Informasi Pelanggan</h2>
+              <p className="worker-wizard-subtitle">
+                {needsVehicle
+                  ? 'Isi data pelanggan dan kendaraan yang akan dicuci.'
+                  : 'Isi data pelanggan untuk tiket ini.'}
+              </p>
+            </header>
+
+            <div className="worker-wizard-card">{customerFields}</div>
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="worker-wizard-page">
+            <header className="worker-wizard-head">
+              <h2 className="worker-wizard-title">Konfirmasi</h2>
+              <p className="worker-wizard-subtitle">
+                Periksa detail tiket sebelum disimpan ke antrian.
+              </p>
+            </header>
+
+            <div className="worker-wizard-card">
+              <div className="worker-wizard-card-title">Pelanggan</div>
+              <dl className="worker-wizard-review">
+                <div className="worker-wizard-review-row">
+                  <dt>Nama</dt>
+                  <dd>{customerName.trim() || '—'}</dd>
+                </div>
+                {customerPhone.trim() && (
+                  <div className="worker-wizard-review-row">
+                    <dt>Telepon</dt>
+                    <dd>{customerPhone.trim()}</dd>
+                  </div>
+                )}
+                {needsVehicle && (
+                  <>
+                    <div className="worker-wizard-review-row">
+                      <dt>Nomor Plat</dt>
+                      <dd>{plateNumber.trim() || '—'}</dd>
+                    </div>
+                    {vehicleBrand.trim() && (
+                      <div className="worker-wizard-review-row">
+                        <dt>Kendaraan</dt>
+                        <dd>{vehicleBrand.trim()}</dd>
+                      </div>
+                    )}
+                  </>
+                )}
+              </dl>
+            </div>
+
+            <div className="worker-wizard-card">
+              <div className="worker-wizard-card-title">Item ({lineCount})</div>
+              <ul className="worker-wizard-review-items">
+                {selectedItems.map((item) => (
+                  <li key={item.key} className="worker-wizard-review-item">
+                    <span className="worker-wizard-review-qty">{item.quantity}×</span>
+                    <span className="worker-wizard-review-name">{item.serviceName}</span>
+                    <span className="worker-wizard-review-price">
+                      {formatRupiah(item.unitPrice * item.quantity)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="worker-wizard-card">
+              {discountFields}
+              <NotesField notes={notes} setNotes={setNotes} />
+            </div>
+
+            <div className="worker-wizard-card">
+              <TicketSummary subtotal={subtotal} discountValue={discountValue} total={total} />
+            </div>
+          </section>
+        )}
+
+        <div className="worker-actionbar worker-wizard-bar">
+          <div className="worker-actionbar-summary">
+            <span className="worker-actionbar-count">
+              {lineCount} item{lineCount === 0 ? ' dipilih' : ''}
+            </span>
+            <span className="worker-actionbar-total">{formatRupiah(total)}</span>
+          </div>
+          <div className="worker-wizard-bar-actions">
+            {step > 1 && (
+              <button
+                type="button"
+                className="worker-wizard-back"
+                onClick={() => goToStep(step - 1)}
+              >
+                Kembali
+              </button>
+            )}
+            <button
+              type="submit"
+              className="worker-actionbar-submit"
+              disabled={submitting}
+            >
+              {step === WIZARD_STEPS.length
+                ? submitting
+                  ? 'Menyimpan...'
+                  : 'Simpan'
+                : 'Lanjut'}
+            </button>
+          </div>
+        </div>
+      </form>
+    )
+  }
+
+  // ---- Desk flow: the two-column screen, unchanged ----
   return (
     <form className="transaksi-baru-screen" onSubmit={handleSubmit}>
       <div className="transaksi-catalog">
@@ -197,142 +628,20 @@ export default function TransaksiBaru() {
       <aside className="ticket-panel">
         <div className="ticket-panel-title">Tiket Saat Ini</div>
 
-        <div className="ticket-fields">
-          {needsVehicle && (
-            <>
-              <label>
-                Nomor Plat
-                <input
-                  value={plateNumber}
-                  onChange={(e) => setPlateNumber(e.target.value)}
-                  placeholder="Contoh: B 1234 XYZ"
-                  required
-                />
-              </label>
-              <label>
-                Merek Kendaraan
-                <input
-                  value={vehicleBrand}
-                  onChange={(e) => setVehicleBrand(e.target.value)}
-                  placeholder="Contoh: Honda Vario"
-                />
-              </label>
-            </>
-          )}
-          <label>
-            Nama Pelanggan
-            <input
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Nama pelanggan"
-              required
-            />
-          </label>
-          <label>
-            Nomor Telepon
-            <input
-              type="tel"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="08xxxxxxxxxx"
-              required
-            />
-          </label>
-        </div>
+        {customerFields}
 
-        <div className="ticket-lines">
-          {selectedItems.length === 0 ? (
-            <p className="ticket-lines-empty">Belum ada item — pilih layanan atau barang di sebelah kiri</p>
-          ) : (
-            selectedItems.map((item) => (
-              <div key={item.key} className="ticket-line">
-                <div className="ticket-line-info">
-                  <span className="ticket-line-name">{item.serviceName}</span>
-                  <span className="ticket-line-unit">
-                    {formatRupiah(item.unitPrice)} / item
-                    {item.maxQuantity != null && ` · stok ${item.maxQuantity}`}
-                  </span>
-                </div>
-                <div className="ticket-line-qty">
-                  <button type="button" onClick={() => changeQuantity(item.key, item.quantity - 1)}>
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => changeQuantity(item.key, item.quantity + 1)}
-                    disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="ticket-line-total">
-                  {formatRupiah(item.unitPrice * item.quantity)}
-                </span>
-                <button
-                  type="button"
-                  className="ticket-line-remove"
-                  onClick={() => removeLine(item.key)}
-                  aria-label="Hapus item"
-                >
-                  ✕
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+        <TicketLines
+          items={selectedItems}
+          emptyText="Belum ada item — pilih layanan atau barang di sebelah kiri"
+          onQuantityChange={changeQuantity}
+          onRemove={removeLine}
+        />
 
-        <div className="ticket-discount">
-          <label>
-            Diskon
-            <select
-              value={discountType}
-              onChange={(e) => {
-                // A number typed as a percentage means something completely
-                // different in Rupiah, so don't carry it across.
-                setDiscountType(e.target.value)
-                setDiscountInput('')
-              }}
-            >
-              <option value="percent">Persentase (%)</option>
-              <option value="nominal">Nominal (Rp)</option>
-            </select>
-          </label>
-          <input
-            type="number"
-            min="0"
-            max={discountType === 'percent' ? 100 : undefined}
-            inputMode="numeric"
-            value={discountInput}
-            onChange={(e) => setDiscountInput(e.target.value)}
-            placeholder={discountType === 'percent' ? 'Contoh: 10' : 'Contoh: 20000'}
-            aria-label={discountType === 'percent' ? 'Diskon dalam persen' : 'Diskon dalam Rupiah'}
-          />
-        </div>
+        {discountFields}
 
-        <label className="ticket-notes">
-          Catatan
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Catatan tambahan (opsional)"
-          />
-        </label>
+        <NotesField notes={notes} setNotes={setNotes} />
 
-        <div className="transaksi-summary">
-          <div>
-            <span>Subtotal</span>
-            <span>{formatRupiah(subtotal)}</span>
-          </div>
-          <div>
-            <span>Diskon</span>
-            <span>{formatRupiah(discountValue)}</span>
-          </div>
-          <div className="transaksi-total">
-            <span>Total</span>
-            <span>{formatRupiah(total)}</span>
-          </div>
-        </div>
+        <TicketSummary subtotal={subtotal} discountValue={discountValue} total={total} />
 
         {error && <p className="form-error">{error}</p>}
 
@@ -340,26 +649,6 @@ export default function TransaksiBaru() {
           {submitting ? 'Menyimpan...' : 'Simpan ke Antrian'}
         </button>
       </aside>
-
-      {workerView && (
-        <div className="worker-actionbar">
-          <div className="worker-actionbar-summary">
-            <span className="worker-actionbar-count">
-              {lineCount} item{lineCount === 0 ? ' dipilih' : ''}
-            </span>
-            <span className="worker-actionbar-total">{formatRupiah(total)}</span>
-          </div>
-          {/* Inside the same <form>, so this submits it exactly like the
-              button above — no duplicated handler. */}
-          <button
-            type="submit"
-            className="worker-actionbar-submit"
-            disabled={submitting || selectedItems.length === 0}
-          >
-            {submitting ? 'Menyimpan...' : 'Simpan'}
-          </button>
-        </div>
-      )}
     </form>
   )
 }

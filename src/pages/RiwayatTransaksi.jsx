@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { searchTreatmentsByPlate, getTreatmentsInRange } from '../api'
+import { searchTreatmentsByPlate, getTreatmentsInRange, getWashProofPhoto, getWashProofSignedUrl } from '../api'
+import { parseStaffNames } from '../lib/staffNames'
 import { formatRupiah, formatDateTime } from '../lib/format'
 import { getPeriodRange, formatPeriodLabel } from '../lib/dateRange'
 import { useAuth } from '../context/useAuth'
@@ -23,6 +24,85 @@ const STATUS_LABELS = {
   voided: 'Dibatalkan',
 }
 
+// A history row that expands in place instead of navigating away: shows who
+// washed and QC'd the ticket, the wash-proof photo, and links on to the
+// receipt and the full treatment page. The photo is only fetched the first
+// time the row is opened, not for every row in the list.
+function RiwayatRow({ treatment: t, expanded, onToggle }) {
+  const [photoUrl, setPhotoUrl] = useState(null)
+  const [photoState, setPhotoState] = useState('idle') // idle (not fetched yet) | done | error
+
+  useEffect(() => {
+    if (!expanded || photoState !== 'idle') return
+    getWashProofPhoto(t.id)
+      .then(async (path) => setPhotoUrl(path ? await getWashProofSignedUrl(path) : null))
+      .then(() => setPhotoState('done'))
+      .catch(() => setPhotoState('error'))
+  }, [expanded, photoState, t.id])
+
+  const washers = parseStaffNames(t.wash_staff)
+  const qcers = parseStaffNames(t.qc_staff)
+
+  return (
+    <>
+      <div
+        className="riwayat-table-row riwayat-row-toggle"
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggle()
+          }
+        }}
+      >
+        <span className="riwayat-service">{t.serviceSummary || '-'}</span>
+        <span>{t.treatment_type || '-'}</span>
+        <span>{formatDateTime(t.created_at)}</span>
+        <span className={`status-badge status-${t.status}`}>{STATUS_LABELS[t.status] || t.status}</span>
+        <span className={`status-badge ${t.isPaid ? 'status-closed' : 'status-created'}`}>
+          {t.isPaid ? 'Lunas' : 'Belum'}
+        </span>
+        <span className="riwayat-total">{formatRupiah(t.total)}</span>
+      </div>
+      {expanded && (
+        <div className="riwayat-expand">
+          <div className="riwayat-expand-info">
+            <dl>
+              <dt>Plat</dt>
+              <dd>{t.plate_number || '-'}</dd>
+              <dt>Petugas Cuci</dt>
+              <dd>{washers.length ? washers.join(', ') : 'Belum ditugaskan'}</dd>
+              <dt>Petugas QC</dt>
+              <dd>{qcers.length ? qcers.join(', ') : 'Belum ditugaskan'}</dd>
+            </dl>
+            <div className="riwayat-expand-actions">
+              <Link to={`/struk/${t.id}`} className="btn-primary">
+                Lihat Struk
+              </Link>
+              <Link to={`/treatment/${t.id}`} className="btn-secondary">
+                Detail Treatment
+              </Link>
+            </div>
+          </div>
+          <div className="riwayat-expand-photo">
+            {photoState === 'idle' &&<p className="riwayat-loading">Memuat foto...</p>}
+            {photoState === 'error' && <p className="form-error">Gagal memuat foto</p>}
+            {photoState === 'done' && !photoUrl && <p className="upah-breakdown-empty">Belum ada foto bukti cuci</p>}
+            {photoUrl && (
+              <a href={photoUrl} target="_blank" rel="noreferrer">
+                <img src={photoUrl} alt="Bukti foto cuci" className="riwayat-expand-image" />
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function RiwayatTransaksi() {
   const { profile } = useAuth()
   const isAdmin = checkIsAdmin(profile)
@@ -33,6 +113,7 @@ export default function RiwayatTransaksi() {
   const [isFiltered, setIsFiltered] = useState(false)
   const [period, setPeriod] = useState('daily')
   const [exporting, setExporting] = useState(false)
+  const [expandedId, setExpandedId] = useState(null)
   // Same arrangement as Laporan's leaderboard: the period picker is admin-only,
   // so staff stay pinned to today's rows no matter what's in state.
   const effectivePeriod = isAdmin ? period : 'daily'
@@ -165,18 +246,12 @@ export default function RiwayatTransaksi() {
             <span>Total</span>
           </div>
           {treatments.map((t) => (
-            <Link key={t.id} to={`/treatment/${t.id}`} className="riwayat-table-row">
-              <span className="riwayat-service">{t.serviceSummary || '-'}</span>
-              <span>{t.treatment_type || '-'}</span>
-              <span>{formatDateTime(t.created_at)}</span>
-              <span className={`status-badge status-${t.status}`}>
-                {STATUS_LABELS[t.status] || t.status}
-              </span>
-              <span className={`status-badge ${t.isPaid ? 'status-closed' : 'status-created'}`}>
-                {t.isPaid ? 'Lunas' : 'Belum'}
-              </span>
-              <span className="riwayat-total">{formatRupiah(t.total)}</span>
-            </Link>
+            <RiwayatRow
+              key={t.id}
+              treatment={t}
+              expanded={expandedId === t.id}
+              onToggle={() => setExpandedId((id) => (id === t.id ? null : t.id))}
+            />
           ))}
         </div>
       )}

@@ -1236,6 +1236,57 @@
   background: rgba(var(--pos-ink), 0.02);
 }
 
+.riwayat-row-toggle {
+  cursor: pointer;
+}
+
+.riwayat-expand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 14px 18px 18px;
+  background: var(--pos-bg);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  font-size: 13px;
+  color: var(--pos-text);
+}
+
+.riwayat-expand dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  margin: 0 0 14px;
+}
+
+.riwayat-expand dt {
+  color: var(--pos-text-faint);
+}
+
+.riwayat-expand dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.riwayat-expand-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.riwayat-expand-actions a {
+  text-decoration: none;
+}
+
+.riwayat-expand-image {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--pos-border);
+}
+
 .riwayat-table-head {
   font-size: 10.5px;
   font-weight: 600;
@@ -2229,6 +2280,43 @@
   padding: 14px 18px 18px;
   background: var(--pos-bg);
   border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.upah-breakdown {
+  width: 100%;
+  margin-bottom: 14px;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--pos-text);
+}
+
+.upah-breakdown th,
+.upah-breakdown td {
+  padding: 6px 0;
+  text-align: right;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.upah-breakdown th:first-child,
+.upah-breakdown td:first-child {
+  text-align: left;
+}
+
+.upah-breakdown th {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pos-text-faint);
+}
+
+.upah-breakdown tfoot td {
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.upah-breakdown-empty {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--pos-text-faint);
 }
 
 .upah-adjustment-form {
@@ -3258,6 +3346,301 @@
 .worker-actionbar-submit:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ---- Transaksi Baru, three-page wizard ----
+   A worker builds a ticket across three phone pages instead of the desk's
+   single two-column form: items, customer, then a confirmation page. The
+   stepper sits at the top of the flow; the fixed bar below carries the
+   running total and the page's primary action. */
+
+.worker-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worker-wizard-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.worker-wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--pos-text-faint);
+}
+
+.worker-wizard-step-dot {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(var(--pos-ink), 0.2);
+  border-radius: 50%;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.worker-wizard-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-wizard-step.active {
+  color: var(--pos-text);
+}
+
+.worker-wizard-step.active .worker-wizard-step-dot {
+  background: var(--pos-blue);
+  border-color: var(--pos-blue);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--pos-blue-light);
+}
+
+.worker-wizard-step.done {
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-step.done .worker-wizard-step-dot {
+  background: var(--pos-blue-light);
+  border-color: var(--pos-blue);
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: worker-wizard-in 0.18s ease-out both;
+}
+
+@keyframes worker-wizard-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.worker-wizard-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.worker-wizard-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.worker-wizard-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--pos-text-muted);
+}
+
+/* Both section headings sit inside the page's gap, so their own margins
+   would double the spacing. */
+.worker-wizard .transaksi-section-label {
+  margin: 0;
+}
+
+.worker-wizard-card {
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
+  border-radius: 12px;
+  padding: 16px 14px;
+}
+
+.worker-wizard-card-title {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--pos-text-faint);
+}
+
+/* The shared field block brings the desk panel's divider and bottom margin;
+   inside a card those are already implied by the card edge and padding. */
+.worker-wizard-card .ticket-fields,
+.worker-wizard-card .ticket-discount {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.worker-wizard-card .ticket-notes {
+  margin-top: 14px;
+}
+
+.worker-wizard-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-card input,
+.worker-wizard-card select,
+.worker-wizard-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 10px;
+  background: var(--pos-surface);
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--pos-text);
+}
+
+.worker-wizard-card input:focus,
+.worker-wizard-card select:focus,
+.worker-wizard-card textarea:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+.worker-wizard-card textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* Confirmation page — label/value rows and a plain list of ticket lines. */
+.worker-wizard-review {
+  margin: 0;
+}
+
+.worker-wizard-review-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.worker-wizard-review-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.worker-wizard-review-row dt {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-review-row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.worker-wizard-review-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.worker-wizard-review-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.worker-wizard-review-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.worker-wizard-review-qty {
+  min-width: 26px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard-review-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pos-text);
+  overflow-wrap: anywhere;
+}
+
+.worker-wizard-review-price {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--pos-text);
+  white-space: nowrap;
+}
+
+/* The shared summary has its own top border, which the card already provides. */
+.worker-wizard-card .transaksi-summary {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.worker-wizard-error {
+  margin: 0;
+}
+
+.worker-wizard-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+/* Secondary action, but still a 56px thumb target next to the primary. */
+.worker-wizard-back {
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 12px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.worker-wizard-back:active {
+  background: var(--pos-surface-2);
+}
+
+.worker-wizard-bar .worker-actionbar-submit {
+  min-width: 104px;
 }
 
 /* ---- Detail Treatment / Struk ----

@@ -158,12 +158,18 @@ export async function recordPayment(treatmentId, { amount, paymentMethod }) {
 // photo is required to enter 'qc' (enforced by the caller before invoking
 // sendToQC). Reaching 'selesai' requires at least one wash worker and a QC
 // worker on the ticket — markSelesai checks that itself, see below.
-export async function startProcessing(id) {
-  const { error } = await supabase
-    .from('treatments')
-    .update({ status: 'diproses', updated_at: new Date().toISOString() })
-    .eq('id', id)
+//
+// washStaffNames is optional: when given, the wash crew is saved in the same
+// update that starts the job, so a ticket can't end up 'diproses' with the
+// crew write lost halfway. Omit it to leave whatever is assigned untouched.
+export async function startProcessing(id, washStaffNames) {
+  const update = { status: 'diproses', updated_at: new Date().toISOString() }
+  const washStaff = washStaffNames === undefined ? undefined : formatStaffNames(washStaffNames)
+  if (washStaff !== undefined) update.wash_staff = washStaff
+
+  const { error } = await supabase.from('treatments').update(update).eq('id', id)
   if (error) throw error
+  if (washStaff) await logAction(id, `wash staff assigned: ${washStaff}`)
   await logStatusChange(id, 'diproses')
 }
 

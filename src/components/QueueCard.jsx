@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWashProofUpload } from './useWashProofUpload'
+import { StartProcessModal } from './StartProcessModal'
 import { hasRequiredStaff } from '../api'
 import { formatDateTime, ticketLabel } from '../lib/format'
 import { daysOpen, isOverdue } from '../lib/taskReminder'
@@ -24,6 +26,7 @@ const ACCENTS = {
 
 export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, onAdvance }) {
   const navigate = useNavigate()
+  const [startOpen, setStartOpen] = useState(false)
   const overdue = isOverdue(treatment.created_at)
   const open = () => navigate(`/treatment/${treatment.id}`)
 
@@ -101,13 +104,13 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
           </button>
         ) : needsStaff ? (
           <button type="button" className="worker-btn worker-btn-blue" onClick={open} disabled={busy}>
-            Pilih Petugas Cuci & QC
+            Pilih Petugas
           </button>
         ) : step ? (
           <button
             type="button"
             className={`worker-btn worker-btn-${step.tone}`}
-            onClick={() => onAdvance(treatment.id, step.action)}
+            onClick={() => (step.action === 'start' ? setStartOpen(true) : onAdvance(treatment.id, step.action))}
             disabled={busy}
           >
             {step.label}
@@ -122,6 +125,17 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
             and a stray navigation mid-capture would drop the photo. */}
         {proof.capture}
       </div>
+      {startOpen && (
+        <StartProcessModal
+          treatment={treatment}
+          busy={busy}
+          onCancel={() => setStartOpen(false)}
+          onConfirm={async (names) => {
+            await onAdvance(treatment.id, 'start', names)
+            setStartOpen(false)
+          }}
+        />
+      )}
       {proof.error && <p className="form-error queue-card-proof-error">{proof.error}</p>}
     </article>
   )

@@ -14,6 +14,14 @@ const PERIOD_OPTIONS = [
   { value: 'yearly', label: 'Tahunan' },
 ]
 
+const PAYMENT_FILTER_OPTIONS = [
+  { value: 'all', label: 'Semua Pembayaran' },
+  { value: 'cash', label: 'Tunai' },
+  { value: 'qris', label: 'QRIS' },
+  { value: 'transfer', label: 'Transfer' },
+  { value: 'unpaid', label: 'Belum Dibayar' },
+]
+
 const STATUS_LABELS = {
   created: 'Dibuat',
   paid: 'Dibayar',
@@ -68,6 +76,8 @@ function RiwayatRow({ treatment: t, expanded, onToggle }) {
         <span className="riwayat-total">{formatRupiah(t.total)}</span>
       </div>
       {expanded && (
+        <div className="expand-wrap">
+        <div className="expand-inner">
         <div className="riwayat-expand">
           <div className="riwayat-expand-info">
             <dl>
@@ -83,7 +93,7 @@ function RiwayatRow({ treatment: t, expanded, onToggle }) {
                 Lihat Struk
               </Link>
               <Link to={`/treatment/${t.id}`} className="btn-secondary">
-                Detail Treatment
+                Detail Transaksi
               </Link>
             </div>
           </div>
@@ -97,6 +107,8 @@ function RiwayatRow({ treatment: t, expanded, onToggle }) {
               </a>
             )}
           </div>
+        </div>
+        </div>
         </div>
       )}
     </>
@@ -114,6 +126,7 @@ export default function RiwayatTransaksi() {
   const [period, setPeriod] = useState('daily')
   const [exporting, setExporting] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
+  const [paymentFilter, setPaymentFilter] = useState('all')
   // Same arrangement as Laporan's leaderboard: the period picker is admin-only,
   // so staff stay pinned to today's rows no matter what's in state.
   const effectivePeriod = isAdmin ? period : 'daily'
@@ -169,18 +182,27 @@ export default function RiwayatTransaksi() {
     }
   }
 
+  // The payment filter is applied client-side on the rows already loaded, so
+  // it composes with both the period picker and the plate search. A ticket
+  // matches a method if any of its payments used it; 'unpaid' has none.
+  const visibleTreatments = useMemo(() => {
+    if (paymentFilter === 'all') return treatments
+    if (paymentFilter === 'unpaid') return treatments.filter((t) => !t.isPaid)
+    return treatments.filter((t) => t.payments.some((p) => p.payment_method === paymentFilter))
+  }, [treatments, paymentFilter])
+
   const stats = useMemo(() => {
     // Revenue reflects money actually collected — treatments can now sit in
     // the queue unpaid, so only paid ones count toward it.
-    const paid = treatments.filter((t) => t.status !== 'voided' && t.isPaid)
+    const paid = visibleTreatments.filter((t) => t.status !== 'voided' && t.isPaid)
     const revenue = paid.reduce((sum, t) => sum + Number(t.total || 0), 0)
     const avg = paid.length ? revenue / paid.length : 0
     return {
-      count: treatments.length,
+      count: visibleTreatments.length,
       revenue,
       avg,
     }
-  }, [treatments])
+  }, [visibleTreatments])
 
   return (
     <div className="riwayat-screen">
@@ -192,6 +214,17 @@ export default function RiwayatTransaksi() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari nomor plat..."
           />
+          <select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            aria-label="Filter metode pembayaran"
+          >
+            {PAYMENT_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
           <button type="submit">Cari</button>
         </form>
       </div>
@@ -235,7 +268,7 @@ export default function RiwayatTransaksi() {
       {error && <p className="form-error">{error}</p>}
       {loading && <p className="riwayat-loading">Memuat...</p>}
 
-      {!loading && treatments.length > 0 && (
+      {!loading && visibleTreatments.length > 0 && (
         <div className="riwayat-table">
           <div className="riwayat-table-row riwayat-table-head">
             <span>Layanan</span>
@@ -245,7 +278,7 @@ export default function RiwayatTransaksi() {
             <span>Bayar</span>
             <span>Total</span>
           </div>
-          {treatments.map((t) => (
+          {visibleTreatments.map((t) => (
             <RiwayatRow
               key={t.id}
               treatment={t}
@@ -255,7 +288,7 @@ export default function RiwayatTransaksi() {
           ))}
         </div>
       )}
-      {!loading && treatments.length === 0 && <p className="riwayat-empty">Tidak ada transaksi</p>}
+      {!loading && visibleTreatments.length === 0 && <p className="riwayat-empty">Tidak ada transaksi</p>}
     </div>
   )
 }

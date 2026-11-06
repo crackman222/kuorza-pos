@@ -27,8 +27,8 @@
   --pos-border: rgba(0, 0, 0, 0.08);
   --pos-border-soft: rgba(0, 0, 0, 0.06);
   --pos-text: #16181c;
-  --pos-text-muted: rgba(0, 0, 0, 0.55);
-  --pos-text-faint: rgba(0, 0, 0, 0.4);
+  --pos-text-muted: rgba(0, 0, 0, 0.68);
+  --pos-text-faint: rgba(0, 0, 0, 0.56);
   --pos-green-bg: #e3f3e8;
   --pos-green-text: #276b45;
   --pos-gray-bg: #eef0f2;
@@ -71,8 +71,12 @@
   }
 }
 
+/* Only when no explicit choice has been made: once the toggle sets
+   [data-theme], that choice wins over the OS preference. Without this guard an
+   OS in dark mode repainted --text/--text-h (headings) light-on-light under
+   data-theme="light". */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --text: #9ca3af;
     --text-h: #f3f4f6;
     --bg: #16171d;
@@ -122,6 +126,16 @@
   --pos-green-soft: #1b3527;
   --pos-green-soft-text: #86dda8;
   --pos-wait: #474d57;
+  /* Legacy Vite-starter tokens (h1/h2, code) — must follow the toggle too. */
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #16171d;
+  --border: #2e303a;
+  --code-bg: #1f2028;
+  --accent: #c084fc;
+  --accent-bg: rgba(192, 132, 252, 0.15);
+  --accent-border: rgba(192, 132, 252, 0.5);
+  --social-bg: rgba(47, 48, 58, 0.5);
   color-scheme: dark;
 }
 

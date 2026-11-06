@@ -18,6 +18,7 @@ import { PaymentMethodSelector } from '../components/PaymentMethodSelector'
 import { WashProofButton } from '../components/WashProofButton'
 import { StaffPicker } from '../components/StaffPicker'
 import { MultiStaffPicker } from '../components/MultiStaffPicker'
+import { StartProcessModal } from '../components/StartProcessModal'
 import { formatRupiah, formatDateTime } from '../lib/format'
 import { parseStaffNames } from '../lib/staffNames'
 import { useAuth } from '../context/useAuth'
@@ -49,6 +50,7 @@ export default function DetailTreatment() {
   const [error, setError] = useState('')
   const [photoError, setPhotoError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [startOpen, setStartOpen] = useState(false)
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('cash')
 
@@ -114,10 +116,11 @@ export default function DetailTreatment() {
     }
   }
 
-  async function handleStartProcessing() {
+  async function handleStartProcessing(washStaffNames) {
     setBusy(true)
     try {
-      await startProcessing(id)
+      await startProcessing(id, washStaffNames)
+      setStartOpen(false)
       load()
     } catch {
       setError('Gagal memulai proses')
@@ -353,7 +356,7 @@ export default function DetailTreatment() {
           {!isFinal && (
             <>
               {(treatment.status === 'created' || treatment.status === 'paid') && (
-                <button type="button" className="btn-primary" onClick={handleStartProcessing} disabled={busy}>
+                <button type="button" className="btn-primary" onClick={() => setStartOpen(true)} disabled={busy}>
                   Mulai Proses
                 </button>
               )}
@@ -391,6 +394,15 @@ export default function DetailTreatment() {
           )}
         </div>
       </div>
+
+      {startOpen && (
+        <StartProcessModal
+          treatment={treatment}
+          busy={busy}
+          onCancel={() => setStartOpen(false)}
+          onConfirm={handleStartProcessing}
+        />
+      )}
 
       {lightboxOpen && photoUrl && (
         <div className="photo-lightbox-overlay" onClick={() => setLightboxOpen(false)}>

@@ -348,7 +348,7 @@
   gap: 10px;
   padding: 9px 12px;
   border-radius: 8px;
-  color: rgba(var(--pos-ink), 0.6);
+  color: rgba(var(--pos-ink), 0.7);
   font-weight: 500;
   font-size: 13px;
   text-decoration: none;
@@ -1014,7 +1014,7 @@
 .ticket-line-remove {
   border: none;
   background: transparent;
-  color: rgba(var(--pos-ink), 0.35);
+  color: rgba(var(--pos-ink), 0.55);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1109,6 +1109,15 @@
   border-radius: 8px;
   font-size: 13px;
   min-width: 220px;
+}
+
+.riwayat-search select {
+  padding: 9px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
 }
 
 .riwayat-search input:focus {
@@ -1240,7 +1249,80 @@
   cursor: pointer;
 }
 
+/* Detail panels and the start popup are mounted on demand, so they ease in
+   with a keyframe animation rather than a transition. */
+@keyframes panel-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The wrapper grows its row from 0fr to 1fr, which is what makes the rows
+   below slide down in step with the panel instead of jumping. The inner
+   clips the panel while it's still short. Same duration and curve as the
+   panel's own fade, so the two move as one. */
+@keyframes expand-rows {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+.expand-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: expand-rows 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.expand-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expand-wrap,
+  .riwayat-expand,
+  .upah-adjustments-panel {
+    animation: none !important;
+  }
+
+  /* The popup keeps a plain fade instead of switching off entirely: phones
+     with "remove animations" / battery saver report reduce-motion, and a
+     popup that just appears reads as broken. No movement or scaling. */
+  .start-modal {
+    animation-name: overlay-fade-in !important;
+  }
+}
+
 .riwayat-expand {
+  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
@@ -1683,6 +1765,51 @@
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--pos-border);
+}
+
+.start-modal-overlay {
+  animation: overlay-fade-in 0.2s ease-out;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.start-modal {
+  animation: modal-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  max-width: 380px;
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
+  border-radius: 14px;
+  padding: 22px;
+  color: var(--pos-text);
+}
+
+.start-modal-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.start-modal-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--pos-text-faint);
+}
+
+.start-modal .multi-staff-picker select {
+  width: 100%;
+}
+
+.start-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .photo-lightbox-overlay {
@@ -2277,6 +2404,7 @@
 }
 
 .upah-adjustments-panel {
+  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   padding: 14px 18px 18px;
   background: var(--pos-bg);
   border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
@@ -3098,7 +3226,7 @@
   gap: 3px 7px;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(var(--pos-ink), 0.5);
+  color: rgba(var(--pos-ink), 0.62);
 }
 
 .queue-card-meta > span + span::before {
@@ -3134,7 +3262,7 @@
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  color: rgba(var(--pos-ink), 0.45);
+  color: rgba(var(--pos-ink), 0.6);
 }
 
 .worker-ui .riwayat-loading {

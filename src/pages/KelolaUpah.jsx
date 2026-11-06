@@ -274,6 +274,8 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
         </span>
       </div>
       {expanded && (
+        <div className="expand-wrap">
+        <div className="expand-inner">
         <div className="upah-adjustments-panel">
           <ServiceBreakdown rows={row.serviceBreakdown} />
           <AddAdjustmentForm profileId={row.profileId} date={date} onAdded={onChanged} onError={onError} />
@@ -284,6 +286,8 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
               ))}
             </ul>
           )}
+        </div>
+        </div>
         </div>
       )}
     </>

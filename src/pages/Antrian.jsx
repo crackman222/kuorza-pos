@@ -57,11 +57,13 @@ export default function Antrian() {
 
   // Refetch rather than patch the row in place: 'selesai' drops a ticket out
   // of the queue entirely (see QUEUE_STATUSES), so the list itself changes.
-  async function handleAdvance(id, action) {
+  // extra is only used by 'start', which carries the wash crew picked in the
+  // modal.
+  async function handleAdvance(id, action, extra) {
     setBusyId(id)
     setError('')
     try {
-      await ADVANCE[action](id)
+      await ADVANCE[action](id, extra)
       await loadQueue()
     } catch {
       setError('Gagal memperbarui status transaksi')

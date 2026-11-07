@@ -95,6 +95,15 @@
   }
 }
 
+/* The explicit light choice must pin color-scheme too, not just the tokens.
+   :root declares `light dark`, so with the OS in dark mode the UA still
+   resolved form controls to dark while our tokens painted them light — the
+   native <select> popup then drew the hovered/selected option's label in
+   dark-mode white on our white surface, i.e. invisible. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
 /* Kuorza POS dark mode — toggled by AppShell, persisted to
    localStorage, and applied via [data-theme] on <html> (set inline in
    index.html before paint to avoid a light-mode flash). Same layout as

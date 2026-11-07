@@ -127,7 +127,15 @@ The menu of available wash/detailing services.
   vehicle involved (e.g. Cuci Helm). Drives whether Transaksi Baru asks for
   a plate number and vehicle brand at all; set it in the Supabase dashboard
   when adding the service
-- price numeric
+- price numeric — the normal price ("harga normal")
+- promo_price numeric, nullable (migration 011) — when set, this is what's
+  charged. Always read the charged price through `getServicePrice()` in
+  `src/lib/servicePrice.js`, never `price` directly. Supervisors change it in
+  Katalog via the `set_service_promo_price(p_service_id, p_promo_price)` RPC,
+  which only touches this column and refuses a promo that is <= 0 or not
+  below `price`; null ends the promo
+- sort_order integer — menu order (1xx Motor, 2xx Mobil, 3xx Helm, sizes
+  ascending within each). One row per size, named e.g. "Motor Basic Wash - S"
 
 ### `shelf_items`
 Goods sold off the shelf alongside services (added via migration 010).
@@ -442,3 +450,8 @@ All SQL migrations have been run against the Supabase project in order:
   active_field_workers and field_workers
 - 010_add_shelf_items — shelf_items table + RLS, treatment_items.shelf_item_id,
   the consume/restore stock triggers, and the add_shelf_stock() RPC
+- 011_revise_service_menu — services.promo_price + sort_order, the 50-item
+  per-size menu from the shop posters (Motor, Mobil, Helm), and the
+  set_service_promo_price() RPC. The intended delete of the 5 old generic
+  services (Cuci Motor, Cuci Mobil, Poles Body, Coating Kaca, Cuci Helm) was
+  blocked from the tooling and has to be run by hand in the SQL Editor

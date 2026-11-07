@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
-import { getActiveServices, getShelfItems, createShelfItem, addShelfStock } from '../api'
+import {
+  getActiveServices,
+  setServicePromoPrice,
+  getShelfItems,
+  createShelfItem,
+  addShelfStock,
+} from '../api'
 import { formatRupiah } from '../lib/format'
+import { getServicePrice, hasPromo } from '../lib/servicePrice'
+import { groupServicesByCategory } from '../lib/serviceCategories'
 import { ServiceIcon } from '../components/ServiceIcon'
 import { useAuth } from '../context/useAuth'
 import { isSupervisor } from '../lib/roles'
@@ -23,6 +31,10 @@ export default function Katalog() {
       .finally(() => setLoading(false))
   }, [])
 
+  function reloadServices() {
+    getActiveServices().then(setServices).catch(() => setError('Gagal memuat layanan'))
+  }
+
   function reloadShelf() {
     getShelfItems().then(setShelfItems).catch(() => setError('Gagal memuat barang'))
   }
@@ -36,31 +48,12 @@ export default function Katalog() {
 
       {!loading && (
         <>
-          <section className="katalog-section">
-            <h2 className="transaksi-section-label">Layanan</h2>
-            <p className="katalog-note">
-              Untuk menambah atau mengubah layanan, hubungi admin — dikelola lewat dashboard Supabase.
-            </p>
-            {services.length === 0 ? (
-              <p className="riwayat-empty">Belum ada layanan aktif</p>
-            ) : (
-              <div className="riwayat-table katalog-table">
-                <div className="riwayat-table-row riwayat-table-head">
-                  <span>Nama Layanan</span>
-                  <span>Harga</span>
-                </div>
-                {services.map((service) => (
-                  <div key={service.id} className="riwayat-table-row">
-                    <span className="riwayat-plate katalog-service-name">
-                      <ServiceIcon name={service.name} />
-                      {service.name}
-                    </span>
-                    <span className="riwayat-total">{formatRupiah(service.price)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <ServiceSection
+            services={services}
+            canManagePromo={canManageStock}
+            onChanged={reloadServices}
+            onError={setError}
+          />
 
           <ShelfSection
             items={shelfItems}
@@ -71,6 +64,108 @@ export default function Katalog() {
         </>
       )}
     </div>
+  )
+}
+
+// Layanan: names and normal prices are managed in the Supabase dashboard.
+// The promo price changes from time to time, so supervisors set it here.
+function ServiceSection({ services, canManagePromo, onChanged, onError }) {
+  return (
+    <section className="katalog-section">
+      <h2 className="transaksi-section-label">Layanan</h2>
+      <p className="katalog-note">
+        {canManagePromo
+          ? 'Harga promo bisa diubah di sini. Kosongkan lalu simpan untuk mengakhiri promo. Nama dan harga normal dikelola lewat dashboard Supabase.'
+          : 'Untuk menambah atau mengubah layanan, hubungi admin — dikelola lewat dashboard Supabase.'}
+      </p>
+      {services.length === 0 ? (
+        <p className="riwayat-empty">Belum ada layanan aktif</p>
+      ) : (
+        groupServicesByCategory(services).map((group) => (
+          <div key={group.key} className="katalog-category">
+            <h3 className="katalog-category-title">
+              {group.label}
+              <span className="katalog-category-count">{group.services.length} layanan</span>
+            </h3>
+            <div
+              className={`riwayat-table katalog-table ${canManagePromo ? 'katalog-service-managed' : 'katalog-service'}`}
+            >
+              <div className="riwayat-table-row riwayat-table-head">
+                <span>Nama Layanan</span>
+                <span>Harga Normal</span>
+                <span>Harga Promo</span>
+                {canManagePromo && <span></span>}
+              </div>
+              {group.services.map((service) => (
+                <div key={service.id} className="riwayat-table-row">
+                  <span className="riwayat-plate katalog-service-name">
+                    <ServiceIcon name={service.name} />
+                    {service.name}
+                  </span>
+                  <span className={hasPromo(service) ? 'katalog-normal-price-struck' : 'riwayat-total'}>
+                    {formatRupiah(service.price)}
+                  </span>
+                  <span className="riwayat-total">
+                    {hasPromo(service) ? formatRupiah(getServicePrice(service)) : '—'}
+                  </span>
+                  {canManagePromo && (
+                    <PromoPriceEditor service={service} onChanged={onChanged} onError={onError} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
+    </section>
+  )
+}
+
+// The RPC re-checks everything below (supervisor, > 0, < normal price); the
+// client-side checks are just for a friendlier message.
+function PromoPriceEditor({ service, onChanged, onError }) {
+  const [value, setValue] = useState(service.promo_price != null ? String(Number(service.promo_price)) : '')
+  const [busy, setBusy] = useState(false)
+
+  async function handleSave() {
+    const trimmed = value.trim()
+    const promo = trimmed === '' ? null : Math.round(Number(trimmed))
+    if (promo !== null && (!Number.isFinite(promo) || promo <= 0)) {
+      onError('Harga promo harus angka lebih dari nol')
+      return
+    }
+    if (promo !== null && promo >= Number(service.price)) {
+      onError('Harga promo harus lebih kecil dari harga normal')
+      return
+    }
+    setBusy(true)
+    onError('')
+    try {
+      await setServicePromoPrice(service.id, promo)
+      onChanged()
+    } catch (err) {
+      onError(err.message || 'Gagal mengubah harga promo')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <span className="katalog-stock-actions">
+      <input
+        type="number"
+        min="0"
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Promo"
+        aria-label={`Harga promo ${service.name}`}
+        disabled={busy}
+      />
+      <button type="button" className="btn-secondary" onClick={handleSave} disabled={busy}>
+        Simpan
+      </button>
+    </span>
   )
 }
 

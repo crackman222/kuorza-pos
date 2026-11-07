@@ -65,13 +65,16 @@ function DefaultServiceIcon() {
   )
 }
 
-// Matched against the real `services.name` values on file — trailing
-// whitespace exists in the DB (e.g. "Cuci Motor "), hence the trim.
+// Matched against the real `services.name` values on file, e.g.
+// "Motor Full Polish - L", "Mobil Premium Wash - S". First match wins, so the
+// treatment (coating/polish) beats the vehicle. The trim covers legacy names
+// with trailing whitespace (e.g. "Cuci Motor ").
 const ICON_BY_KEYWORD = [
   { keyword: 'coating', Icon: CoatingKacaIcon },
-  { keyword: 'cuci mobil', Icon: CuciMobilIcon },
-  { keyword: 'cuci motor', Icon: CuciMotorIcon },
+  { keyword: 'polish', Icon: PolesBodyIcon },
   { keyword: 'poles', Icon: PolesBodyIcon },
+  { keyword: 'mobil', Icon: CuciMobilIcon },
+  { keyword: 'motor', Icon: CuciMotorIcon },
 ]
 
 export function ServiceIcon({ name }) {

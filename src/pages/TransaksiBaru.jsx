@@ -4,6 +4,7 @@ import { getActiveServices, getAvailableShelfItems, createTreatment } from '../a
 import { ServicePicker } from '../components/ServicePicker'
 import { ShelfItemPicker } from '../components/ShelfItemPicker'
 import { formatRupiah } from '../lib/format'
+import { getServicePrice } from '../lib/servicePrice'
 import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 
@@ -250,7 +251,7 @@ export default function TransaksiBaru() {
       key: `service-${service.id}`,
       serviceId: service.id,
       serviceName: service.name,
-      unitPrice: service.price,
+      unitPrice: getServicePrice(service),
       requiresVehicle: service.requires_vehicle,
     })
   }

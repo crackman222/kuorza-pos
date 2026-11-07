@@ -2,9 +2,9 @@
 // sync with the profiles_role_check constraint (migration 008).
 //
 //   staff      — the people doing the work: Dashboard, Transaksi Baru, Katalog.
-//   supervisor — oversees operations: everything staff sees, plus Riwayat and
-//                Laporan. This is what 'staff' used to mean before the split.
+//   supervisor — oversees operations: everything staff sees, plus Riwayat and Laporan.
 //   admin      — everything, including Kelola Staf.
+
 export const ROLES = {
   STAFF: 'staff',
   SUPERVISOR: 'supervisor',
@@ -28,10 +28,6 @@ export function isAdmin(profile) {
   return profile?.role === ROLES.ADMIN
 }
 
-// The people on the shop floor, as opposed to the office. Deliberately NOT
-// `!isSupervisor(profile)` — a null/loading profile is nobody, not a worker,
-// and answering "true" there would flash the phone shell at a supervisor
-// before their profile resolves.
 export function isStaff(profile) {
   return profile?.role === ROLES.STAFF
 }

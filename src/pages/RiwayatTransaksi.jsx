@@ -124,7 +124,7 @@ export default function RiwayatTransaksi() {
   const [error, setError] = useState('')
   const [isFiltered, setIsFiltered] = useState(false)
   const [period, setPeriod] = useState('daily')
-  const [exporting, setExporting] = useState(false)
+  const [exporting, setExporting] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
   const [paymentFilter, setPaymentFilter] = useState('all')
   // Same arrangement as Laporan's leaderboard: the period picker is admin-only,
@@ -165,20 +165,30 @@ export default function RiwayatTransaksi() {
     }
   }
 
-  async function handleExportPdf() {
-    setExporting(true)
+  // Both exports pull the whole period fresh rather than reusing the rows on
+  // screen, so the plate search and payment filter don't leak into the file.
+  async function handleExport(format) {
+    setExporting(format)
     setError('')
     try {
       const { start, end } = getPeriodRange(period)
-      const [results, { exportTreatmentsToPdf }] = await Promise.all([
-        getTreatmentsInRange(start, end),
-        import('../lib/pdf'),
-      ])
-      exportTreatmentsToPdf(results, formatPeriodLabel(period))
+      if (format === 'pdf') {
+        const [results, { exportTreatmentsToPdf }] = await Promise.all([
+          getTreatmentsInRange(start, end),
+          import('../lib/pdf'),
+        ])
+        exportTreatmentsToPdf(results, formatPeriodLabel(period))
+      } else {
+        const [results, { exportTreatmentsToCsv }] = await Promise.all([
+          getTreatmentsInRange(start, end),
+          import('../lib/csv'),
+        ])
+        exportTreatmentsToCsv(results, formatPeriodLabel(period))
+      }
     } catch {
-      setError('Gagal membuat PDF')
+      setError(format === 'pdf' ? 'Gagal membuat PDF' : 'Gagal membuat file Excel')
     } finally {
-      setExporting(false)
+      setExporting(null)
     }
   }
 
@@ -241,8 +251,11 @@ export default function RiwayatTransaksi() {
               </option>
             ))}
           </select>
-          <button type="button" className="btn-secondary" onClick={handleExportPdf} disabled={exporting}>
-            {exporting ? 'Membuat PDF...' : 'Unduh PDF'}
+          <button type="button" className="btn-secondary" onClick={() => handleExport('pdf')} disabled={!!exporting}>
+            {exporting === 'pdf' ? 'Membuat PDF...' : 'Unduh PDF'}
+          </button>
+          <button type="button" className="btn-secondary" onClick={() => handleExport('csv')} disabled={!!exporting}>
+            {exporting === 'csv' ? 'Membuat Excel...' : 'Unduh Excel (CSV)'}
           </button>
           <span className="riwayat-period-label">{formatPeriodLabel(period)}</span>
         </div>

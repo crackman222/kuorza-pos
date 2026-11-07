@@ -69,7 +69,15 @@ export default function Katalog() {
 
 // Layanan: names and normal prices are managed in the Supabase dashboard.
 // The promo price changes from time to time, so supervisors set it here.
+// Same collapsible sections as the Transaksi Baru picker: one category open
+// at a time, the first one open to start.
 function ServiceSection({ services, canManagePromo, onChanged, onError }) {
+  const groups = groupServicesByCategory(services)
+  // undefined = untouched, so the first category starts open;
+  // null = the user closed everything.
+  const [openKey, setOpenKey] = useState(undefined)
+  const currentKey = openKey === undefined ? groups[0]?.key : openKey
+
   return (
     <section className="katalog-section">
       <h2 className="transaksi-section-label">Layanan</h2>
@@ -81,41 +89,60 @@ function ServiceSection({ services, canManagePromo, onChanged, onError }) {
       {services.length === 0 ? (
         <p className="riwayat-empty">Belum ada layanan aktif</p>
       ) : (
-        groupServicesByCategory(services).map((group) => (
-          <div key={group.key} className="katalog-category">
-            <h3 className="katalog-category-title">
-              {group.label}
-              <span className="katalog-category-count">{group.services.length} layanan</span>
-            </h3>
-            <div
-              className={`riwayat-table katalog-table ${canManagePromo ? 'katalog-service-managed' : 'katalog-service'}`}
-            >
-              <div className="riwayat-table-row riwayat-table-head">
-                <span>Nama Layanan</span>
-                <span>Harga Normal</span>
-                <span>Harga Promo</span>
-                {canManagePromo && <span></span>}
+        <div className="service-category-list">
+          {groups.map((group) => {
+            const isOpen = group.key === currentKey
+            const panelId = `katalog-category-${group.key}`
+            return (
+              <div key={group.key} className={`service-category ${isOpen ? 'open' : ''}`}>
+                <button
+                  type="button"
+                  className="service-category-header"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => setOpenKey(isOpen ? null : group.key)}
+                >
+                  <span className="service-category-label">{group.label}</span>
+                  <span className="service-category-meta">{group.services.length} layanan</span>
+                  <span className="service-category-chevron" aria-hidden="true" />
+                </button>
+
+                {isOpen && (
+                  <div
+                    id={panelId}
+                    className={`riwayat-table katalog-table katalog-category-panel ${
+                      canManagePromo ? 'katalog-service-managed' : 'katalog-service'
+                    }`}
+                  >
+                    <div className="riwayat-table-row riwayat-table-head">
+                      <span>Nama Layanan</span>
+                      <span>Harga Normal</span>
+                      <span>Harga Promo</span>
+                      {canManagePromo && <span></span>}
+                    </div>
+                    {group.services.map((service) => (
+                      <div key={service.id} className="riwayat-table-row">
+                        <span className="riwayat-plate katalog-service-name">
+                          <ServiceIcon name={service.name} />
+                          {service.name}
+                        </span>
+                        <span className={hasPromo(service) ? 'katalog-normal-price-struck' : 'riwayat-total'}>
+                          {formatRupiah(service.price)}
+                        </span>
+                        <span className="riwayat-total">
+                          {hasPromo(service) ? formatRupiah(getServicePrice(service)) : '—'}
+                        </span>
+                        {canManagePromo && (
+                          <PromoPriceEditor service={service} onChanged={onChanged} onError={onError} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              {group.services.map((service) => (
-                <div key={service.id} className="riwayat-table-row">
-                  <span className="riwayat-plate katalog-service-name">
-                    <ServiceIcon name={service.name} />
-                    {service.name}
-                  </span>
-                  <span className={hasPromo(service) ? 'katalog-normal-price-struck' : 'riwayat-total'}>
-                    {formatRupiah(service.price)}
-                  </span>
-                  <span className="riwayat-total">
-                    {hasPromo(service) ? formatRupiah(getServicePrice(service)) : '—'}
-                  </span>
-                  {canManagePromo && (
-                    <PromoPriceEditor service={service} onChanged={onChanged} onError={onError} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
+            )
+          })}
+        </div>
       )}
     </section>
   )
@@ -151,7 +178,7 @@ function PromoPriceEditor({ service, onChanged, onError }) {
   }
 
   return (
-    <span className="katalog-stock-actions">
+    <span className="katalog-stock-actions katalog-promo-actions">
       <input
         type="number"
         min="0"

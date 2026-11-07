@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { uploadWashProofPhoto } from '../api'
 import { CameraCapture } from './CameraCapture'
 import { isCameraSupported } from '../lib/camera'
@@ -9,13 +9,22 @@ import { isCameraSupported } from '../lib/camera'
 // card's one chunky button, which is the photo step and the status step at
 // once. Only the trigger differs, so only the trigger is duplicated.
 //
-// Returns the handler plus `capture`, the elements the caller has to render
-// somewhere in its own tree: the hidden file input and the camera sheet.
+// Returns the handler plus `capture`, the camera sheet the caller has to
+// render somewhere in its own tree.
+//
+// Camera only, by design: the proof has to be a photo taken on the spot, not
+// something picked from the gallery. There is deliberately no file input —
+// even with capture="environment", some Android browsers still offer the
+// gallery from it.
 export function useWashProofUpload({ treatmentId, onUploaded, onError }) {
-  const inputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [cameraOpen, setCameraOpen] = useState(false)
+
+  function fail(message) {
+    setError(message)
+    onError?.(message)
+  }
 
   async function upload(file) {
     if (!file) return
@@ -26,63 +35,36 @@ export function useWashProofUpload({ treatmentId, onUploaded, onError }) {
       onUploaded?.(treatmentId)
     } catch (err) {
       console.error('Upload bukti foto cuci gagal:', err)
-      const message = err.message || 'Gagal mengunggah foto'
-      setError(message)
-      onError?.(message)
+      fail(err.message || 'Gagal mengunggah foto')
     } finally {
       setUploading(false)
     }
   }
 
-  function handleChange(e) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    upload(file)
-  }
-
-  // Camera first where the browser can give us one; everywhere else (no
-  // getUserMedia, or a plain-http origin where it's unavailable) this falls
-  // straight through to the file picker, which on a phone still opens the
-  // camera app via capture="environment".
+  // getUserMedia only exists on a secure origin (https or localhost). Without
+  // it there is no camera to offer, and no fallback either — say so.
   function open() {
     if (uploading) return
-    if (isCameraSupported()) {
-      setError('')
-      setCameraOpen(true)
+    if (!isCameraSupported()) {
+      fail('Kamera tidak tersedia di browser ini — buka aplikasi lewat https')
       return
     }
-    inputRef.current?.click()
+    setError('')
+    setCameraOpen(true)
   }
 
-  const capture = (
-    <>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="wash-proof-input"
-        onChange={handleChange}
-        onClick={(e) => e.stopPropagation()}
+  const capture = cameraOpen && (
+    // Stop clicks inside the sheet from reaching whatever sits underneath
+    // — both the desk table row and the queue card navigate on click.
+    <span onClick={(e) => e.stopPropagation()}>
+      <CameraCapture
+        onCapture={(file) => {
+          setCameraOpen(false)
+          upload(file)
+        }}
+        onClose={() => setCameraOpen(false)}
       />
-      {cameraOpen && (
-        // Stop clicks inside the sheet from reaching whatever sits underneath
-        // — both the desk table row and the queue card navigate on click.
-        <span onClick={(e) => e.stopPropagation()}>
-          <CameraCapture
-            onCapture={(file) => {
-              setCameraOpen(false)
-              upload(file)
-            }}
-            onClose={() => setCameraOpen(false)}
-            onFallback={() => {
-              setCameraOpen(false)
-              inputRef.current?.click()
-            }}
-          />
-        </span>
-      )}
-    </>
+    </span>
   )
 
   return { open, uploading, error, capture }

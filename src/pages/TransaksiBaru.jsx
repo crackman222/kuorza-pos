@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getActiveServices, getAvailableShelfItems, createTreatment } from '../api'
+import { getActiveServices, getAvailableShelfItems, getActiveProfiles, createTreatment } from '../api'
 import { ServicePicker } from '../components/ServicePicker'
 import { ShelfItemPicker } from '../components/ShelfItemPicker'
+import { StaffPicker } from '../components/StaffPicker'
+import { MultiStaffPicker } from '../components/MultiStaffPicker'
 import { formatRupiah } from '../lib/format'
 import { getServicePrice } from '../lib/servicePrice'
+import { findDefaultQcStaff } from '../lib/staffDefaults'
 import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 
@@ -123,6 +126,24 @@ function CustomerFields({
   )
 }
 
+// Who washes and who QCs this ticket. Both optional here — wash can still be
+// picked at Mulai Proses — but QC starts pre-filled with the regular QC
+// person (see lib/staffDefaults) and can be changed or cleared.
+function StaffFields({ washStaff, setWashStaff, qcStaff, setQcStaff }) {
+  return (
+    <div className="ticket-fields ticket-staff-fields">
+      <div className="ticket-staff-row">
+        <span className="ticket-staff-label">Petugas Cuci</span>
+        <MultiStaffPicker value={washStaff} onChange={setWashStaff} />
+      </div>
+      <div className="ticket-staff-row">
+        <span className="ticket-staff-label">Petugas QC</span>
+        <StaffPicker value={qcStaff} onChange={setQcStaff} />
+      </div>
+    </div>
+  )
+}
+
 function DiscountFields({
   discountType,
   setDiscountType,
@@ -208,6 +229,11 @@ export default function TransaksiBaru() {
   const [discountType, setDiscountType] = useState('percent')
   const [discountInput, setDiscountInput] = useState('')
   const [notes, setNotes] = useState('')
+  const [washStaff, setWashStaff] = useState([])
+  // undefined = roster not loaded yet, so the default hasn't been applied;
+  // null = deliberately nobody. Keeps a choice made before the roster arrives
+  // from being overwritten by the default.
+  const [qcStaff, setQcStaff] = useState(undefined)
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -223,6 +249,11 @@ export default function TransaksiBaru() {
     getAvailableShelfItems()
       .then(setShelfItems)
       .catch(() => setError('Gagal memuat daftar barang'))
+    getActiveProfiles()
+      .then((workers) =>
+        setQcStaff((current) => (current === undefined ? findDefaultQcStaff(workers) : current))
+      )
+      .catch(() => setQcStaff((current) => (current === undefined ? null : current)))
   }, [])
 
   // A ticket line is a service or a shelf item, so lines are keyed by a
@@ -396,6 +427,8 @@ export default function TransaksiBaru() {
         notes: notes.trim() || null,
         items: selectedItems,
         discount: discountValue,
+        washStaffNames: washStaff,
+        qcStaff: qcStaff ?? null,
       })
       navigate('/')
     } catch (err) {
@@ -419,6 +452,15 @@ export default function TransaksiBaru() {
       setCustomerName={setCustomerName}
       customerPhone={customerPhone}
       setCustomerPhone={setCustomerPhone}
+    />
+  )
+
+  const staffFields = (
+    <StaffFields
+      washStaff={washStaff}
+      setWashStaff={setWashStaff}
+      qcStaff={qcStaff}
+      setQcStaff={setQcStaff}
     />
   )
 
@@ -510,6 +552,11 @@ export default function TransaksiBaru() {
             </header>
 
             <div className="worker-wizard-card">{customerFields}</div>
+
+            <div className="worker-wizard-card">
+              <div className="worker-wizard-card-title">Petugas</div>
+              {staffFields}
+            </div>
           </section>
         )}
 
@@ -549,6 +596,14 @@ export default function TransaksiBaru() {
                     )}
                   </>
                 )}
+                <div className="worker-wizard-review-row">
+                  <dt>Petugas Cuci</dt>
+                  <dd>{washStaff.length ? washStaff.join(', ') : '—'}</dd>
+                </div>
+                <div className="worker-wizard-review-row">
+                  <dt>Petugas QC</dt>
+                  <dd>{qcStaff || '—'}</dd>
+                </div>
               </dl>
             </div>
 
@@ -630,6 +685,8 @@ export default function TransaksiBaru() {
         <div className="ticket-panel-title">Tiket Saat Ini</div>
 
         {customerFields}
+
+        {staffFields}
 
         <TicketLines
           items={selectedItems}

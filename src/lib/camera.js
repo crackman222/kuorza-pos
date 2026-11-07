@@ -1,13 +1,9 @@
-// Live camera capture for photo uploads.
-//
-// The file inputs already carry capture="environment", which is enough on a
-// phone — the OS camera app handles it. On a laptop (and on any browser that
-// ignores the attribute) that falls back to a file picker, so this module
-// drives the camera in-page via getUserMedia instead.
+// Live camera capture for photo uploads, driven in-page via getUserMedia.
+// Wash proof is camera-only (no file picker), so this is the one capture path.
 //
 // navigator.mediaDevices only exists on a secure origin (https or localhost),
-// so on a plain-http deployment this reports unsupported and callers fall back
-// to the file picker rather than failing.
+// so on a plain-http origin this reports unsupported and the caller shows an
+// error instead of opening the camera.
 export function isCameraSupported() {
   return typeof navigator !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia)
 }

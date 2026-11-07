@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { startCameraStream, stopCameraStream, captureFrame, describeCameraError } from '../lib/camera'
 
 // Full-screen camera sheet: live preview -> shutter -> review the shot ->
-// either keep it (onCapture receives a File) or retake. Cancelling or any
-// camera failure closes back out through onClose/onFallback, so the caller can
-// offer the plain file picker instead.
-export function CameraCapture({ onCapture, onClose, onFallback }) {
+// either keep it (onCapture receives a File) or retake. Camera only — there
+// is no "pick a file" escape hatch, so wash proof is always a live photo. A
+// camera failure shows its reason here and the sheet closes via onClose.
+export function CameraCapture({ onCapture, onClose }) {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   const [error, setError] = useState('')
@@ -98,21 +98,14 @@ export function CameraCapture({ onCapture, onClose, onFallback }) {
             </button>
           </>
         ) : (
-          <>
-            {onFallback && (
-              <button type="button" className="btn-secondary" onClick={onFallback}>
-                Pilih File
-              </button>
-            )}
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleShutter}
-              disabled={!ready || busy}
-            >
-              Ambil Foto
-            </button>
-          </>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={handleShutter}
+            disabled={!ready || busy}
+          >
+            Ambil Foto
+          </button>
         )}
       </div>
     </div>

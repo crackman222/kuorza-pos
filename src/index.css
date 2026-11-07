@@ -120,8 +120,10 @@
   --pos-border: rgba(255, 255, 255, 0.1);
   --pos-border-soft: rgba(255, 255, 255, 0.07);
   --pos-text: #f1f2f4;
-  --pos-text-muted: rgba(255, 255, 255, 0.62);
-  --pos-text-faint: rgba(255, 255, 255, 0.42);
+  /* Faint was 0.42 — about 3:1 on --pos-surface, too dim for the small
+     labels and hints that use it. 0.58 clears 4.5:1. */
+  --pos-text-muted: rgba(255, 255, 255, 0.68);
+  --pos-text-faint: rgba(255, 255, 255, 0.58);
   --pos-green-bg: #17351f;
   --pos-green-text: #7fd79a;
   --pos-gray-bg: #262931;

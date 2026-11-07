@@ -52,9 +52,15 @@ export async function createTreatment({
   items,
   discount = 0,
   paymentMethod,
+  washStaffNames,
+  qcStaff,
 }) {
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
   const total = Math.max(subtotal - discount, 0)
+  // Crew can be assigned up front from Transaksi Baru, or left empty and
+  // picked later (Mulai Proses / Detail Transaksi).
+  const washStaff = formatStaffNames(washStaffNames)
+  const qc = qcStaff?.trim() || null
 
   const treatment = await insertTreatment({
     customer_name: customerName,
@@ -69,9 +75,13 @@ export async function createTreatment({
     subtotal,
     discount,
     total,
+    wash_staff: washStaff,
+    qc_staff: qc,
   })
 
   await logStatusChange(treatment.id, 'created')
+  if (washStaff) await logAction(treatment.id, `wash staff assigned: ${washStaff}`)
+  if (qc) await logAction(treatment.id, `qc staff assigned: ${qc}`)
 
   const { error: itemsError } = await supabase.from('treatment_items').insert(
     items.map((item) => ({

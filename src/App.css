@@ -899,6 +899,35 @@
   border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
 }
 
+/* Wash/QC pickers on Transaksi Baru: label above a full-width dropdown, same
+   rhythm as the customer fields' labels. The pickers are right-aligned in
+   Detail Transaksi, so stretch them back out here. */
+.ticket-staff-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ticket-staff-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.ticket-staff-fields .multi-staff-picker {
+  align-items: stretch;
+}
+
+.ticket-staff-fields .staff-picker-select {
+  width: 100%;
+  font-size: 13.5px;
+  padding: 10px 12px;
+}
+
+.ticket-staff-fields .multi-staff-list {
+  min-width: 0;
+}
+
 .ticket-panel label {
   display: flex;
   flex-direction: column;
@@ -1650,6 +1679,116 @@
   grid-template-columns: 2fr 1fr 1fr 1.4fr;
 }
 
+.katalog-table.katalog-service .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.katalog-table.katalog-service-managed .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr 1.4fr;
+}
+
+/* Transaksi Baru: one collapsible section per service category. Headers are
+   full-width and 52px tall so they're an easy thumb target on a phone. */
+.service-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-category {
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: var(--pos-surface);
+}
+
+.service-category-header {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--pos-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.service-category-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.service-category-meta {
+  font-size: 12.5px;
+  color: var(--pos-text-muted);
+}
+
+.service-category-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--pos-blue);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* Drawn chevron rather than a glyph, so it renders the same everywhere */
+.service-category-chevron {
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--pos-text-muted);
+  border-bottom: 2px solid var(--pos-text-muted);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+
+.service-category.open .service-category-chevron {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+/* Katalog: the table sits inside the collapsible card, so drop its own
+   border/radius and just divide it from the header */
+.service-category .katalog-category-panel {
+  border: none;
+  border-top: 1px solid var(--pos-border);
+  border-radius: 0 0 12px 12px;
+  margin: 0;
+}
+
+/* Promo prices run to 7 digits (1050000); the stock input's 68px clips them */
+.katalog-promo-actions input {
+  width: 104px;
+}
+
+/* Room for the qty badge, which sits 8px outside each card's corner */
+.service-category-panel {
+  padding: 10px 14px 16px;
+}
+
+/* Normal price when a promo is running — still shown so staff can quote it */
+.katalog-normal-price-struck,
+.service-card-normal-price {
+  color: var(--pos-text-muted, #8a8f98);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.service-card-normal-price {
+  margin-left: 6px;
+  font-size: 12px;
+}
+
 .katalog-stock-actions {
   display: flex;
   gap: 8px;
@@ -1679,97 +1818,6 @@
 .service-card-stock {
   font-size: 11.5px;
   font-weight: 600;
-.katalog-table.katalog-service .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr;
-}
-
-.katalog-table.katalog-service-managed .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr 1.4fr;
-}
-
-/* Katalog: one table per service category (Motor / Mobil / Helm) */
-.katalog-category + .katalog-category {
-  margin-top: 22px;
-}
-
-.katalog-category-title {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
-
-.katalog-category-count {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
-}
-
-/* Transaksi Baru: category tabs above the service cards */
-.service-category-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-.service-category-tab {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 10px;
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface);
-  color: var(--pos-text-muted);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Same inversion as .worker-chip.active — works in both themes */
-.service-category-tab.active {
-  background: var(--pos-text);
-  border-color: var(--pos-text);
-  color: var(--pos-surface);
-}
-
-.service-category-tab-count {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--pos-blue);
-  color: #fff;
-  font-size: 11.5px;
-}
-
-/* Normal price when a promo is running — still shown so staff can quote it */
-.katalog-normal-price-struck,
-.service-card-normal-price {
-  color: var(--pos-text-muted, #8a8f98);
-  text-decoration: line-through;
-  font-weight: 500;
-}
-
-.service-card-normal-price {
-  margin-left: 6px;
-  font-size: 12px;
-}
-
   color: var(--pos-text-faint);
 }
 
@@ -1832,13 +1880,6 @@
   border-color: var(--pos-red-text);
   color: var(--pos-red-text);
   background: var(--pos-red-bg);
-}
-
-/* The file input WashProofButton and the queue card's photo step both fall
-   back to when there is no in-page camera — clicked programmatically, never
-   seen. */
-.wash-proof-input {
-  display: none;
 }
 
 .wash-proof-thumb-btn {
@@ -2409,9 +2450,9 @@
   font-weight: 500;
   color: var(--pos-text);
   padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--pos-ink), 0.15);
   border-radius: 8px;
-  background: #fff;
+  background: var(--pos-surface);
 }
 
 .staf-edit-row {
@@ -2422,9 +2463,9 @@
 .staf-edit-row select {
   font-size: 13px;
   padding: 7px 10px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--pos-ink), 0.15);
   border-radius: 6px;
-  background: #fff;
+  background: var(--pos-surface);
   color: var(--pos-text);
   width: 100%;
 }
@@ -2835,6 +2876,21 @@
 
 :root[data-theme='dark'] .rev-bar {
   background: #33475c;
+}
+
+/* Text with no color of its own inherits :root's legacy --text, a dim gray
+   that reads poorly on the dark surfaces. Inside the app, default to the
+   real body-text token instead. Light mode is left as it was. */
+:root[data-theme='dark'] .app-shell,
+:root[data-theme='dark'] .worker-shell,
+:root[data-theme='dark'] .login-screen {
+  color: var(--pos-text);
+}
+
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: var(--pos-text-faint);
+  opacity: 1;
 }
 
 .app-header-right {

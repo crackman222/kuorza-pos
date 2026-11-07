@@ -455,3 +455,9 @@ All SQL migrations have been run against the Supabase project in order:
   set_service_promo_price() RPC. The intended delete of the 5 old generic
   services (Cuci Motor, Cuci Mobil, Poles Body, Coating Kaca, Cuci Helm) was
   blocked from the tooling and has to be run by hand in the SQL Editor
+- 013_require_verified_payment_to_close — `treatments_require_verified_payment`
+  trigger (BEFORE INSERT OR UPDATE OF status): a treatment can only become
+  'closed' when its latest payment exists and, for qris/transfer, has a
+  `proof_url` (camera photo of the payment screen, uploaded via the
+  `upload-wash-proof` Edge Function with `kind=payment`). Cash needs no
+  photo. Mirrors `isPaymentVerified()` in `src/api/treatments.js`

@@ -8,13 +8,15 @@ import {
   sendToQC,
   markSelesai,
   hasRequiredStaff,
-  recordPayment,
+  recordVerifiedPayment,
+  uploadPaymentProofPhoto,
+  isPaymentVerified,
   assignWashStaff,
   assignQcStaff,
   getWashProofPhoto,
   getWashProofSignedUrl,
 } from '../api'
-import { PaymentMethodSelector } from '../components/PaymentMethodSelector'
+import { PaymentModal } from '../components/PaymentModal'
 import { WashProofButton } from '../components/WashProofButton'
 import { StaffPicker } from '../components/StaffPicker'
 import { MultiStaffPicker } from '../components/MultiStaffPicker'
@@ -34,6 +36,12 @@ const STATUS_LABELS = {
   voided: 'Dibatalkan',
 }
 
+const PAYMENT_METHOD_LABELS = {
+  cash: 'Tunai',
+  qris: 'QRIS',
+  transfer: 'Transfer',
+}
+
 export default function DetailTreatment() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -46,17 +54,24 @@ export default function DetailTreatment() {
   const [treatment, setTreatment] = useState(null)
   const [hasPhoto, setHasPhoto] = useState(false)
   const [photoUrl, setPhotoUrl] = useState(null)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [paymentProofUrl, setPaymentProofUrl] = useState(null)
+  // Which photo the lightbox is showing (wash proof or payment proof), or null.
+  const [lightboxUrl, setLightboxUrl] = useState(null)
   const [error, setError] = useState('')
   const [photoError, setPhotoError] = useState('')
   const [busy, setBusy] = useState(false)
   const [startOpen, setStartOpen] = useState(false)
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState('cash')
+  // null | 'pay' (record payment) | 'proof' (recorded, photo missing)
+  const [payMode, setPayMode] = useState(null)
+  const [payError, setPayError] = useState('')
 
   const load = useCallback(() => {
     getTreatmentDetail(id)
-      .then(setTreatment)
+      .then(async (data) => {
+        setTreatment(data)
+        const proofPath = data.payment?.proof_url
+        setPaymentProofUrl(proofPath ? await getWashProofSignedUrl(proofPath).catch(() => null) : null)
+      })
       .catch(() => setError('Gagal memuat transaksi'))
     getWashProofPhoto(id)
       .then(async (path) => {
@@ -71,24 +86,32 @@ export default function DetailTreatment() {
   }, [load])
 
   useEffect(() => {
-    if (!lightboxOpen) return
+    if (!lightboxUrl) return
     function handleKeyDown(e) {
-      if (e.key === 'Escape') setLightboxOpen(false)
+      if (e.key === 'Escape') setLightboxUrl(null)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [lightboxOpen])
+  }, [lightboxUrl])
 
-  async function handleRecordPayment() {
+  // Errors stay inside the payment modal rather than replacing the whole
+  // screen. Reload either way: a failed proof upload can still leave the
+  // payment itself recorded.
+  async function handlePay({ paymentMethod, proofFile }) {
     setBusy(true)
+    setPayError('')
     try {
-      await recordPayment(id, { amount: treatment.total, paymentMethod })
-      setShowPaymentForm(false)
-      load()
-    } catch {
-      setError('Gagal mencatat pembayaran')
+      if (payMode === 'proof') {
+        await uploadPaymentProofPhoto(id, proofFile)
+      } else {
+        await recordVerifiedPayment(id, { amount: treatment.total, paymentMethod, proofFile })
+      }
+      setPayMode(null)
+    } catch (err) {
+      setPayError(err.message || 'Gagal menyimpan pembayaran')
     } finally {
       setBusy(false)
+      load()
     }
   }
 
@@ -160,8 +183,8 @@ export default function DetailTreatment() {
     try {
       await closeTreatment(id)
       load()
-    } catch {
-      setError('Gagal menutup transaksi')
+    } catch (err) {
+      setError(err.message || 'Gagal menutup transaksi')
     } finally {
       setBusy(false)
     }
@@ -193,6 +216,8 @@ export default function DetailTreatment() {
 
   const isFinal = treatment.status === 'voided' || treatment.status === 'closed'
   const isPaid = Boolean(treatment.payment)
+  // Closing needs a verified payment: cash, or QRIS/transfer with a proof photo.
+  const paymentVerified = isPaymentVerified(treatment.payment)
   const staffReady = hasRequiredStaff(treatment)
 
   return (
@@ -218,8 +243,12 @@ export default function DetailTreatment() {
             <span className={`status-badge status-${treatment.status}`}>
               {STATUS_LABELS[treatment.status] || treatment.status}
             </span>
-            <span className={`status-badge ${isPaid ? 'status-closed' : 'status-created'}`}>
-              {isPaid ? 'Lunas' : 'Belum Dibayar'}
+            <span
+              className={`status-badge ${
+                paymentVerified ? 'status-closed' : isPaid ? 'status-diproses' : 'status-created'
+              }`}
+            >
+              {paymentVerified ? 'Lunas' : isPaid ? 'Bukti Bayar Belum Ada' : 'Belum Dibayar'}
             </span>
             <WashProofButton
               treatmentId={treatment.id}
@@ -269,7 +298,7 @@ export default function DetailTreatment() {
             <button
               type="button"
               className="wash-proof-thumb-btn"
-              onClick={() => setLightboxOpen(true)}
+              onClick={() => setLightboxUrl(photoUrl)}
               aria-label="Perbesar bukti foto cuci"
             >
               <img src={photoUrl} alt="Bukti foto cuci" className="wash-proof-thumb" />
@@ -279,6 +308,29 @@ export default function DetailTreatment() {
           )}
         </div>
         {photoError && <p className="form-error">{photoError}</p>}
+        {isPaid && (
+          <div className="struk-row">
+            <span>Pembayaran</span>
+            <span>{PAYMENT_METHOD_LABELS[treatment.payment.payment_method] || treatment.payment.payment_method}</span>
+          </div>
+        )}
+        {isPaid && treatment.payment.payment_method !== 'cash' && (
+          <div className="struk-row">
+            <span>Bukti Bayar</span>
+            {paymentProofUrl ? (
+              <button
+                type="button"
+                className="wash-proof-thumb-btn"
+                onClick={() => setLightboxUrl(paymentProofUrl)}
+                aria-label="Perbesar bukti pembayaran"
+              >
+                <img src={paymentProofUrl} alt="Bukti pembayaran" className="wash-proof-thumb" />
+              </button>
+            ) : (
+              <span>Belum ada foto</span>
+            )}
+          </div>
+        )}
 
         <hr />
         <div className="struk-items">
@@ -308,35 +360,25 @@ export default function DetailTreatment() {
           <span>{formatRupiah(treatment.total)}</span>
         </div>
 
-        {!isFinal && !isPaid && (
+        {!isFinal && !paymentVerified && (
           <div className="payment-form">
-            {showPaymentForm ? (
-              <>
-                <div className="payment-form-title">Catat Pembayaran</div>
-                <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} />
-                <div className="detail-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setShowPaymentForm(false)}>
-                    Batal
-                  </button>
-                  <button type="button" className="btn-primary" onClick={handleRecordPayment} disabled={busy}>
-                    Konfirmasi · {formatRupiah(treatment.total)}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                type="button"
-                className="btn-primary payment-form-trigger"
-                onClick={() => setShowPaymentForm(true)}
-              >
-                Catat Pembayaran
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn-primary payment-form-trigger"
+              onClick={() => setPayMode(isPaid ? 'proof' : 'pay')}
+              disabled={busy}
+            >
+              {isPaid ? '📷 Foto Bukti Bayar' : '💳 Verifikasi Pembayaran'}
+            </button>
           </div>
         )}
 
-        {treatment.status === 'selesai' && !isPaid && !showPaymentForm && (
-          <p className="detail-hint">Pembayaran diperlukan sebelum transaksi bisa ditutup.</p>
+        {treatment.status === 'selesai' && !paymentVerified && (
+          <p className="detail-hint">
+            {isPaid
+              ? 'Foto bukti pembayaran QRIS/transfer diperlukan sebelum transaksi bisa ditutup.'
+              : 'Pembayaran harus diverifikasi sebelum transaksi bisa ditutup.'}
+          </p>
         )}
 
         {treatment.status === 'qc' && !staffReady && (
@@ -382,7 +424,7 @@ export default function DetailTreatment() {
                   Tandai Selesai
                 </button>
               )}
-              {treatment.status === 'selesai' && isPaid && (
+              {treatment.status === 'selesai' && paymentVerified && (
                 <button type="button" className="btn-primary" onClick={handleClose} disabled={busy}>
                   Tutup Transaksi
                 </button>
@@ -404,19 +446,34 @@ export default function DetailTreatment() {
         />
       )}
 
-      {lightboxOpen && photoUrl && (
-        <div className="photo-lightbox-overlay" onClick={() => setLightboxOpen(false)}>
+      {payMode && (
+        <PaymentModal
+          total={treatment.total}
+          busy={busy}
+          error={payError}
+          proofOnly={payMode === 'proof'}
+          initialMethod={payMode === 'proof' ? treatment.payment?.payment_method : 'cash'}
+          onCancel={() => {
+            setPayMode(null)
+            setPayError('')
+          }}
+          onConfirm={handlePay}
+        />
+      )}
+
+      {lightboxUrl && (
+        <div className="photo-lightbox-overlay" onClick={() => setLightboxUrl(null)}>
           <button
             type="button"
             className="photo-lightbox-close"
-            onClick={() => setLightboxOpen(false)}
+            onClick={() => setLightboxUrl(null)}
             aria-label="Tutup"
           >
             ✕
           </button>
           <img
-            src={photoUrl}
-            alt="Bukti foto cuci"
+            src={lightboxUrl}
+            alt="Bukti foto"
             className="photo-lightbox-image"
             onClick={(e) => e.stopPropagation()}
           />

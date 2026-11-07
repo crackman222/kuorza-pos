@@ -19,6 +19,21 @@ export async function uploadWashProofPhoto(treatmentId, file) {
   return data.path
 }
 
+// Photo of the QRIS/transfer confirmation screen. Same Edge Function and
+// compression as the wash proof; the function writes the stored path onto the
+// treatment's latest payments.proof_url itself (staff have no UPDATE on
+// payments), so the payment must be recorded before calling this.
+export async function uploadPaymentProofPhoto(treatmentId, file) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('treatmentId', String(treatmentId))
+  form.append('kind', 'payment')
+
+  const { data, error } = await supabase.functions.invoke('upload-wash-proof', { body: form })
+  if (error) throw new Error(await extractFunctionErrorMessage(error, 'Gagal mengunggah bukti pembayaran'))
+  return data.path
+}
+
 export async function getWashProofPhoto(treatmentId) {
   const { data, error } = await supabase
     .from('photos')

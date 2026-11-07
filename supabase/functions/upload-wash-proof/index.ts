@@ -3,6 +3,20 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 const BUCKET = 'foto_kendaraan'
 const WASH_PROOF_TYPE = 'bukti_cuci'
 
+// Two kinds of proof go through here, both camera-only and both compressed
+// the same way:
+//   'wash'    (default) — the wash-proof photo; stored at <id>/bukti-cuci and
+//             tracked by a photos row (photo_type 'bukti_cuci')
+//   'payment' — a photo of the QRIS/transfer confirmation screen; stored at
+//             <id>/bukti-bayar and written to the treatment's latest
+//             payments.proof_url. Done here rather than from the client
+//             because payments has no UPDATE policy — staff can record a
+//             payment but not edit one afterwards.
+const KINDS = {
+  wash: { path: (id) => `${id}/bukti-cuci` },
+  payment: { path: (id) => `${id}/bukti-bayar` },
+}
+
 // Generous enough for a full-resolution phone photo, small enough that one
 // request can't burn through the Tinify quota or the function's memory.
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024
@@ -78,6 +92,12 @@ Deno.serve(async (req) => {
     }
     const treatmentId = Number(rawTreatmentId)
 
+    const rawKind = form.get('kind') ?? 'wash'
+    if (typeof rawKind !== 'string' || !Object.hasOwn(KINDS, rawKind)) {
+      return jsonResponse({ error: 'Jenis foto tidak valid' }, 400)
+    }
+    const kind = rawKind
+
     if (file.size === 0 || file.size > MAX_UPLOAD_BYTES) {
       return jsonResponse({ error: 'Ukuran foto maksimal 15 MB' }, 413)
     }
@@ -94,6 +114,24 @@ Deno.serve(async (req) => {
     if (treatmentError) throw treatmentError
     if (!treatment) {
       return jsonResponse({ error: 'Transaksi tidak ditemukan' }, 404)
+    }
+
+    // Payment proof attaches to a payment that already exists — the client
+    // records the payment first, then sends the photo.
+    let paymentId = null
+    if (kind === 'payment') {
+      const { data: payment, error: paymentError } = await supabaseAdmin
+        .from('payments')
+        .select('id, payment_method')
+        .eq('treatment_id', treatmentId)
+        .order('paid_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (paymentError) throw paymentError
+      if (!payment) {
+        return jsonResponse({ error: 'Pembayaran belum dicatat' }, 400)
+      }
+      paymentId = payment.id
     }
 
     const originalBytes = new Uint8Array(await file.arrayBuffer())
@@ -122,12 +160,24 @@ Deno.serve(async (req) => {
 
     const compressedBytes = new Uint8Array(await compressedRes.arrayBuffer())
     const contentType = shrinkResult.output.type || file.type || 'image/jpeg'
-    const path = `${treatmentId}/bukti-cuci`
+    const path = KINDS[kind].path(treatmentId)
 
     const { error: uploadError } = await supabaseAdmin.storage
       .from(BUCKET)
       .upload(path, compressedBytes, { upsert: true, contentType })
     if (uploadError) throw uploadError
+
+    if (kind === 'payment') {
+      const { error } = await supabaseAdmin
+        .from('payments')
+        .update({ proof_url: path })
+        .eq('id', paymentId)
+      if (error) throw error
+      await supabaseAdmin
+        .from('treatment_logs')
+        .insert({ treatment_id: treatmentId, action: 'payment proof uploaded' })
+      return jsonResponse({ path })
+    }
 
     const { data: existing, error: fetchError } = await supabaseAdmin
       .from('photos')

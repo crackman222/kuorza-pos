@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getActiveQueue, getWashProofMap, startProcessing, sendToQC, markSelesai } from '../api'
+import {
+  getActiveQueue,
+  getWashProofMap,
+  startProcessing,
+  sendToQC,
+  markSelesai,
+  closeTreatment,
+  recordVerifiedPayment,
+  uploadPaymentProofPhoto,
+} from '../api'
 import { formatRupiah, formatDateTime, ticketLabel } from '../lib/format'
 import { WashProofButton } from '../components/WashProofButton'
 import { QueueCard } from '../components/QueueCard'
@@ -8,21 +17,24 @@ import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 import { TASK_REMINDER_DAYS, daysOpen, isOverdue } from '../lib/taskReminder'
 
-// Only the statuses that can appear in the queue — 'selesai' and later drop
+// Only the statuses that can appear in the queue — 'closed' and 'voided' drop
 // out of it (see QUEUE_STATUSES in api/treatments.js).
 const STATUS_LABELS = {
   created: 'Dibuat',
   paid: 'Dibayar',
   diproses: 'Diproses',
   qc: 'QC',
+  selesai: 'Selesai',
 }
 
-// Advancing a ticket from the queue card. Same three calls DetailTreatment
-// makes, keyed by the action name QueueCard hands back.
+// Advancing a ticket from the queue card. Same calls DetailTreatment makes,
+// keyed by the action name QueueCard hands back. 'close' refuses a ticket
+// whose payment isn't verified (see closeTreatment).
 const ADVANCE = {
   start: startProcessing,
   qc: sendToQC,
   done: markSelesai,
+  close: closeTreatment,
 }
 
 export default function Antrian() {
@@ -55,7 +67,7 @@ export default function Antrian() {
     loadQueue().finally(() => setLoading(false))
   }, [loadQueue])
 
-  // Refetch rather than patch the row in place: 'selesai' drops a ticket out
+  // Refetch rather than patch the row in place: 'closed' drops a ticket out
   // of the queue entirely (see QUEUE_STATUSES), so the list itself changes.
   // extra is only used by 'start', which carries the wash crew picked in the
   // modal.
@@ -65,9 +77,27 @@ export default function Antrian() {
     try {
       await ADVANCE[action](id, extra)
       await loadQueue()
-    } catch {
-      setError('Gagal memperbarui status transaksi')
+    } catch (err) {
+      // closeTreatment's refusal names what's missing — show it.
+      setError(action === 'close' && err.message ? err.message : 'Gagal memperbarui status transaksi')
     } finally {
+      setBusyId(null)
+    }
+  }
+
+  // Payment verification from the queue card. Throws back to the card so
+  // the error shows inside the payment modal; the queue is reloaded either
+  // way, since a failed proof upload can still leave the payment recorded.
+  async function handlePay(treatment, { paymentMethod, proofFile, proofOnly }) {
+    setBusyId(treatment.id)
+    try {
+      if (proofOnly) {
+        await uploadPaymentProofPhoto(treatment.id, proofFile)
+      } else {
+        await recordVerifiedPayment(treatment.id, { amount: treatment.total, paymentMethod, proofFile })
+      }
+    } finally {
+      await loadQueue()
       setBusyId(null)
     }
   }
@@ -89,6 +119,7 @@ export default function Antrian() {
       belumDiproses: byStatus(['created', 'paid']),
       diproses: byStatus(['diproses']),
       qc: byStatus(['qc']),
+      selesai: byStatus(['selesai']),
     }
   }, [queue])
 
@@ -102,6 +133,7 @@ export default function Antrian() {
     { key: 'belum', label: 'Belum Diproses', count: stats.belumDiproses },
     { key: 'diproses', label: 'Diproses', count: stats.diproses },
     { key: 'qc', label: 'QC', count: stats.qc },
+    { key: 'selesai', label: 'Selesai', count: stats.selesai },
   ]
 
   const visibleQueue = useMemo(() => {
@@ -208,6 +240,7 @@ export default function Antrian() {
               busy={busyId === t.id}
               onUploaded={markPhotoUploaded}
               onAdvance={handleAdvance}
+              onPay={handlePay}
             />
           ))}
         </div>
@@ -244,13 +277,21 @@ export default function Antrian() {
               onKeyDown={(e) => e.key === 'Enter' && navigate(`/treatment/${t.id}`)}
             >
               <span className="riwayat-service">{t.serviceSummary || '-'}</span>
-              <span>{t.treatment_type || '-'}</span>
+              <span className="antrian-vehicle-cell">
+                <span className="antrian-vehicle">{t.treatment_type || '-'}</span>
+                {t.plate_number && <span className="antrian-vehicle-plate">{t.plate_number}</span>}
+              </span>
               <span>{t.pic || '-'}</span>
               <span className={`status-badge status-${t.status}`}>
                 {STATUS_LABELS[t.status] || t.status}
               </span>
-              <span className={`status-badge ${t.isPaid ? 'status-closed' : 'status-created'}`}>
-                {t.isPaid ? 'Lunas' : 'Belum'}
+              <span
+                className={`status-badge ${
+                  t.isPaymentVerified ? 'status-closed' : t.isPaid ? 'status-diproses' : 'status-created'
+                }`}
+                title={t.isPaid && !t.isPaymentVerified ? 'Bukti pembayaran belum diunggah' : undefined}
+              >
+                {t.isPaymentVerified ? 'Lunas' : t.isPaid ? 'Tanpa Bukti' : 'Belum'}
               </span>
               <span>
                 {formatDateTime(t.created_at)}

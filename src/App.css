@@ -1933,6 +1933,48 @@
   color: var(--pos-text-faint);
 }
 
+/* ---- payment verification modal (reuses .start-modal) ---- */
+.payment-modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--pos-surface-2);
+  font-size: 13px;
+  color: var(--pos-text-muted);
+}
+
+.payment-modal-total span:last-child {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.payment-modal .payment-method-selector {
+  margin-bottom: 16px;
+}
+
+.payment-modal-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-modal-proof .start-modal-hint {
+  margin: 0;
+}
+
+.payment-modal-proof-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-surface-2);
+}
+
 .start-modal .multi-staff-picker select {
   width: 100%;
 }
@@ -3297,6 +3339,11 @@
   border-left-color: var(--pos-green-solid);
 }
 
+/* Work done, waiting on payment verification / close. */
+.queue-card-selesai {
+  border-left-color: var(--pos-green-text);
+}
+
 .queue-card.overdue {
   border-color: var(--pos-red-text);
   border-left-color: var(--pos-red-text);
@@ -3339,6 +3386,55 @@
 /* A name in the heading slot shouldn't wear the plate's wide tracking. */
 .queue-card-plate-name {
   letter-spacing: -0.2px;
+}
+
+/* Vehicle on top, plate below it. */
+.queue-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.queue-card-vehicle {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  color: var(--pos-text);
+  overflow-wrap: anywhere;
+}
+
+.queue-card-plate-sub {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--pos-text-muted);
+}
+
+.queue-card-plate-sub.queue-card-plate-name {
+  letter-spacing: -0.1px;
+}
+
+/* Desk queue table: same pairing inside the Merek cell. */
+.antrian-vehicle-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.antrian-vehicle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.antrian-vehicle-plate {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--pos-text-muted);
 }
 
 /* Treatment code, plus the customer when the heading is a plate rather than

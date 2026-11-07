@@ -1,5 +1,21 @@
 import { supabase } from '../lib/supabase'
 import { formatStaffNames, parseStaffNames } from '../lib/staffNames'
+import { uploadPaymentProofPhoto } from './photos'
+
+// Payment verification: a ticket can only be closed once its payment is
+// verified. Cash is verified the moment it's recorded — the money is in hand.
+// QRIS and transfer also need a camera photo of the confirmation screen
+// (payments.proof_url), since "the customer said they paid" isn't proof.
+export const PROOF_REQUIRED_METHODS = ['qris', 'transfer']
+
+export function paymentNeedsProof(method) {
+  return PROOF_REQUIRED_METHODS.includes(method)
+}
+
+export function isPaymentVerified(payment) {
+  if (!payment) return false
+  return !paymentNeedsProof(payment.payment_method) || Boolean(payment.proof_url)
+}
 
 function generateTreatmentCode() {
   const now = new Date()
@@ -163,6 +179,19 @@ export async function recordPayment(treatmentId, { amount, paymentMethod }) {
   }
 }
 
+// Records the payment and, for QRIS/transfer, attaches the proof photo in one
+// go. The payment row goes in first because the proof is written onto it. If
+// the photo upload fails after that, the payment stays recorded but
+// unverified — the screens then offer "Foto Bukti Bayar" to retry, and the
+// ticket can't close in the meantime.
+export async function recordVerifiedPayment(treatmentId, { amount, paymentMethod, proofFile }) {
+  if (paymentNeedsProof(paymentMethod) && !proofFile) {
+    throw new Error('Foto bukti pembayaran wajib untuk QRIS/transfer')
+  }
+  await recordPayment(treatmentId, { amount, paymentMethod })
+  if (proofFile) await uploadPaymentProofPhoto(treatmentId, proofFile)
+}
+
 // Work pipeline: created/paid -> diproses -> qc -> selesai -> closed.
 // Any staff can move a treatment through these three stages; the wash-proof
 // photo is required to enter 'qc' (enforced by the caller before invoking
@@ -247,6 +276,23 @@ export async function assignQcStaff(id, staffName) {
 }
 
 export async function closeTreatment(id) {
+  // Same pattern as markSelesai: the screens gate the button, this re-reads
+  // the payment so nothing closes on a stale copy.
+  const { data: payments, error: readError } = await supabase
+    .from('payments')
+    .select('payment_method, proof_url')
+    .eq('treatment_id', id)
+    .order('paid_at', { ascending: false })
+    .limit(1)
+  if (readError) throw readError
+  if (!isPaymentVerified(payments?.[0])) {
+    throw new Error(
+      payments?.[0]
+        ? 'Bukti pembayaran belum diunggah — transaksi belum bisa ditutup'
+        : 'Pembayaran belum dicatat — transaksi belum bisa ditutup'
+    )
+  }
+
   const { error } = await supabase
     .from('treatments')
     .update({ status: 'closed', updated_at: new Date().toISOString() })
@@ -267,12 +313,16 @@ export async function voidTreatment(id) {
 // The list views (queue, history) all need the same shape: paid-or-not plus a
 // readable summary of what was ordered, so they share one select and one
 // mapper.
-const LIST_SELECT = '*, payments(payment_method), treatment_items(service_name)'
+const LIST_SELECT = '*, payments(payment_method, proof_url, paid_at), treatment_items(service_name)'
 
 function mapTreatmentRow(t) {
+  const payment =
+    [...(t.payments ?? [])].sort((a, b) => String(b.paid_at).localeCompare(String(a.paid_at)))[0] ?? null
   return {
     ...t,
-    isPaid: t.payments.length > 0,
+    payment,
+    isPaid: Boolean(payment),
+    isPaymentVerified: isPaymentVerified(payment),
     serviceSummary: (t.treatment_items ?? []).map((item) => item.service_name).join(', '),
   }
 }
@@ -302,15 +352,17 @@ export async function getTreatmentsInRange(start, end) {
   return data.map(mapTreatmentRow)
 }
 
-// The queue is work still to be done: new tickets plus jobs in progress. Once
-// a job reaches 'selesai' the work is over, so it drops off the queue the same
-// way 'closed' and 'voided' do — it lives on in Riwayat/Laporan.
+// The queue is everything not yet closed: new tickets, jobs in progress, and
+// finished ('selesai') jobs still waiting on payment verification and close —
+// the worker settles payment and closes from the queue card, so a 'selesai'
+// ticket has to stay here until then. 'closed' and 'voided' drop off and live
+// on in Riwayat/Laporan.
 //
 // Deliberately NOT limited to today: a car left overnight, or a ticket nobody
 // closed before going home, is still outstanding work and has to stay visible
 // the next morning. What removes a treatment from the queue is its status, not
 // the calendar. Riwayat and Laporan remain the date-scoped views.
-const QUEUE_STATUSES = ['created', 'paid', 'diproses', 'qc']
+const QUEUE_STATUSES = ['created', 'paid', 'diproses', 'qc', 'selesai']
 
 export async function getActiveQueue() {
   const { data, error } = await supabase

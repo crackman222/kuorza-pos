@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { parseStaffNames } from '../lib/staffNames'
 import { getDayRange } from '../lib/dateRange'
+import { getKasbonEntries, getKasbonRepayPercent, kasbonBalances, KASBON_TYPES } from './kasbon'
 
 // Wage management (supervisor/admin only — see SupervisorRoute and
 // src/pages/KelolaUpah.jsx). Two things are stored by hand:
@@ -118,16 +119,62 @@ async function getServiceEarningsByName(date) {
   return { byName, wageByName }
 }
 
+// Uang makan: the flat daily meal allowance paid to everyone marked present
+// (migration 021). The rate lives in wage_settings; each attendance row keeps
+// the amount it was marked with, so changing the rate never rewrites a past
+// day. Both writes go through supervisor-gated functions, not direct inserts.
+export async function getMealAllowance() {
+  const { data, error } = await supabase
+    .from('wage_settings')
+    .select('value')
+    .eq('key', 'meal_allowance')
+    .maybeSingle()
+  if (error) throw error
+  return Number(data?.value ?? 0)
+}
+
+export async function setMealAllowance(amount) {
+  const { error } = await supabase.rpc('set_meal_allowance', { p_amount: amount })
+  if (error) throw new Error(error.message || 'Gagal menyimpan uang makan')
+}
+
+// Present writes the day's row at the current rate (a no-op if it exists);
+// not present removes it. date is a "YYYY-MM-DD" string.
+export async function setAttendance(profileId, date, present) {
+  const { error } = await supabase.rpc('set_attendance', {
+    p_profile_id: profileId,
+    p_date: date,
+    p_present: present,
+  })
+  if (error) throw new Error(error.message || 'Gagal menyimpan kehadiran')
+}
+
 // One row per active staff member for the given day: what the fixed-wage
-// services they washed add up to, every bonus/deduction logged against
-// that day, and the net wage. date is a "YYYY-MM-DD" string.
+// services they washed add up to, their uang makan if marked present, every
+// bonus/deduction logged against that day, and the net wage. date is a
+// "YYYY-MM-DD" string.
 export async function getDailyWageSummary(date) {
-  const [roster, { byName: washByName, wageByName }, adjustmentsResult] = await Promise.all([
-    getWageStaffRoster(),
-    getServiceEarningsByName(date),
-    supabase.from('wage_adjustments').select('*').eq('adjustment_date', date).order('created_at'),
-  ])
+  const [roster, { byName: washByName, wageByName }, adjustmentsResult, attendanceResult, kasbonEntries, repayPercent] =
+    await Promise.all([
+      getWageStaffRoster(),
+      getServiceEarningsByName(date),
+      supabase.from('wage_adjustments').select('*').eq('adjustment_date', date).order('created_at'),
+      supabase.from('attendance').select('profile_id, meal_allowance').eq('attendance_date', date),
+      getKasbonEntries(),
+      getKasbonRepayPercent(),
+    ])
   if (adjustmentsResult.error) throw adjustmentsResult.error
+  if (attendanceResult.error) throw attendanceResult.error
+
+  const mealByProfile = new Map(attendanceResult.data.map((a) => [a.profile_id, Number(a.meal_allowance)]))
+  const balanceByProfile = kasbonBalances(kasbonEntries)
+  // The day's repayment out of wages, one per person (the database allows
+  // only one 'bayar' per person per day).
+  const repaymentByProfile = new Map(
+    kasbonEntries
+      .filter((e) => e.type === KASBON_TYPES.REPAYMENT && e.entry_date === date)
+      .map((e) => [e.profile_id, e]),
+  )
 
   const adjustmentsByProfile = new Map()
   for (const adj of adjustmentsResult.data) {
@@ -152,17 +199,37 @@ export async function getDailyWageSummary(date) {
       .filter((a) => a.type === 'deduction')
       .reduce((sum, a) => sum + Number(a.amount), 0)
 
+    const present = mealByProfile.has(worker.id)
+    const mealAllowance = mealByProfile.get(worker.id) ?? 0
+    const repayment = repaymentByProfile.get(worker.id)
+    const kasbonRepayment = Number(repayment?.amount ?? 0)
+    // What they owe right now, with this day's repayment counted as paid.
+    const kasbonBalance = balanceByProfile.get(worker.id) ?? 0
+    // The most that could be repaid today: what is owed if today's repayment
+    // were not yet taken. The pay screen caps the input and the suggestion at
+    // this; the database enforces the same limit.
+    const kasbonAvailable = kasbonBalance + kasbonRepayment
+    const kasbonSuggested = Math.min(Math.floor((serviceEarnings * repayPercent) / 100), kasbonAvailable)
+
     return {
       profileId: worker.id,
       fullName: worker.full_name,
       serviceEarnings,
       serviceBreakdown,
+      present,
+      mealAllowance,
+      kasbonRepayment,
+      kasbonRepaymentNote: repayment?.note ?? null,
+      kasbonBalance,
+      kasbonAvailable,
+      kasbonSuggested,
+      kasbonRepayPercent: repayPercent,
       adjustments,
       bonusTotal,
       deductionTotal,
       // Not clamped at zero — if deductions outweigh what was earned, the
       // deficit is real and the page should show it, not hide it.
-      netWage: serviceEarnings + bonusTotal - deductionTotal,
+      netWage: serviceEarnings + mealAllowance + bonusTotal - deductionTotal - kasbonRepayment,
     }
   })
 }

@@ -17,6 +17,7 @@ import Laporan from './pages/Laporan'
 import DetailTreatment from './pages/DetailTreatment'
 import KelolaStaf from './pages/KelolaStaf'
 import KelolaUpah from './pages/KelolaUpah'
+import Keuangan from './pages/Keuangan'
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
                   <Route path="/riwayat" element={<RiwayatTransaksi />} />
                   <Route path="/laporan" element={<Laporan />} />
                   <Route path="/upah" element={<KelolaUpah />} />
+                  <Route path="/keuangan" element={<Keuangan />} />
                 </Route>
                 <Route element={<AdminRoute />}>
                   <Route path="/staf" element={<KelolaStaf />} />

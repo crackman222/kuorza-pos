@@ -6,6 +6,10 @@ import {
   getDailyWageSummary,
   addWageAdjustment,
   deleteWageAdjustment,
+  getMealAllowance,
+  setMealAllowance,
+  setAttendance,
+  setKasbonRepayment,
 } from '../api'
 import { formatRupiah } from '../lib/format'
 import { todayDateInput } from '../lib/dateRange'
@@ -69,6 +73,7 @@ export default function KelolaUpah() {
         onChanged={handleRateChanged}
         onError={setError}
       />
+      <MealAllowanceSection onError={setError} />
       <DailyWageSection ratesVersion={ratesVersion} onError={setError} />
     </div>
   )
@@ -207,8 +212,78 @@ function ServiceWageRow({ service, currentWage, onChanged, onError }) {
   )
 }
 
+// Uang makan: the flat amount paid for each day someone is marked present
+// (Hadir) in Upah Harian below. Changing it only affects days marked from now
+// on — a day already marked keeps the amount it was marked with.
+function MealAllowanceSection({ onError }) {
+  const { t } = useLanguage()
+  const [saved, setSaved] = useState(null)
+  const [value, setValue] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    getMealAllowance()
+      .then((amount) => {
+        setSaved(amount)
+        setValue(String(amount))
+      })
+      .catch(() => onError('Gagal memuat uang makan'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const dirty = saved !== null && value !== '' && Math.round(Number(value)) !== saved
+
+  async function handleSave() {
+    const amount = Math.round(Number(value))
+    if (!Number.isFinite(amount) || amount < 0) {
+      onError('Uang makan harus berupa angka Rupiah, minimal 0')
+      return
+    }
+    setBusy(true)
+    onError('')
+    try {
+      await setMealAllowance(amount)
+      setSaved(amount)
+      setValue(String(amount))
+    } catch {
+      onError('Gagal menyimpan uang makan')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="staf-section">
+      <div className="staf-section-header">
+        <h2 className="transaksi-section-label">{t('Uang Makan')}</h2>
+      </div>
+      <p className="staf-section-note">
+        {t('Per hari hadir. Perubahan hanya berlaku untuk hari yang dicatat setelah ini.')}
+      </p>
+      <div className="upah-meal-row">
+        <span className="upah-rate-input">
+          <span>Rp</span>
+          <input
+            type="number"
+            min="0"
+            step="500"
+            inputMode="numeric"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={busy || saved === null}
+            aria-label={t('Uang makan per hari')}
+          />
+        </span>
+        <button type="button" className="btn-secondary" onClick={handleSave} disabled={busy || !dirty}>
+          {busy ? t('Menyimpan...') : t('Simpan')}
+        </button>
+      </div>
+    </section>
+  )
+}
+
 // What each staff member earned on one day: fixed-wage services they
-// washed, plus bonuses, minus deductions.
+// washed, plus uang makan if present, plus bonuses, minus deductions.
 function DailyWageSection({ ratesVersion, onError }) {
   const { t } = useLanguage()
   const [date, setDate] = useState(todayDateInput())
@@ -270,7 +345,9 @@ function DailyWageSection({ ratesVersion, onError }) {
             <div className="riwayat-table upah-daily-table">
               <div className="riwayat-table-row riwayat-table-head">
                 <span>{t('Nama')}</span>
+                <span>{t('Hadir')}</span>
                 <span>{t('Upah Jasa')}</span>
+                <span>{t('Uang Makan')}</span>
                 <span>{t('Penyesuaian')}</span>
                 <span>{t('Total Upah')}</span>
                 <span></span>
@@ -296,16 +373,47 @@ function DailyWageSection({ ratesVersion, onError }) {
 
 function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
   const { t } = useLanguage()
+  const [attendanceBusy, setAttendanceBusy] = useState(false)
+
+  async function handleAttendance(present) {
+    setAttendanceBusy(true)
+    onError('')
+    try {
+      await setAttendance(row.profileId, date, present)
+      onChanged()
+    } catch {
+      onError('Gagal menyimpan kehadiran')
+    } finally {
+      setAttendanceBusy(false)
+    }
+  }
+
   return (
     <>
       <div className="riwayat-table-row upah-daily-row">
         <span className="riwayat-plate">{row.fullName}</span>
-        <span>{formatRupiah(row.serviceEarnings)}</span>
         <span>
-          {row.bonusTotal === 0 && row.deductionTotal === 0 && '-'}
+          <input
+            type="checkbox"
+            className="upah-present-check"
+            checked={row.present}
+            disabled={attendanceBusy}
+            onChange={(e) => handleAttendance(e.target.checked)}
+            aria-label={t('Hadir {name}', { name: row.fullName })}
+          />
+        </span>
+        <span>{formatRupiah(row.serviceEarnings)}</span>
+        <span>{row.present ? formatRupiah(row.mealAllowance) : '-'}</span>
+        <span>
+          {row.bonusTotal === 0 && row.deductionTotal === 0 && row.kasbonRepayment === 0 && '-'}
           {row.bonusTotal > 0 && <span className="status-badge status-closed">+{formatRupiah(row.bonusTotal)}</span>}
           {row.deductionTotal > 0 && (
             <span className="status-badge status-voided">-{formatRupiah(row.deductionTotal)}</span>
+          )}
+          {row.kasbonRepayment > 0 && (
+            <span className="status-badge status-voided">
+              {t('Kasbon')} -{formatRupiah(row.kasbonRepayment)}
+            </span>
           )}
         </span>
         <span className={`riwayat-total ${row.netWage < 0 ? 'upah-net-negative' : ''}`}>
@@ -322,6 +430,15 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
         <div className="expand-inner">
         <div className="upah-adjustments-panel">
           <ServiceBreakdown rows={row.serviceBreakdown} />
+          {(row.kasbonAvailable > 0 || row.kasbonRepayment > 0) && (
+            <KasbonRepaymentForm
+              key={`${row.profileId}:${row.kasbonRepayment}:${row.kasbonSuggested}`}
+              row={row}
+              date={date}
+              onSaved={onChanged}
+              onError={onError}
+            />
+          )}
           <AddAdjustmentForm profileId={row.profileId} date={date} onAdded={onChanged} onError={onError} />
           {row.adjustments.length > 0 && (
             <ul className="upah-adjustments-list">
@@ -335,6 +452,112 @@ function DailyWageRow({ row, date, expanded, onToggle, onChanged, onError }) {
         </div>
       )}
     </>
+  )
+}
+
+// The day's kasbon repayment out of this person's wages. The suggestion is a
+// set share of their service wages (never more than they owe); a supervisor
+// can go above it, but has to say why. The database enforces the one hard
+// limit — never more than the balance — and requires the reason.
+function KasbonRepaymentForm({ row, date, onSaved, onError }) {
+  const { t } = useLanguage()
+  const [amount, setAmount] = useState(row.kasbonRepayment > 0 ? String(row.kasbonRepayment) : '')
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const typed = Math.round(Number(amount) || 0)
+  const override = typed > row.kasbonSuggested
+  const unchanged = typed === row.kasbonRepayment
+
+  async function save(value, isOverride) {
+    if (!Number.isFinite(value) || value < 0) {
+      onError('Jumlah cicilan tidak valid')
+      return
+    }
+    if (value > row.kasbonAvailable) {
+      onError('Cicilan melebihi sisa kasbon')
+      return
+    }
+    if (isOverride && !reason.trim()) {
+      onError('Alasan wajib diisi jika cicilan melebihi saran')
+      return
+    }
+    setBusy(true)
+    onError('')
+    try {
+      await setKasbonRepayment({
+        profileId: row.profileId,
+        date,
+        amount: value,
+        override: isOverride,
+        reason,
+      })
+      onSaved()
+    } catch (err) {
+      onError(err.message || 'Gagal menyimpan cicilan kasbon')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="upah-kasbon-panel">
+      <div className="upah-kasbon-head">
+        <strong>{t('Cicilan Kasbon')}</strong>
+        <span>{t('Sisa kasbon')}: {formatRupiah(row.kasbonBalance)}</span>
+        <span>
+          {t('Saran')}: {formatRupiah(row.kasbonSuggested)} (
+          {t('{percent}% dari upah jasa', { percent: row.kasbonRepayPercent })})
+        </span>
+      </div>
+      {row.kasbonRepaymentNote && <p className="upah-kasbon-note">{row.kasbonRepaymentNote}</p>}
+      <div className="upah-adjustment-form">
+        <span className="upah-rate-input">
+          <span>Rp</span>
+          <input
+            type="number"
+            min="0"
+            max={row.kasbonAvailable}
+            inputMode="numeric"
+            placeholder={t('Jumlah (Rp)')}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            disabled={busy}
+            aria-label={t('Jumlah cicilan')}
+          />
+        </span>
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={busy || row.kasbonSuggested === typed}
+          onClick={() => setAmount(String(row.kasbonSuggested))}
+        >
+          {t('Pakai saran')}
+        </button>
+        {override && (
+          <input
+            type="text"
+            placeholder={t('Alasan melebihi saran')}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            disabled={busy}
+          />
+        )}
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={busy || unchanged}
+          onClick={() => save(typed, override)}
+        >
+          {busy ? t('Menyimpan...') : t('Simpan Cicilan')}
+        </button>
+        {row.kasbonRepayment > 0 && (
+          <button type="button" className="btn-secondary" disabled={busy} onClick={() => save(0, false)}>
+            {t('Hapus')}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   getLast7DaysRevenue,
   getTodayPaymentBreakdown,
@@ -8,6 +9,8 @@ import {
 import { formatRupiah, initials } from '../lib/format'
 import {
   getPeriodRange,
+  getDayRange,
+  todayDateInput,
   formatPeriodLabel,
   businessDayStart,
 } from '../lib/dateRange'
@@ -35,6 +38,25 @@ export default function Laporan() {
   const { profile } = useAuth()
   const { t, language } = useLanguage()
   const isAdmin = checkIsAdmin(profile)
+  // The day being reported, kept in the URL (?tanggal=2026-10-15) so a past
+  // day can be bookmarked or shared. Like the period pickers below, looking
+  // back is admin-only: everyone else is pinned to today, and a missing,
+  // malformed or future value falls back to today too.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const today = todayDateInput()
+  const requestedDate = searchParams.get('tanggal') ?? ''
+  const date = isAdmin && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) && requestedDate <= today ? requestedDate : today
+  const isToday = date === today
+
+  function changeDate(value) {
+    setSearchParams(value && value !== today ? { tanggal: value } : {}, { replace: true })
+  }
+
+  // 'daily' follows the picked day; weekly/monthly/yearly stay relative to now.
+  function rangeFor(period) {
+    return period === 'daily' ? getDayRange(date) : getPeriodRange(period)
+  }
+
   const [last7, setLast7] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -55,12 +77,13 @@ export default function Laporan() {
   const effectiveServicePeriod = isAdmin ? servicePeriod : 'daily'
 
   useEffect(() => {
-    const { start, end } = getPeriodRange(effectiveServicePeriod)
+    const { start, end } = rangeFor(effectiveServicePeriod)
     getPopularServices(start, end)
       .then(setPopularServices)
       .catch(() => setError('Gagal memuat layanan terpopuler'))
       .finally(() => setServicesLoading(false))
-  }, [effectiveServicePeriod])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveServicePeriod, date])
 
   const topServices = useMemo(() => {
     const top = popularServices.slice(0, 5)
@@ -70,20 +93,20 @@ export default function Laporan() {
 
   useEffect(() => {
     // Staff only get today's numbers — the 7-day trend is history, admin-only.
-    Promise.all([isAdmin ? getLast7DaysRevenue() : Promise.resolve([]), getTodayPaymentBreakdown()])
+    Promise.all([isAdmin ? getLast7DaysRevenue(date) : Promise.resolve([]), getTodayPaymentBreakdown(date)])
       .then(([last7Data, paymentsData]) => {
         setLast7(last7Data)
         setPayments(paymentsData)
       })
       .catch(() => setError('Gagal memuat laporan'))
       .finally(() => setLoading(false))
-  }, [isAdmin])
+  }, [isAdmin, date])
 
   // Doesn't flip workerLoading back to true on a period switch — only the
   // very first load shows "Memuat...", later switches just swap the table
   // in place once the new counts arrive instead of flashing a spinner.
   function loadWorkerCounts(period) {
-    const { start, end } = getPeriodRange(period)
+    const { start, end } = rangeFor(period)
     getWorkerOrderCounts(start, end)
       .then(setWorkerCounts)
       .catch(() => setError('Gagal memuat peringkat pekerja'))
@@ -92,7 +115,8 @@ export default function Laporan() {
 
   useEffect(() => {
     loadWorkerCounts(effectiveWorkerPeriod)
-  }, [effectiveWorkerPeriod])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveWorkerPeriod, date])
 
   // Revenue/count/avg all come from payments actually collected today, not
   // from treatment totals — a queued-but-unpaid job isn't revenue yet.
@@ -104,9 +128,11 @@ export default function Laporan() {
 
   const revBars = useMemo(() => {
     // Each bar is a business day (04:00–04:00), labelled by the day it opened.
+    // The last bar is the day being reported (today unless a date is picked).
+    const lastDay = getDayRange(date).start
     const days = []
     for (let i = 6; i >= 0; i--) {
-      const d = businessDayStart()
+      const d = new Date(lastDay)
       d.setDate(d.getDate() - i)
       days.push({ date: d, key: d.toDateString(), label: dayLabel(d), revenue: 0 })
     }
@@ -116,15 +142,15 @@ export default function Laporan() {
       if (bucket) bucket.revenue += Number(p.amount || 0)
     }
     const max = Math.max(1, ...days.map((d) => d.revenue))
-    const todayKey = businessDayStart().toDateString()
+    const selectedKey = lastDay.toDateString()
     return days.map((d) => ({
       ...d,
       heightPct: Math.round((d.revenue / max) * 100),
-      isToday: d.key === todayKey,
+      isToday: d.key === selectedKey,
     }))
     // language: the weekday labels are localized.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [last7, language])
+  }, [last7, language, date])
 
   const paymentBreakdown = useMemo(() => {
     const totals = { cash: 0, qris: 0, transfer: 0 }
@@ -145,12 +171,30 @@ export default function Laporan() {
 
   return (
     <div className="laporan-screen">
-      <h1>{t('Laporan Harian')}</h1>
+      <div className="laporan-header">
+        <h1>{t('Laporan Harian')}</h1>
+        {isAdmin && (
+          <div className="laporan-date">
+            <input
+              type="date"
+              value={date}
+              max={today}
+              onChange={(e) => changeDate(e.target.value)}
+              aria-label={t('Tanggal')}
+            />
+            {!isToday && (
+              <button type="button" className="btn-secondary" onClick={() => changeDate(today)}>
+                {t('Hari Ini')}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
       {error && <p className="form-error">{t(error)}</p>}
 
       <div className="stat-cards">
         <div className="stat-card">
-          <span className="stat-card-label">{t('Pendapatan Hari Ini')}</span>
+          <span className="stat-card-label">{isToday ? t('Pendapatan Hari Ini') : t('Pendapatan')}</span>
           <span className="stat-card-value stat-card-value-accent">{formatRupiah(stats.revenue)}</span>
         </div>
         <div className="stat-card">
@@ -205,7 +249,7 @@ export default function Laporan() {
         <div className="laporan-panel-header">
           <div>
             <div className="laporan-panel-title">{t('Layanan Terpopuler')}</div>
-            <p className="laporan-panel-subtitle">{formatPeriodLabel(effectiveServicePeriod)}</p>
+            <p className="laporan-panel-subtitle">{formatPeriodLabel(effectiveServicePeriod, date)}</p>
           </div>
           {isAdmin && (
             <select value={servicePeriod} onChange={(e) => setServicePeriod(e.target.value)}>
@@ -247,7 +291,7 @@ export default function Laporan() {
         <div className="laporan-panel-header">
           <div>
             <div className="laporan-panel-title">{t('Peringkat Pekerja')}</div>
-            <p className="laporan-panel-subtitle">{formatPeriodLabel(effectiveWorkerPeriod)}</p>
+            <p className="laporan-panel-subtitle">{formatPeriodLabel(effectiveWorkerPeriod, date)}</p>
           </div>
           {isAdmin && (
             <select value={workerPeriod} onChange={(e) => setWorkerPeriod(e.target.value)}>

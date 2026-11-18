@@ -91,8 +91,10 @@ export function todayDateInput() {
   return `${y}-${m}-${d}`
 }
 
-export function formatPeriodLabel(period) {
-  const { start, end } = getPeriodRange(period)
+// `dateStr` ("YYYY-MM-DD") only matters for 'daily': it labels that day
+// instead of today.
+export function formatPeriodLabel(period, dateStr) {
+  const { start, end } = period === 'daily' && dateStr ? getDayRange(dateStr) : getPeriodRange(period)
 
   if (period === 'daily') {
     const hours = `${String(BUSINESS_DAY_START_HOUR).padStart(2, '0')}.00–${String(BUSINESS_DAY_END_HOUR).padStart(2, '0')}.00`

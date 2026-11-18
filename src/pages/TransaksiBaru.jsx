@@ -8,8 +8,7 @@ import { MultiStaffPicker } from '../components/MultiStaffPicker'
 import { MissingFieldsModal } from '../components/MissingFieldsModal'
 import { PaymentModal } from '../components/PaymentModal'
 import { formatRupiah } from '../lib/format'
-import { getServicePrice, hasPromo, PRICE_MODES } from '../lib/servicePrice'
-import { PriceModeToggle } from '../components/PriceModeToggle'
+import { hasPromo, PRICE_MODES } from '../lib/servicePrice'
 import { findDefaultQcStaff } from '../lib/staffDefaults'
 import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
@@ -225,7 +224,7 @@ function StaffFields({ washStaff, setWashStaff, qcStaff, setQcStaff }) {
 }
 
 // Custom discount input — disabled: new tickets no longer take a manual
-// discount (the promo/harga normal toggle is the only price reduction).
+// discount (the promo checkbox is the only price reduction).
 // Kept commented out in case it's wanted back.
 // function DiscountFields({
 //   discountType,
@@ -279,7 +278,15 @@ function NotesField({ notes, setNotes }) {
   )
 }
 
-function TicketSummary({ subtotal, total /* , discountValue */ }) {
+function TicketSummary({
+  subtotal,
+  total,
+  hasPromoLines,
+  usePromo,
+  promoSaving,
+  onTogglePromo,
+  /* discountValue, */
+}) {
   const { t } = useLanguage()
   return (
     <div className="transaksi-summary">
@@ -287,6 +294,21 @@ function TicketSummary({ subtotal, total /* , discountValue */ }) {
         <span>{t('Subtotal')}</span>
         <span>{formatRupiah(subtotal)}</span>
       </div>
+      {hasPromoLines && (
+        <div className="transaksi-promo-row">
+          <label className="transaksi-promo-check">
+            <input
+              type="checkbox"
+              checked={usePromo}
+              onChange={(e) => onTogglePromo(e.target.checked)}
+            />
+            {t('Promo')}
+          </label>
+          {usePromo && (
+            <span className="transaksi-promo-saving">-{formatRupiah(promoSaving)}</span>
+          )}
+        </div>
+      )}
       {/* Discount row — disabled along with DiscountFields.
       <div>
         <span>{t('Diskon')}</span>
@@ -323,9 +345,11 @@ export default function TransaksiBaru() {
   // const [discountType, setDiscountType] = useState('percent')
   // const [discountInput, setDiscountInput] = useState('')
   const [notes, setNotes] = useState('')
-  // Promo or harga normal for every service on this ticket — see
-  // PriceModeToggle. Defaults to promo, which is what Katalog advertises.
-  const [priceMode, setPriceMode] = useState(PRICE_MODES.PROMO)
+  // Promo or harga normal for every service on this ticket — set by the
+  // "Promo" checkbox under the subtotal (TicketSummary), which only shows
+  // when a picked service has a promo. Defaults to harga normal: staff opt in
+  // to the promo per ticket.
+  const [priceMode, setPriceMode] = useState(PRICE_MODES.NORMAL)
   const [washStaff, setWashStaff] = useState([])
   // undefined = roster not loaded yet, so the default hasn't been applied;
   // null = deliberately nobody. Keeps a choice made before the roster arrives
@@ -389,7 +413,11 @@ export default function TransaksiBaru() {
       key: `service-${service.id}`,
       serviceId: service.id,
       serviceName: service.name,
-      unitPrice: getServicePrice(service, priceMode),
+      // Always the normal price: the ticket lines and subtotal never move with
+      // the promo checkbox, which only takes a deduction off the total.
+      unitPrice: Number(service.price),
+      normalPrice: Number(service.price),
+      promoPrice: hasPromo(service) ? Number(service.promo_price) : null,
       requiresVehicle: service.requires_vehicle,
     })
   }
@@ -412,20 +440,20 @@ export default function TransaksiBaru() {
     })
   }
 
-  // Switching mode reprices the service lines already on the ticket, so the
-  // whole ticket is always on one price mode. Shelf items keep their price.
-  function changePriceMode(mode) {
-    setPriceMode(mode)
-    setSelectedItems((items) =>
-      items.map((item) => {
-        if (item.serviceId == null) return item
-        const service = services.find((s) => s.id === item.serviceId)
-        return service ? { ...item, unitPrice: getServicePrice(service, mode) } : item
-      })
-    )
-  }
-
-  const promoCount = useMemo(() => services.filter(hasPromo).length, [services])
+  // The promo checkbox only exists when something on the ticket has a promo.
+  // promoSaving is what the promo takes off the ticket; it is deducted from
+  // the total (and shown under the subtotal) only while the box is ticked.
+  const promoSaving = useMemo(
+    () =>
+      selectedItems.reduce(
+        (sum, item) =>
+          item.promoPrice != null ? sum + (item.normalPrice - item.promoPrice) * item.quantity : sum,
+        0
+      ),
+    [selectedItems]
+  )
+  const hasPromoLines = selectedItems.some((item) => item.promoPrice != null)
+  const usePromo = priceMode === PRICE_MODES.PROMO
 
   function removeLine(key) {
     setSelectedItems((items) => items.filter((item) => item.key !== key))
@@ -549,8 +577,8 @@ export default function TransaksiBaru() {
   }
 
   // No custom discount on a new ticket — the only price reduction is the
-  // promo/harga normal toggle, already reflected in each line's unit price.
-  const total = subtotal
+  // promo checkbox, which deducts promoSaving from the normal-price subtotal.
+  const total = subtotal - (hasPromoLines && usePromo ? promoSaving : 0)
 
   // Disabled with DiscountFields. Staff typed the discount as either a
   // percentage of the bill or a straight Rupiah amount. Percentages were
@@ -699,8 +727,16 @@ export default function TransaksiBaru() {
     />
   )
 
-  const priceModeToggle = (
-    <PriceModeToggle value={priceMode} onChange={changePriceMode} promoCount={promoCount} />
+  const ticketSummary = (
+    <TicketSummary
+      subtotal={subtotal}
+      total={total}
+      hasPromoLines={hasPromoLines}
+      usePromo={usePromo}
+      promoSaving={promoSaving}
+      onTogglePromo={(checked) => setPriceMode(checked ? PRICE_MODES.PROMO : PRICE_MODES.NORMAL)}
+      /* discountValue={discountValue} */
+    />
   )
 
   // Disabled with DiscountFields:
@@ -771,14 +807,12 @@ export default function TransaksiBaru() {
               </p>
             </header>
 
-            {priceModeToggle}
-
             <h2 className="transaksi-section-label">{t('Layanan')}</h2>
             <ServicePicker
               services={services}
               selectedItems={selectedItems}
               onAdd={addService}
-              priceMode={priceMode}
+              priceMode={PRICE_MODES.NORMAL}
               worker
             />
 
@@ -888,8 +922,7 @@ export default function TransaksiBaru() {
             <div className="worker-wizard-card">
               <div className="worker-wizard-card-title">
                 {t('Item ({count})', { count: lineCount })}
-                {promoCount > 0 &&
-                  ` · ${priceMode === PRICE_MODES.PROMO ? t('Harga Promo') : t('Harga Normal')}`}
+                {hasPromoLines && ` · ${usePromo ? t('Harga Promo') : t('Harga Normal')}`}
               </div>
               <ul className="worker-wizard-review-items">
                 {selectedItems.map((item) => (
@@ -910,7 +943,7 @@ export default function TransaksiBaru() {
             </div>
 
             <div className="worker-wizard-card">
-              <TicketSummary subtotal={subtotal} total={total} /* discountValue={discountValue} */ />
+              {ticketSummary}
             </div>
           </section>
         )}
@@ -963,13 +996,12 @@ export default function TransaksiBaru() {
         <div className="transaksi-catalog-header">
           <h1>{t('Transaksi Baru')}</h1>
         </div>
-        {priceModeToggle}
         <h2 className="transaksi-section-label">{t('Layanan')}</h2>
         <ServicePicker
           services={services}
           selectedItems={selectedItems}
           onAdd={addService}
-          priceMode={priceMode}
+          priceMode={PRICE_MODES.NORMAL}
         />
 
         <h2 className="transaksi-section-label transaksi-section-label-spaced">{t('Barang')}</h2>
@@ -995,7 +1027,7 @@ export default function TransaksiBaru() {
 
         <NotesField notes={notes} setNotes={setNotes} />
 
-        <TicketSummary subtotal={subtotal} total={total} /* discountValue={discountValue} */ />
+        {ticketSummary}
 
         {error && <p className="form-error">{t(error)}</p>}
 

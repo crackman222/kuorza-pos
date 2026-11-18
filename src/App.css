@@ -1089,6 +1089,59 @@
   margin-top: 4px;
 }
 
+/* Laporan: title with the day picker beside it */
+.laporan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.laporan-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Promo checkbox under the subtotal, with what the promo saves beside it */
+.transaksi-summary .transaksi-promo-row {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Two classes so this beats `.ticket-panel label` / `.worker-wizard-card label`,
+   which stack a label's children in a column. */
+.transaksi-summary .transaksi-promo-check {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pos-text);
+  cursor: pointer;
+}
+
+.transaksi-promo-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--pos-blue);
+  cursor: pointer;
+}
+
+.transaksi-promo-saving {
+  font-weight: 600;
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard .transaksi-promo-check input {
+  width: 22px;
+  height: 22px;
+}
+
 .ticket-submit {
   margin-top: 16px;
   width: 100%;
@@ -2837,8 +2890,75 @@ body.service-menu-open .worker-content {
 
 /* Upah Harian: Nama | Upah Jasa | Penyesuaian | Total Upah | aksi */
 .upah-daily-table .riwayat-table-row {
-  grid-template-columns: 1.8fr 1.4fr 1.5fr 1.3fr 0.9fr;
-  min-width: 760px;
+  grid-template-columns: 1.6fr 0.6fr 1.2fr 1.2fr 1.4fr 1.2fr 0.9fr;
+  min-width: 960px;
+}
+
+.upah-present-check {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--pos-blue);
+  cursor: pointer;
+}
+
+.upah-kasbon-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.1);
+  border-radius: 10px;
+}
+
+.upah-kasbon-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  font-size: 13px;
+  color: var(--pos-text-muted);
+}
+
+.upah-kasbon-head strong {
+  color: var(--pos-text);
+}
+
+.upah-kasbon-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+}
+
+.kasbon-table .riwayat-table-row {
+  grid-template-columns: 2fr 1.4fr 1fr;
+  min-width: 480px;
+}
+
+.kasbon-clear {
+  color: var(--pos-text-faint);
+}
+
+.kasbon-percent {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.kasbon-percent label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.upah-meal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .upah-daily-row .status-badge {

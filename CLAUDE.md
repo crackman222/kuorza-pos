@@ -223,6 +223,10 @@ migration 004.
   for a service line, set for a shelf item. This is the one live FK on the
   row, and it exists to know what stock to move, not for display: name and
   price stay snapshots either way
+- normal_unit_price numeric, nullable (migration 020) — list price at the
+  moment of sale, a snapshot like unit_price. A line was sold on promo when
+  `unit_price < normal_unit_price`. Null on rows from before 020 means
+  "unknown", not "no promo"
 - created_at timestamptz
 
 ### `payments`
@@ -534,3 +538,29 @@ All SQL migrations have been run against the Supabase project in order:
 - 019b_lock_direct_payment_inserts — dropped the direct INSERT policy on
   `payments`, so `record_payment()` / `create_treatment()` are the only ways
   to create a payment
+- 020_add_promo_flag — `treatment_items.normal_unit_price` plus
+  `create_treatment()` filling it from `services.price` / `shelf_items.price`.
+  Existing rows are left null (old list prices aren't recoverable)
+- 021_add_attendance_meal_allowance — uang makan. `attendance` (one row per
+  person per business day present; `meal_allowance` is a snapshot of the rate
+  when marked, so a rate change never rewrites a past day) and
+  `wage_settings` (key `meal_allowance`, default 10000). Supervisor-read-only
+  tables; written only through `set_attendance(profile, date, present)` and
+  `set_meal_allowance(amount)` (SECURITY DEFINER, `is_supervisor()`-gated,
+  EXECUTE revoked from anon). Kelola Upah ticks Hadir per person per day and
+  adds the allowance to that day's net wage (`getDailyWageSummary`)
+- 022_add_kasbon_ledger — kasbon (advances on pay). `kasbon_entries` is an
+  add-only ledger (`saldo_awal` once per person, `pinjam`, `bayar`,
+  `koreksi`); the balance is never stored, it is the sum of the rows
+  (`kasbonBalances()` in `src/api/kasbon.js`, `kasbon_balance()` in SQL).
+  Supervisor-read-only; written through `add_kasbon_entry`,
+  `set_kasbon_repayment` (one `bayar` per person per day, replaceable until
+  day-close exists) and `set_kasbon_repay_percent`, all SECURITY DEFINER,
+  `is_supervisor()`-gated, locking the person's profile row first. The
+  suggested daily repayment is `wage_settings.kasbon_repay_percent` (40) of
+  that day's service wages — a default, not a limit: going above it needs a
+  reason, and only "never more than the balance" is hard-enforced. The
+  **Keuangan** page (`/keuangan`, supervisor+) is the ledger; the repayment
+  is set per person per day on Kelola Upah and is deducted from net wage.
+  Known gap: a deactivated person's balance isn't listed (supervisors can
+  only read active names)

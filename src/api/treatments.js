@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { formatStaffNames, parseStaffNames } from '../lib/staffNames'
-import { getBusinessDayRange } from '../lib/dateRange'
+import { getBusinessDayRange, getDayRange } from '../lib/dateRange'
 import { uploadPaymentProofPhoto } from './photos'
 import { PRICE_MODES } from '../lib/servicePrice'
 
@@ -349,9 +349,12 @@ export function subscribeToQueueChanges(onChange) {
 // shouldn't show up as revenue.
 // Days here are business days (04:00–04:00, see src/lib/dateRange.js): the
 // current shift plus the six before it.
-export async function getLast7DaysRevenue() {
-  const { start: todayStart, end } = getBusinessDayRange()
-  const start = new Date(todayStart)
+//
+// `dateStr` ("YYYY-MM-DD", see getDayRange) names the last of the seven days;
+// omitted, that is the current business day.
+export async function getLast7DaysRevenue(dateStr) {
+  const { start: lastDayStart, end } = dateStr ? getDayRange(dateStr) : getBusinessDayRange()
+  const start = new Date(lastDayStart)
   start.setDate(start.getDate() - 6)
 
   const { data, error } = await supabase
@@ -363,10 +366,10 @@ export async function getLast7DaysRevenue() {
   return data
 }
 
-// Payments collected during the current business day (shift 07:00–04:00,
-// plus the closed hours before it).
-export async function getTodayPaymentBreakdown() {
-  const { start, end } = getBusinessDayRange()
+// Payments collected during one business day (shift 07:00–04:00, plus the
+// closed hours before it): the current one, or the "YYYY-MM-DD" day given.
+export async function getTodayPaymentBreakdown(dateStr) {
+  const { start, end } = dateStr ? getDayRange(dateStr) : getBusinessDayRange()
 
   const { data, error } = await supabase
     .from('payments')

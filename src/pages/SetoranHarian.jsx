@@ -363,9 +363,9 @@ function ExpensesBlock({ date, expenses, loans, nameById, locked, onChanged, onE
         <div className="riwayat-table setoran-expense-table">
           <div className="riwayat-table-row riwayat-table-head">
             <span>{t('Kategori')}</span>
+            <span>{t('Nominal')}</span>
             <span>{t('Keterangan')}</span>
             <span>{t('Sumber dana')}</span>
-            <span>{t('Nominal')}</span>
             <span></span>
           </div>
           {loans.map((loan) => (
@@ -373,9 +373,9 @@ function ExpensesBlock({ date, expenses, loans, nameById, locked, onChanged, onE
               <span>
                 <span className="status-badge status-voided">{t('Kasbon')}</span>
               </span>
+              <span className="riwayat-total">{formatRupiah(loan.amount)}</span>
               <span>{nameById.get(loan.profile_id) ?? '-'}</span>
               <span>{t(CHANNEL_LABELS[loan.channel])}</span>
-              <span className="riwayat-total">{formatRupiah(loan.amount)}</span>
               <span></span>
             </div>
           ))}
@@ -384,9 +384,9 @@ function ExpensesBlock({ date, expenses, loans, nameById, locked, onChanged, onE
               <span>
                 <span className="status-badge status-voided">{t(CATEGORY_LABELS[expense.category])}</span>
               </span>
+              <span className="riwayat-total">{formatRupiah(expense.amount)}</span>
               <span>{expense.note}</span>
               <span>{t(CHANNEL_LABELS[expense.channel])}</span>
-              <span className="riwayat-total">{formatRupiah(expense.amount)}</span>
               <span className="staf-row-actions">
                 {!locked && (
                   <button type="button" className="btn-secondary" disabled={busy} onClick={() => handleDelete(expense.id)}>

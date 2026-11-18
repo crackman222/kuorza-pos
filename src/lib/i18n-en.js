@@ -481,7 +481,7 @@ export const en = {
   "Detail": "Details",
   "Belum ada layanan dikerjakan pada tanggal ini": "No services done on this date",
   "Jumlah": "Count",
-  "Nominal": "Value",
+  "Nominal": "Amount",
   "Jumlah harus lebih dari nol": "Amount must be above zero",
   "Gagal menambah bonus": "Failed to add the bonus",
   "Gagal menambah potongan": "Failed to add the deduction",

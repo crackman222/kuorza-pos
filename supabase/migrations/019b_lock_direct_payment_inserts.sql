@@ -1,8 +1,6 @@
 -- 019b_lock_direct_payment_inserts
 --
--- NOT YET APPLIED. Run only AFTER the frontend that calls record_payment()
--- is deployed — the old build inserts into payments directly and would stop
--- being able to record payments.
+-- Applied 2026-11-17, after the record_payment() frontend was deployed.
 --
 -- After this, record_payment() (SECURITY DEFINER) is the only way to create
 -- a payment row, so the amount always comes from the ticket's stored total.

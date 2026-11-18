@@ -531,6 +531,6 @@ All SQL migrations have been run against the Supabase project in order:
   grants already limited direct updates to status/wash_staff/qc_staff/
   updated_at.) Plus `record_payment(p_treatment_id, p_payment_method)` RPC:
   amount is always the ticket's stored total, one payment per ticket.
-  **019b_lock_direct_payment_inserts is NOT applied yet** — drops the direct
-  INSERT policy on `payments`; run only after the frontend calling
-  `record_payment()` is deployed
+- 019b_lock_direct_payment_inserts — dropped the direct INSERT policy on
+  `payments`, so `record_payment()` / `create_treatment()` are the only ways
+  to create a payment

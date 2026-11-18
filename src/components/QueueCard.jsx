@@ -7,6 +7,7 @@ import { hasRequiredStaff } from '../api'
 import { formatDateTime, ticketLabel } from '../lib/format'
 import { daysOpen, isOverdue } from '../lib/taskReminder'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 // Which chunky button a ticket shows is entirely a function of its status,
 // and it mirrors the ladder in DetailTreatment exactly — same API calls,
@@ -15,11 +16,11 @@ import { useLanguage } from '../context/useLanguage'
 // have to open a ticket to advance it; the mockup's whole layout is built
 // around that one big button being right there on the card.
 const ACTIONS = {
-  created: { label: 'Mulai Proses', tone: 'blue', action: 'start' },
-  paid: { label: 'Mulai Proses', tone: 'blue', action: 'start' },
-  diproses: { label: 'Tandai Selesai', tone: 'green', action: 'done' },
-  qc: { label: 'Tandai Selesai', tone: 'green', action: 'done' },
-  selesai: { label: 'Tutup Transaksi', tone: 'green', action: 'close' },
+  created: { label: 'Mulai Proses', tone: 'blue', action: 'start', icon: 'play_arrow' },
+  paid: { label: 'Mulai Proses', tone: 'blue', action: 'start', icon: 'play_arrow' },
+  diproses: { label: 'Tandai Selesai', tone: 'green', action: 'done', icon: 'task_alt' },
+  qc: { label: 'Tandai Selesai', tone: 'green', action: 'done', icon: 'task_alt' },
+  selesai: { label: 'Tutup Transaksi', tone: 'green', action: 'close', icon: 'done_all' },
 }
 
 // The left stripe reads the ticket's state before the text does.
@@ -113,7 +114,10 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
                   : t('Belum Dibayar')}
             </span>
             {overdue && (
-              <span className="overdue-badge">⚠️ {t('{days} hari', { days: daysOpen(treatment.created_at) })}</span>
+              <span className="overdue-badge">
+                <Icon name="schedule" size={18} />
+                {t('{days} hari', { days: daysOpen(treatment.created_at) })}
+              </span>
             )}
           </div>
         </div>
@@ -146,10 +150,12 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
             onClick={proof.open}
             disabled={busy || proof.uploading}
           >
-            {proof.uploading ? t('Mengunggah…') : `📷 ${t('Foto Bukti Cuci')}`}
+            <Icon name={proof.uploading ? 'progress_activity' : 'photo_camera'} size={20} />
+            {proof.uploading ? t('Mengunggah…') : t('Foto Bukti Cuci')}
           </button>
         ) : needsStaff ? (
           <button type="button" className="worker-btn worker-btn-blue" onClick={open} disabled={busy}>
+            <Icon name="group_add" size={20} />
             {t('Pilih Petugas')}
           </button>
         ) : needsPayment ? (
@@ -159,7 +165,8 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
             onClick={() => setPayMode('pay')}
             disabled={busy}
           >
-            💳 {t('Verifikasi Pembayaran')}
+            <Icon name="payments" size={20} />
+            {t('Verifikasi Pembayaran')}
           </button>
         ) : needsPaymentProof ? (
           <button
@@ -168,7 +175,8 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
             onClick={() => setPayMode('proof')}
             disabled={busy}
           >
-            📷 {t('Foto Bukti Bayar')}
+            <Icon name="photo_camera" size={20} />
+            {t('Foto Bukti Bayar')}
           </button>
         ) : step ? (
           <button
@@ -177,13 +185,17 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
             onClick={() => (step.action === 'start' ? setStartOpen(true) : onAdvance(treatment.id, step.action))}
             disabled={busy}
           >
+            <Icon name={step.icon} size={20} />
             {t(step.label)}
           </button>
         ) : (
-          <span className="worker-btn-static">{t('Siap Diambil')}</span>
+          <span className="worker-btn-static">
+            <Icon name="check_circle" size={20} />
+            {t('Siap Diambil')}
+          </span>
         )}
         <button type="button" className="worker-btn worker-btn-ghost" onClick={open} aria-label={t('Lihat detail transaksi')}>
-          i
+          <Icon name="chevron_right" />
         </button>
         {/* Outside .queue-card-main on purpose: that area navigates on click,
             and a stray navigation mid-capture would drop the photo. */}

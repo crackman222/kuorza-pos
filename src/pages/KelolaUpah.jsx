@@ -11,6 +11,7 @@ import { formatRupiah } from '../lib/format'
 import { todayDateInput } from '../lib/dateRange'
 import { groupServicesByCategory } from '../lib/serviceCategories'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 // Supervisor/admin only (see SupervisorRoute in App.jsx). Two things:
 //   - Upah per Layanan: a fixed rupiah amount each service pays out (e.g.
@@ -121,15 +122,17 @@ function ServiceWageSection({ services, rates, loading, onChanged, onError }) {
                   onClick={() => toggleGroup(group.key)}
                 >
                   <span className="service-category-label">{group.label}</span>
-                  <span className="service-category-meta">{group.services.length} layanan</span>
-                  <span className="service-category-chevron" aria-hidden="true" />
+                  <span className="service-category-meta">
+                    {t('{count} layanan', { count: group.services.length })}
+                  </span>
+                  <Icon name="expand_more" className="service-category-chevron" />
                 </button>
 
                 {isOpen && (
                   <div id={panelId} className="riwayat-table upah-rate-table katalog-category-panel">
                     <div className="riwayat-table-row riwayat-table-head">
-                      <span>Layanan</span>
-                      <span>Upah</span>
+                      <span>{t('Layanan')}</span>
+                      <span>{t('Upah')}</span>
                       <span></span>
                     </div>
                     {group.services.map((service) => {

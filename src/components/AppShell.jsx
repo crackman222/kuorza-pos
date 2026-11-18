@@ -1,25 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { logout } from '../api'
 import { initials } from '../lib/format'
 import { useAuth } from '../context/useAuth'
-import { useTheme } from '../context/useTheme'
 import { isAdmin, isStaff, isSupervisor, ROLE_LABELS } from '../lib/roles'
 import { WorkerShell } from './WorkerShell'
 import { LanguageToggle } from './LanguageToggle'
+import { Icon } from './Icon'
 import { useLanguage } from '../context/useLanguage'
 import { dateLocale } from '../lib/i18n'
 
 // `access` mirrors the route guards in App.jsx — keep the two in step, since
 // this only decides what's shown and the guards decide what's reachable.
 const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', end: true, access: 'all' },
-  { to: '/transaksi-baru', label: 'Transaksi Baru', end: false, access: 'all' },
-  { to: '/katalog', label: 'Katalog Layanan', end: false, access: 'supervisor' },
-  { to: '/riwayat', label: 'Riwayat Transaksi', end: false, access: 'supervisor' },
-  { to: '/laporan', label: 'Laporan Harian', end: false, access: 'supervisor' },
-  { to: '/upah', label: 'Kelola Upah', end: false, access: 'supervisor' },
-  { to: '/staf', label: 'Kelola Staf', end: false, access: 'admin' },
+  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true, access: 'all' },
+  { to: '/transaksi-baru', label: 'Transaksi Baru', icon: 'add_circle', end: false, access: 'all' },
+  { to: '/katalog', label: 'Katalog Layanan', icon: 'menu_book', end: false, access: 'supervisor' },
+  { to: '/riwayat', label: 'Riwayat Transaksi', icon: 'receipt_long', end: false, access: 'supervisor' },
+  { to: '/laporan', label: 'Laporan Harian', icon: 'monitoring', end: false, access: 'supervisor' },
+  { to: '/upah', label: 'Kelola Upah', icon: 'wage', end: false, access: 'supervisor' },
+  { to: '/staf', label: 'Kelola Staf', icon: 'group', end: false, access: 'admin' },
 ]
 
 function todayLabel() {
@@ -31,17 +31,29 @@ function todayLabel() {
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
+// Desk shell: an M3 navigation drawer beside a small top app bar. At wide
+// widths the drawer is standard (always visible); below 1024px it becomes a
+// modal drawer over a scrim, opened from the app bar's menu button.
 export function AppShell() {
   const { profile, setProfile } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const { t } = useLanguage()
   const navigate = useNavigate()
   const [navOpen, setNavOpen] = useState(false)
 
+  // A modal drawer closes itself on Escape, like any other M3 modal surface.
+  useEffect(() => {
+    if (!navOpen) return undefined
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') setNavOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navOpen])
+
   // Workers are on a phone, so they get a different shell entirely — bottom
-  // tabs instead of a sidebar. Same routes underneath: this swaps the chrome
-  // around <Outlet/>, it is not a second route table. Placed after the hooks
-  // above so the hook order stays identical either way.
+  // navigation instead of a drawer. Same routes underneath: this swaps the
+  // chrome around <Outlet/>, it is not a second route table. Placed after the
+  // hooks above so the hook order stays identical either way.
   if (isStaff(profile)) return <WorkerShell />
 
   function canSee(item) {
@@ -58,64 +70,76 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      {navOpen && (
-        <div className="app-sidebar-backdrop" onClick={() => setNavOpen(false)} />
-      )}
-      <aside className={`app-sidebar ${navOpen ? 'open' : ''}`}>
-        <div className="app-sidebar-brand">
-          <img src="/favicon.png" alt="Kuorza" className="app-sidebar-brand-mark" />
-          <span className="app-sidebar-brand-name">Kuorza</span>
+      <div
+        className={`app-drawer-scrim ${navOpen ? 'open' : ''}`}
+        onClick={() => setNavOpen(false)}
+        aria-hidden="true"
+      />
+      <aside className={`app-drawer ${navOpen ? 'open' : ''}`} aria-label={t('Menu utama')}>
+        <div className="app-drawer-brand">
+          <span className="app-brand-mark">
+            <Icon name="brand" />
+          </span>
+          <div className="app-drawer-brand-text">
+            <span className="app-drawer-brand-name">Kuorza</span>
+            <span className="app-drawer-brand-sub">Point of Sale</span>
+          </div>
         </div>
-        <nav className="app-sidebar-nav">
+        <nav className="app-drawer-nav">
           {NAV_ITEMS.filter(canSee).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               onClick={() => setNavOpen(false)}
-              className={({ isActive }) => `app-sidebar-link ${isActive ? 'active' : ''}`}
+              className={({ isActive }) => `app-drawer-item ${isActive ? 'active' : ''}`}
             >
-              <span className="app-sidebar-link-dot" />
-              <span>{t(item.label)}</span>
+              {({ isActive }) => (
+                <>
+                  <Icon name={item.icon} fill={isActive} />
+                  <span>{t(item.label)}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
-      </aside>
-      <div className="app-main">
-        <header className="app-header">
-          <div className="app-header-left">
+        {profile && (
+          <div className="app-drawer-user">
+            <span className="app-avatar">{initials(profile.full_name)}</span>
+            <div className="app-drawer-user-text">
+              <span className="app-drawer-user-name">{profile.full_name}</span>
+              <span className="app-drawer-user-role">{t(ROLE_LABELS[profile.role] || profile.role)}</span>
+            </div>
             <button
               type="button"
-              className="app-hamburger"
-              onClick={() => setNavOpen((open) => !open)}
-              aria-label={navOpen ? t('Tutup menu') : t('Buka menu')}
-              aria-expanded={navOpen}
+              className="icon-btn"
+              onClick={handleLogout}
+              title={t('Keluar')}
+              aria-label={t('Keluar')}
             >
-              <span />
+              <Icon name="logout" />
             </button>
-            <span className="app-header-date">{todayLabel()}</span>
           </div>
-          <div className="app-header-right">
+        )}
+      </aside>
+
+      <div className="app-main">
+        <header className="app-topbar">
+          <button
+            type="button"
+            className="icon-btn app-menu-btn"
+            onClick={() => setNavOpen((open) => !open)}
+            aria-label={navOpen ? t('Tutup menu') : t('Buka menu')}
+            aria-expanded={navOpen}
+          >
+            <Icon name="menu" />
+          </button>
+          <div className="app-topbar-titles">
+            <Icon name="calendar_today" size={20} />
+            <span className="app-topbar-title">{todayLabel()}</span>
+          </div>
+          <div className="app-topbar-actions">
             <LanguageToggle />
-            <button
-              type="button"
-              className="theme-toggle-btn"
-              onClick={toggleTheme}
-              title={theme === 'dark' ? t('Mode Terang') : t('Mode Gelap')}
-              aria-label={theme === 'dark' ? t('Aktifkan mode terang') : t('Aktifkan mode gelap')}
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-            {profile && (
-              <div className="app-header-user">
-                <span className="app-header-avatar">{initials(profile.full_name)}</span>
-                <span className="app-header-name">{profile.full_name}</span>
-                <span className="app-header-role">{t(ROLE_LABELS[profile.role] || profile.role)}</span>
-                <button type="button" className="app-header-logout" onClick={handleLogout}>
-                  {t('Keluar')}
-                </button>
-              </div>
-            )}
           </div>
         </header>
         <main className="app-content">

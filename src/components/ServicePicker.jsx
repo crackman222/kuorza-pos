@@ -4,6 +4,7 @@ import { formatRupiah } from '../lib/format'
 import { getServicePrice, hasPromo, PRICE_MODES } from '../lib/servicePrice'
 import { groupServicesByVehicleAndKind } from '../lib/serviceCategories'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 // The full menu is ~50 cards, far too long to scroll on a phone, and a ticket
 // is almost always one treatment on one kind of vehicle. So the picker shows
@@ -42,6 +43,9 @@ export function ServicePicker({ services, selectedItems, onAdd, worker = false, 
               className={`service-menu-tile ${count > 0 ? 'has-selection' : ''}`}
               onClick={() => setOpenKey(group.key)}
             >
+              <span className="service-menu-tile-icon">
+                <Icon name={groupIcon(group)} />
+              </span>
               <span className="service-menu-tile-label">{groupLabel(t, group)}</span>
               <span className="service-menu-tile-meta">
                 {t('{count} layanan', { count: group.services.length })}
@@ -67,6 +71,13 @@ export function ServicePicker({ services, selectedItems, onAdd, worker = false, 
       )}
     </>
   )
+}
+
+// Tile icon by vehicle — the group key is "<vehicle>-<kind>", or "lainnya".
+const GROUP_ICONS = { motor: 'two_wheeler', mobil: 'directions_car', helm: 'sports_motorsports' }
+
+function groupIcon(group) {
+  return GROUP_ICONS[group.key.split('-')[0]] ?? 'category'
 }
 
 // "Cuci Motor" in Indonesian, "Motorbike Wash" in English — the word order

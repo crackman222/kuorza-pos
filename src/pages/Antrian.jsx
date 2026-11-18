@@ -17,6 +17,7 @@ import { useAuth } from '../context/useAuth'
 import { useLanguage } from '../context/useLanguage'
 import { isStaff } from '../lib/roles'
 import { TASK_REMINDER_DAYS, daysOpen, isOverdue } from '../lib/taskReminder'
+import { Icon } from '../components/Icon'
 
 // Only the statuses that can appear in the queue — 'closed' and 'voided' drop
 // out of it (see QUEUE_STATUSES in api/treatments.js).
@@ -166,7 +167,8 @@ export default function Antrian() {
       <div className="riwayat-header">
         <h1>{t('Dashboard')}</h1>
         <Link to="/transaksi-baru" className="btn-primary antrian-new-link">
-          + {t('Transaksi Baru')}
+          <Icon name="add" size={20} />
+          {t('Transaksi Baru')}
         </Link>
       </div>
 
@@ -229,7 +231,7 @@ export default function Antrian() {
 
       {!loading && overdueTreatments.length > 0 && (
         <div className="overdue-alert" role="alert">
-          <span className="overdue-alert-icon">⚠️</span>
+          <Icon name="warning" className="overdue-alert-icon" />
           <span>
             {t('{count} transaksi sudah {days} hari atau lebih belum selesai — segera tindak lanjuti:', {
               count: overdueTreatments.length,
@@ -321,7 +323,8 @@ export default function Antrian() {
                     className="overdue-badge"
                     title={t('Sudah {days} hari belum selesai', { days: daysOpen(row.created_at) })}
                   >
-                    ⚠️ {t('{days} hari', { days: daysOpen(row.created_at) })}
+                    <Icon name="schedule" size={18} />
+                    {t('{days} hari', { days: daysOpen(row.created_at) })}
                   </span>
                 )}
               </span>

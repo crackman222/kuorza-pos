@@ -1,5 +1,6 @@
 import { PRICE_MODES } from '../lib/servicePrice'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 const OPTIONS = [
   { value: PRICE_MODES.PROMO, label: 'Harga Promo' },
@@ -16,17 +17,18 @@ export function PriceModeToggle({ value, onChange, promoCount }) {
 
   return (
     <div className="price-mode">
-      <div className="price-mode-toggle" role="radiogroup" aria-label={t('Mode harga layanan')}>
+      <div className="segmented price-mode-toggle" role="radiogroup" aria-label={t('Mode harga layanan')}>
         {OPTIONS.map((option) => (
           <button
             key={option.value}
             type="button"
             role="radio"
             aria-checked={value === option.value}
-            className={`price-mode-option ${value === option.value ? 'active' : ''}`}
+            className={`segmented-option price-mode-option ${value === option.value ? 'active' : ''}`}
             onClick={() => onChange(option.value)}
             disabled={noPromo}
           >
+            {value === option.value && <Icon name="check" size={18} />}
             {t(option.label)}
           </button>
         ))}

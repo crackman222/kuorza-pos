@@ -17,7 +17,8 @@ import { useLanguage } from '../context/useLanguage'
 import { dateLocale, translateServiceName } from '../lib/i18n'
 
 const PAYMENT_LABELS = { cash: 'Tunai', qris: 'QRIS', transfer: 'Transfer' }
-const PAYMENT_COLORS = { cash: '#2c6a9e', qris: '#7bb2d9', transfer: '#dce9f3' }
+// Theme roles, so the chart follows the M3 palette (see index.css).
+const PAYMENT_COLORS = { cash: 'var(--md-primary)', qris: 'var(--md-tertiary)', transfer: 'var(--md-inverse-primary)' }
 
 const WORKER_PERIOD_OPTIONS = [
   { value: 'daily', label: 'Harian' },
@@ -193,7 +194,10 @@ export default function Laporan() {
           <div className="payment-breakdown-legend">
             {paymentBreakdown.map((p) => (
               <div key={p.method} className="payment-breakdown-row">
-                <span>{p.label}</span>
+                <span className="payment-breakdown-name">
+                  <span className="payment-breakdown-swatch" style={{ background: p.color }} />
+                  {p.label}
+                </span>
                 <span>{formatRupiah(p.amount)} ({p.pct}%)</span>
               </div>
             ))}

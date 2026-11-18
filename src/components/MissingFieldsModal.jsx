@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 // Shown when a form is submitted with required fields left empty. Lists every
 // problem at once rather than one at a time, so staff fix them all in one
@@ -31,7 +32,7 @@ export function MissingFieldsModal({ issues, onClose }) {
         aria-describedby="missing-fields-list"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="missing-fields-icon" aria-hidden="true">!</div>
+        <Icon name="error" className="missing-fields-icon" />
         <h2 id="missing-fields-title" className="start-modal-title">
           {t('Data belum lengkap')}
         </h2>

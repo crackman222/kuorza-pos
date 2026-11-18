@@ -7,6 +7,7 @@ import { getPeriodRange, formatPeriodLabel } from '../lib/dateRange'
 import { useAuth } from '../context/useAuth'
 import { isAdmin as checkIsAdmin } from '../lib/roles'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 const PERIOD_OPTIONS = [
   { value: 'daily', label: 'Harian' },
@@ -233,6 +234,7 @@ export default function RiwayatTransaksi() {
       <div className="riwayat-header">
         <h1>{t('Riwayat Transaksi')}</h1>
         <form onSubmit={handleSearch} className="riwayat-search">
+          <Icon name="search" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}

@@ -5,6 +5,7 @@ import { paymentNeedsProof } from '../api'
 import { isCameraSupported } from '../lib/camera'
 import { formatRupiah } from '../lib/format'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 // Recording a payment so the ticket can be closed. Cash is confirmed as is;
 // QRIS and transfer need a camera photo of the payment confirmation screen
@@ -84,7 +85,8 @@ export function PaymentModal({ total, busy, error, proofOnly = false, initialMet
             </p>
             {proofUrl && <img src={proofUrl} alt={t('Bukti pembayaran')} className="payment-modal-proof-img" />}
             <button type="button" className="btn-secondary" onClick={openCamera} disabled={busy}>
-              📷 {proofFile ? t('Ulangi Foto') : t('Ambil Foto Bukti')}
+              <Icon name="photo_camera" size={18} />
+              {proofFile ? t('Ulangi Foto') : t('Ambil Foto Bukti')}
             </button>
           </div>
         ) : (

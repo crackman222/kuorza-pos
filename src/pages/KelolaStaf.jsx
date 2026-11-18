@@ -4,6 +4,7 @@ import { suggestUsername, isValidUsername } from '../lib/username'
 import { useAuth } from '../context/useAuth'
 import { ROLES, ROLE_LABELS, isAdmin } from '../lib/roles'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 // One roster since migration 009: field workers and office staff are all
 // rows in `profiles` now. What separates them is `role` (what they can open)
@@ -71,7 +72,8 @@ function StaffSection({ workers, onChanged, onError }) {
       <div className="staf-section-header">
         <h2 className="transaksi-section-label">{t('Staf')}</h2>
         <button type="button" className="btn-primary" onClick={() => setShowAddForm((v) => !v)}>
-          {showAddForm ? t('Tutup') : `+ ${t('Tambah Staf')}`}
+          <Icon name={showAddForm ? 'close' : 'person_add'} size={20} />
+          {showAddForm ? t('Tutup') : t('Tambah Staf')}
         </button>
       </div>
 

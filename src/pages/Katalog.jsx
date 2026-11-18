@@ -13,6 +13,7 @@ import { ServiceIcon } from '../components/ServiceIcon'
 import { useAuth } from '../context/useAuth'
 import { isSupervisor } from '../lib/roles'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 export default function Katalog() {
   const { profile } = useAuth()
@@ -106,7 +107,7 @@ function ServiceSection({ services, canManagePromo, onChanged, onError }) {
                   <span className="service-category-meta">
                     {t('{count} layanan', { count: group.services.length })}
                   </span>
-                  <span className="service-category-chevron" aria-hidden="true" />
+                  <Icon name="expand_more" className="service-category-chevron" />
                 </button>
 
                 {isOpen && (
@@ -250,7 +251,8 @@ function ShelfSection({ items, canManageStock, onChanged, onError }) {
         <h2 className="transaksi-section-label">{t('Barang')}</h2>
         {canManageStock && (
           <button type="button" className="btn-primary" onClick={() => setShowAddForm((v) => !v)}>
-            {showAddForm ? t('Tutup') : `+ ${t('Tambah Barang')}`}
+            <Icon name={showAddForm ? 'close' : 'add'} size={20} />
+            {showAddForm ? t('Tutup') : t('Tambah Barang')}
           </button>
         )}
       </div>

@@ -5,6 +5,7 @@ import { useAuth } from '../context/useAuth'
 import { useTurnstile } from '../lib/turnstile'
 import { useLanguage } from '../context/useLanguage'
 import { LanguageToggle } from '../components/LanguageToggle'
+import { Icon } from '../components/Icon'
 
 const IDLE_LOGOUT_FLAG = 'nd_idle_logout'
 const DEACTIVATED_LOGOUT_FLAG = 'nd_deactivated_logout'
@@ -83,37 +84,48 @@ export default function Login() {
   return (
     <div className="login-screen">
       <div className="login-card">
-        <LanguageToggle className="login-language" />
-        <img src="/favicon.png" alt="Kuorza" className="login-brand-mark" />
+        <div className="login-card-top">
+          <span className="app-brand-mark login-brand-mark">
+            <Icon name="brand" size={32} />
+          </span>
+          <LanguageToggle className="login-language" />
+        </div>
         <h1>Kuorza</h1>
-        <p className="login-subtitle">Point of Sale</p>
+        <p className="login-subtitle">{t('Masuk untuk mulai bekerja')}</p>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          <label>
-            {t('Username')}
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder={t('nama.anda')}
-              autoCapitalize="none"
-              autoCorrect="off"
-              autoComplete="username"
-              disabled={submitting}
-            />
+          <label className="text-field">
+            <span className="text-field-label">{t('Username')}</span>
+            <span className="text-field-box">
+              <Icon name="person" />
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={t('nama.anda')}
+                autoCapitalize="none"
+                autoCorrect="off"
+                autoComplete="username"
+                disabled={submitting}
+              />
+            </span>
           </label>
-          <label>
-            PIN
-            <input
-              type="password"
-              value={pin}
-              // Digits only, max 6 — the PIN doubles as the account password
-              // and Supabase Auth's minimum length is 6 characters.
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="••••••"
-              inputMode="numeric"
-              autoComplete="current-password"
-              disabled={submitting}
-            />
+          <label className="text-field">
+            <span className="text-field-label">PIN</span>
+            <span className="text-field-box">
+              <Icon name="lock" />
+              <input
+                type="password"
+                value={pin}
+                // Digits only, max 6 — the PIN doubles as the account password
+                // and Supabase Auth's minimum length is 6 characters.
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="••••••"
+                inputMode="numeric"
+                autoComplete="current-password"
+                disabled={submitting}
+              />
+            </span>
+            <span className="text-field-support">{t('6 digit angka')}</span>
           </label>
 
           {/* Invisible unless Cloudflare's risk engine decides this login
@@ -128,6 +140,7 @@ export default function Login() {
           </button>
         </form>
       </div>
+      <p className="login-footer">Nineteen Details</p>
     </div>
   )
 }

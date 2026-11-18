@@ -1,5 +1,6 @@
 import { useWashProofUpload } from './useWashProofUpload'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 export function WashProofButton({ treatmentId, hasPhoto, onUploaded, onError }) {
   const { t } = useLanguage()
@@ -18,7 +19,8 @@ export function WashProofButton({ treatmentId, hasPhoto, onUploaded, onError }) 
         role="button"
         aria-label={hasPhoto ? t('Ganti bukti foto cuci') : t('Unggah bukti foto cuci')}
       >
-        {uploading ? '…' : hasPhoto ? `✓ ${t('Foto')}` : `📷 ${t('Foto')}`}
+        <Icon name={uploading ? 'progress_activity' : hasPhoto ? 'check' : 'photo_camera'} size={18} />
+        {t('Foto')}
       </span>
       {capture}
     </>

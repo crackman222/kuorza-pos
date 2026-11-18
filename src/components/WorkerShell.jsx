@@ -2,40 +2,25 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { logout } from '../api'
 import { initials } from '../lib/format'
 import { useAuth } from '../context/useAuth'
-import { useTheme } from '../context/useTheme'
 import { useLanguage } from '../context/useLanguage'
 import { LanguageToggle } from './LanguageToggle'
+import { Icon } from './Icon'
 
 // The phone shell for role='staff' — the people on the floor, who work off a
 // handset rather than the counter machine. Same routes and same pages as the
-// desk shell (AppShell); what changes is the chrome: no sidebar, no
-// hamburger, and a thumb-reachable bottom tab bar instead.
-//
-// Styling follows `design/Worker View Standalone.html` — see the Worker UI
-// section of App.css for what was and wasn't taken from it.
+// desk shell (AppShell); what changes is the chrome: an M3 small top app bar
+// and a thumb-reachable navigation bar instead of the drawer.
 //
 // Only the two destinations a worker starts from get a tab. Detail Treatment
 // and Struk are reached by tapping a ticket, exactly as on the desk shell, so
 // they stay out of the nav — see the comment on the routes in App.jsx.
 const WORKER_NAV = [
-  {
-    to: '/',
-    label: 'Antrian',
-    title: 'Antrian Kerja',
-    end: true,
-    icon: <path d="M4 6h16M4 12h16M4 18h10" strokeWidth="2" strokeLinecap="round" />,
-  },
-  {
-    to: '/transaksi-baru',
-    label: 'Transaksi',
-    title: 'Transaksi Baru',
-    end: false,
-    icon: <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" />,
-  },
+  { to: '/', label: 'Antrian', title: 'Antrian Kerja', icon: 'format_list_bulleted', end: true },
+  { to: '/transaksi-baru', label: 'Transaksi', title: 'Transaksi Baru', icon: 'add_circle', end: false },
 ]
 
-// The mockup names the screen in its header. Detail and Struk have no tab, so
-// they fall through to a label of their own rather than inheriting 'Antrian'.
+// Detail and Struk have no tab, so they get a title of their own rather than
+// inheriting 'Antrian'.
 function screenTitle(pathname) {
   if (pathname.startsWith('/treatment/')) return 'Detail Transaksi'
   if (pathname.startsWith('/struk/')) return 'Struk'
@@ -45,7 +30,6 @@ function screenTitle(pathname) {
 
 export function WorkerShell() {
   const { profile, setProfile } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const { t } = useLanguage()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -62,60 +46,46 @@ export function WorkerShell() {
     // Antrian/Detail/Struk stay single components. See App.css.
     <div className="worker-ui worker-shell">
       <header className="worker-topbar">
-        <div className="worker-topbar-left">
-          <img src="/favicon.png" alt="Kuorza" className="app-sidebar-brand-mark" />
-          <span className="worker-topbar-title">{t(screenTitle(pathname))}</span>
-        </div>
-        <div className="worker-topbar-right">
-          <LanguageToggle className="language-toggle-compact" />
+        <span className="app-brand-mark">
+          <Icon name="brand" size={20} />
+        </span>
+        <span className="worker-topbar-title">{t(screenTitle(pathname))}</span>
+        <LanguageToggle className="language-toggle-compact" />
+        {profile && (
+          // The avatar doubles as the logout control — there is no room on a
+          // phone app bar for both, and 40px is already a full touch target.
           <button
             type="button"
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
-            title={theme === 'dark' ? t('Mode Terang') : t('Mode Gelap')}
-            aria-label={theme === 'dark' ? t('Aktifkan mode terang') : t('Aktifkan mode gelap')}
+            className="app-avatar app-avatar-btn"
+            onClick={handleLogout}
+            title={t('{name} — ketuk untuk keluar', { name: profile.full_name })}
+            aria-label={t('Keluar dari akun {name}', { name: profile.full_name })}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {initials(profile.full_name)}
           </button>
-          {profile && (
-            // The mockup's 44px avatar circle, doing double duty as the logout
-            // control — there is no room on a phone header for both, and 44px
-            // is already the minimum touch target.
-            <button
-              type="button"
-              className="worker-avatar"
-              onClick={handleLogout}
-              title={t('{name} — ketuk untuk keluar', { name: profile.full_name })}
-              aria-label={t('Keluar dari akun {name}', { name: profile.full_name })}
-            >
-              {initials(profile.full_name)}
-            </button>
-          )}
-        </div>
+        )}
       </header>
 
       <main className="worker-content">
         <Outlet />
       </main>
 
-      <nav className="worker-tabbar">
+      <nav className="worker-navbar" aria-label={t('Menu utama')}>
         {WORKER_NAV.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.end}
-            className={({ isActive }) => `worker-tab ${isActive ? 'active' : ''}`}
+            className={({ isActive }) => `worker-nav-item ${isActive ? 'active' : ''}`}
           >
-            <svg
-              className="worker-tab-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              {item.icon}
-            </svg>
-            <span className="worker-tab-label">{t(item.label)}</span>
+            {({ isActive }) => (
+              <>
+                <span className="worker-nav-indicator">
+                  <Icon name={item.icon} fill={isActive} />
+                </span>
+                <span className="worker-nav-label">{t(item.label)}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

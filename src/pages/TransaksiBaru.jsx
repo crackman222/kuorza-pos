@@ -15,6 +15,7 @@ import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 import { useLanguage } from '../context/useLanguage'
 import { translateServiceName } from '../lib/i18n'
+import { Icon } from '../components/Icon'
 
 // Workers build a ticket one page at a time — items, customer, confirmation —
 // while the desk keeps the single two-column screen. Both share the same state
@@ -57,16 +58,18 @@ function TicketLines({ items, emptyText, invalid = false, onQuantityChange, onRe
             <button
               type="button"
               onClick={() => onQuantityChange(item.key, item.quantity - 1)}
+              aria-label={t('Kurangi')}
             >
-              -
+              <Icon name="remove" size={18} />
             </button>
             <span>{item.quantity}</span>
             <button
               type="button"
               onClick={() => onQuantityChange(item.key, item.quantity + 1)}
               disabled={item.maxQuantity != null && item.quantity >= item.maxQuantity}
+              aria-label={t('Tambah')}
             >
-              +
+              <Icon name="add" size={18} />
             </button>
           </div>
           <span className="ticket-line-total">
@@ -78,7 +81,7 @@ function TicketLines({ items, emptyText, invalid = false, onQuantityChange, onRe
             onClick={() => onRemove(item.key)}
             aria-label={t('Hapus item')}
           >
-            ✕
+            <Icon name="delete" size={20} />
           </button>
         </div>
       ))}
@@ -753,7 +756,7 @@ export default function TransaksiBaru() {
               aria-current={step === item.number ? 'step' : undefined}
             >
               <span className="worker-wizard-step-dot">
-                {step > item.number ? '✓' : item.number}
+                {step > item.number ? <Icon name="check" size={18} /> : item.number}
               </span>
               <span className="worker-wizard-step-label">{t(item.label)}</span>
             </li>

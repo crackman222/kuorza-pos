@@ -25,6 +25,7 @@ import { parseStaffNames } from '../lib/staffNames'
 import { useAuth } from '../context/useAuth'
 import { isStaff } from '../lib/roles'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 const STATUS_LABELS = {
   created: 'Dibuat',
@@ -216,9 +217,7 @@ export default function DetailTreatment() {
     <div className="detail-screen">
       {workerView ? (
         <button type="button" className="worker-back-btn" onClick={() => navigate('/')}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-            <path d="M15 5l-7 7 7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Icon name="arrow_back" />
           {t('Kembali')}
         </button>
       ) : (
@@ -360,7 +359,8 @@ export default function DetailTreatment() {
               onClick={() => setPayMode(isPaid ? 'proof' : 'pay')}
               disabled={busy}
             >
-              {isPaid ? `📷 ${t('Foto Bukti Bayar')}` : `💳 ${t('Verifikasi Pembayaran')}`}
+              <Icon name={isPaid ? 'photo_camera' : 'payments'} size={20} />
+              {isPaid ? t('Foto Bukti Bayar') : t('Verifikasi Pembayaran')}
             </button>
           </div>
         )}
@@ -389,6 +389,7 @@ export default function DetailTreatment() {
 
         <div className="detail-actions">
           <button type="button" className="btn-secondary" onClick={() => navigate(`/struk/${treatment.id}`)}>
+            <Icon name="receipt_long" size={18} />
             {t('Lihat Struk')}
           </button>
           {!isFinal && (
@@ -466,7 +467,7 @@ export default function DetailTreatment() {
             onClick={() => setLightboxUrl(null)}
             aria-label={t('Tutup')}
           >
-            ✕
+            <Icon name="close" />
           </button>
           <img
             src={lightboxUrl}

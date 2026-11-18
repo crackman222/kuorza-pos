@@ -1,1330 +1,1220 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg) scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg) scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  &>div {
-    flex: 1 1 0;
-    padding: 32px;
-
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
-}
-
 /* =========================================================================
-   Kuorza POS — application UI
-   Everything below styles the actual product screens (login, dashboard
-   shell, transactions, receipt, history). The rules above this line are the
-   original Vite starter styles, left in place per project convention.
+   Kuorza POS — Material 3 component layer (light, green).
+   Every color/shape/elevation comes from the --md-* tokens in index.css.
+   Icons are Hugeicons via <Icon />.
+
+   Sections:
+     1. App shells (desk drawer + top app bar, worker app bar + nav bar)
+     2. Buttons, icon buttons, segmented buttons, chips
+     3. Text fields & selects
+     4. Feedback (errors, empty/loading, badges, alerts)
+     5. Cards & stat cards
+     6. Data tables
+     7. Dialogs
+     8. Service & shelf pickers
+     9. Screens: Login, Antrian, Transaksi Baru, worker wizard, queue cards,
+        Detail/Struk, Riwayat, Laporan, Katalog, Staf, Upah
+    10. Camera & lightbox
+    11. Responsive
    ========================================================================= */
 
-.app-shell,
-.login-screen,
+/* ---------- Typescale helpers (used by @extend-like repetition below) ----
+   display-small 36/44 · headline-medium 28/36 · headline-small 24/32
+   title-large 22/28 · title-medium 16/24/500 · title-small 14/20/500
+   body-large 16/24 · body-medium 14/20 · body-small 12/16
+   label-large 14/20/500 · label-medium 12/16/500 · label-small 11/16/500 */
+
+/* =========================================================================
+   1. App shells
+   ========================================================================= */
+
 .loading-screen {
-  font-family: var(--pos-font);
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  color: var(--md-on-surface-variant);
+  font-size: 14px;
 }
 
-.app-shell *,
-.login-screen *,
-.loading-screen * {
-  box-sizing: border-box;
+.app-brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-shape-md);
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
 }
 
-.app-shell button,
-.app-shell input,
-.app-shell textarea,
-.login-screen button,
-.login-screen input,
-.login-screen textarea {
-  font-family: inherit;
-}
-
-/* ---- loading ---- */
-.loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  height: 100svh;
-  width: 100%;
-  background: var(--pos-bg);
-  color: var(--pos-text-muted);
+.app-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  display: inline-grid;
+  place-items: center;
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+  border: 0;
+  padding: 0;
 }
 
-/* ---- shared headings inside the dashboard ---- */
-.app-content h1 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: normal;
-  color: var(--pos-text);
-  margin: 0 0 20px;
+.app-avatar-btn {
+  cursor: pointer;
+  transition: box-shadow var(--md-duration-short) var(--md-ease-standard);
 }
 
-.transaksi-section-label {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin: 0 0 12px;
+.app-avatar-btn:hover {
+  box-shadow: 0 0 0 4px rgb(var(--md-primary-rgb) / 0.12);
 }
 
-/* =========================================================================
-   App shell — sidebar + header + content
-   ========================================================================= */
+/* ---- Desk: navigation drawer + small top app bar ---- */
 
 .app-shell {
   display: flex;
-  height: 100vh;
-  height: 100svh;
-  width: 100%;
-  background: var(--pos-bg);
-  overflow: hidden;
+  min-height: 100svh;
+  background: var(--md-surface);
 }
 
-.app-sidebar {
-  width: 216px;
-  flex: none;
-  background: var(--pos-surface);
-  border-right: 1px solid var(--pos-border);
+.app-drawer {
+  width: 288px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100svh;
   display: flex;
   flex-direction: column;
-  padding: 22px 0;
+  padding: 12px;
+  background: var(--md-surface);
+  z-index: 40;
 }
 
-.app-hamburger {
-  display: none;
-  width: 34px;
-  height: 34px;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface);
-  cursor: pointer;
-  padding: 0;
-}
-
-.app-hamburger span,
-.app-hamburger span::before,
-.app-hamburger span::after {
-  display: block;
-  width: 16px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--pos-text);
-  position: relative;
-}
-
-.app-hamburger span::before,
-.app-hamburger span::after {
-  content: '';
-  position: absolute;
-  left: 0;
-}
-
-.app-hamburger span::before {
-  top: -5px;
-}
-
-.app-hamburger span::after {
-  top: 5px;
-}
-
-.app-sidebar-backdrop {
-  display: none;
-}
-
-.app-sidebar-brand {
+.app-drawer-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 20px 20px;
-  border-bottom: 1px solid var(--pos-border-soft);
-  margin-bottom: 16px;
+  gap: 12px;
+  padding: 12px 16px 20px;
 }
 
-.app-sidebar-brand-mark {
-  width: 36px;
-  height: 36px;
-  flex: none;
-  border-radius: 8px;
-  object-fit: cover;
+.app-drawer-brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
-.app-sidebar-brand-name {
-  font-weight: 700;
-  font-size: 13.5px;
-  line-height: 1.25;
-  color: var(--pos-text);
+.app-drawer-brand-name {
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--md-on-surface);
 }
 
-.app-sidebar-nav {
+.app-drawer-brand-sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+  letter-spacing: 0.03em;
+}
+
+.app-drawer-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 12px;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.app-sidebar-link {
+.app-drawer-item {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  color: rgba(var(--pos-ink), 0.7);
-  font-weight: 500;
-  font-size: 13px;
+  gap: 12px;
+  height: 56px;
+  padding: 0 24px 0 16px;
+  border-radius: var(--md-shape-full);
+  color: var(--md-on-surface-variant);
   text-decoration: none;
-  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.007em;
+  transition: background-color var(--md-duration-short) var(--md-ease-standard);
 }
 
-.app-sidebar-link:hover {
-  background: rgba(var(--pos-ink), 0.04);
+.app-drawer-item:hover {
+  background: rgb(var(--md-on-surface-rgb) / var(--md-state-hover));
+  color: var(--md-on-surface);
 }
 
-.app-sidebar-link.active {
-  background: var(--pos-blue);
-  color: #fff;
+.app-drawer-item.active {
+  background: var(--md-secondary-container);
+  color: var(--md-primary);
   font-weight: 600;
 }
 
-.app-sidebar-link-dot {
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border-radius: 2px;
-  background: rgba(var(--pos-ink), 0.25);
+.app-drawer-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 8px 12px 12px;
+  border-radius: var(--md-shape-lg);
+  background: var(--md-surface-container);
 }
 
-.app-sidebar-link.active .app-sidebar-link-dot {
-  background: #fff;
+.app-drawer-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.app-drawer-user-name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-drawer-user-role {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.app-drawer-scrim {
+  display: none;
 }
 
 .app-main {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
 }
 
-.app-header {
-  height: 60px;
-  flex: none;
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 28px;
-  border-bottom: 1px solid var(--pos-border);
-  background: var(--pos-surface);
+  gap: 4px;
+  padding: 0 16px 0 24px;
+  background: var(--md-surface);
 }
 
-.app-header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.icon-btn.app-menu-btn {
+  display: none;
+}
+
+.app-topbar-titles {
+  flex: 1;
   min-width: 0;
-}
-
-.app-header-date {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--pos-text-muted);
-}
-
-.app-header-user {
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--md-on-surface-variant);
 }
 
-.app-header-avatar {
-  width: 30px;
-  height: 30px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--pos-blue-light);
+.app-topbar-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--md-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-topbar-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 11px;
-  color: var(--pos-blue-dark);
-}
-
-.app-header-name {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--pos-text);
-}
-
-.app-header-role {
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--pos-border);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--pos-text-faint);
-}
-
-.app-header-logout {
-  margin-left: 4px;
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface);
-  color: var(--pos-text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.app-header-logout:hover {
-  border-color: rgba(var(--pos-ink), 0.2);
-  color: var(--pos-text);
+  gap: 8px;
 }
 
 .app-content {
   flex: 1;
-  padding: 26px 28px;
-  overflow: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding: 16px 24px 40px;
   min-width: 0;
 }
 
-/* =========================================================================
-   Buttons, forms, badges — shared across screens
-   ========================================================================= */
-
-.btn-primary,
-.btn-secondary,
-.btn-danger {
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  border: 1px solid transparent;
+/* Page headline: headline-medium. */
+.app-content h1,
+.worker-content h1 {
+  font-size: 28px;
+  line-height: 36px;
+  margin: 8px 0 20px;
 }
 
-.btn-primary {
-  background: var(--pos-blue);
-  color: #fff;
+/* ---- Worker: small top app bar + navigation bar ---- */
+
+.worker-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--md-surface);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--pos-blue-dark);
-}
-
-.btn-secondary {
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  border-color: rgba(var(--pos-ink), 0.15);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  border-color: rgba(var(--pos-ink), 0.3);
-}
-
-.btn-danger {
-  background: var(--pos-red-bg);
-  color: var(--pos-red-text);
-}
-
-.btn-danger:hover:not(:disabled) {
-  filter: brightness(0.96);
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled,
-.btn-danger:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.form-error {
-  color: var(--pos-red-text);
-  background: var(--pos-red-bg);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 8px 0;
-}
-
-.form-info {
-  color: var(--pos-blue-dark);
-  background: var(--pos-blue-light);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 8px 0;
-}
-
-.status-badge {
-  display: inline-flex;
-  width: fit-content;
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 5px 10px;
-  border-radius: 20px;
-  line-height: 1;
-}
-
-.status-created {
-  background: var(--pos-gray-bg);
-  color: var(--pos-gray-text);
-}
-
-.status-paid {
-  background: var(--pos-blue-light);
-  color: var(--pos-blue-dark);
-}
-
-.status-diproses {
-  background: #fdecc8;
-  color: #8a5a00;
-}
-
-.status-qc {
-  background: #ede4fb;
-  color: #5b3a8f;
-}
-
-.status-selesai {
-  background: #d8f3e8;
-  color: #1f7a5c;
-}
-
-.status-closed {
-  background: var(--pos-green-bg);
-  color: var(--pos-green-text);
-}
-
-.status-voided {
-  background: var(--pos-red-bg);
-  color: var(--pos-red-text);
-}
-
-/* =========================================================================
-   Login
-   ========================================================================= */
-
-.login-screen {
+.worker-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 64px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  min-height: 100svh;
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  background: var(--pos-bg);
+  gap: 12px;
+  padding: 0 12px 0 16px;
+  background: var(--md-surface);
 }
 
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--pos-surface);
-  border: 1px solid var(--pos-border);
-  border-radius: 16px;
-  padding: 36px 32px;
-  text-align: center;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+.worker-topbar .app-brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-shape-sm);
 }
 
-.login-brand-mark {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  object-fit: cover;
-  margin: 0 auto 14px;
-}
-
-.login-card h1 {
+.worker-topbar-title {
+  flex: 1;
+  min-width: 0;
   font-size: 22px;
-  font-weight: 800;
-  letter-spacing: normal;
-  color: var(--pos-text);
-  margin: 2px 0;
+  line-height: 28px;
+  color: var(--md-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.login-subtitle {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--pos-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin: 0 0 22px;
+.worker-content {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  min-width: 0;
+  padding: 16px 16px calc(80px + 104px + env(safe-area-inset-bottom));
 }
 
-.login-instruction {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
-  margin: 0 0 14px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  text-align: left;
-}
-
-.login-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-}
-
-.login-form input {
-  padding: 11px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.12);
-  border-radius: 10px;
-  background: var(--pos-surface);
-  font-size: 14px;
-  color: var(--pos-text);
-}
-
-.login-form input:focus {
-  outline: none;
-  border-color: var(--pos-blue);
-}
-
-.login-submit {
-  margin-top: 4px;
-  padding: 12px;
-  font-size: 14px;
-}
-
-/* Empty and full-width when Cloudflare passes a login through silently
-   (the normal case); only takes visible space if it renders a challenge. */
-.login-captcha:not(:empty) {
+.worker-navbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
   display: flex;
   justify-content: center;
+  gap: 8px;
+  height: calc(80px + env(safe-area-inset-bottom));
+  padding: 12px 8px env(safe-area-inset-bottom);
+  background: var(--md-surface);
 }
 
-.name-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.name-picker-button {
-  padding: 14px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.12);
-  border-radius: 10px;
-  background: var(--pos-surface);
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--pos-text);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.name-picker-button:hover {
-  border-color: var(--pos-blue);
-  background: var(--pos-blue-lighter);
-  color: var(--pos-blue-dark);
-}
-
-.pin-pad {
+.worker-nav-item {
+  flex: 1;
+  max-width: 168px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  color: var(--md-on-surface-variant);
+  text-decoration: none;
 }
 
-.pin-pad-staff {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin: 0 0 4px;
-}
-
-.pin-pad-dots {
-  display: flex;
-  gap: 10px;
-  margin: 6px 0 16px;
-}
-
-.pin-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(var(--pos-ink), 0.2);
-  background: transparent;
-}
-
-.pin-dot.filled {
-  background: var(--pos-blue);
-  border-color: var(--pos-blue);
-}
-
-.pin-pad-error {
-  color: var(--pos-red-text);
-  font-size: 12.5px;
-  font-weight: 600;
-  margin: 0 0 10px;
-}
-
-.pin-pad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 64px);
-  gap: 10px;
-  justify-content: center;
-}
-
-.pin-pad-grid button {
+.worker-nav-indicator {
   width: 64px;
-  height: 56px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--pos-ink), 0.1);
-  background: var(--pos-surface-2);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--pos-text);
-  cursor: pointer;
+  height: 32px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  transition: background-color var(--md-duration-medium) var(--md-ease-standard);
 }
 
-.pin-pad-grid button:hover {
-  background: var(--pos-blue-lighter);
-  border-color: var(--pos-blue);
+.worker-nav-item:hover .worker-nav-indicator {
+  background: rgb(var(--md-on-surface-rgb) / var(--md-state-hover));
 }
 
-.pin-pad-cancel {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: var(--pos-text-muted) !important;
-  background: transparent !important;
-  border: none !important;
+.worker-nav-item.active .worker-nav-indicator {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
 }
 
-.pin-pad-backspace {
-  font-size: 18px;
+.worker-nav-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.worker-nav-item.active .worker-nav-label {
+  color: var(--md-on-surface);
+  font-weight: 700;
+}
+
+/* The page's own title + "Transaksi Baru" button duplicate the app bar and
+   nav bar on a phone. */
+.worker-ui .riwayat-header,
+.worker-ui .transaksi-catalog-header {
+  display: none;
 }
 
 /* =========================================================================
-   Transaksi Baru
+   2. Buttons, icon buttons, segmented buttons, chips
    ========================================================================= */
 
-.transaksi-baru-screen {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.transaksi-catalog {
-  flex: 1;
-  min-width: 0;
-}
-
-.transaksi-catalog-header {
-  margin-bottom: 4px;
-}
-
-.service-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.service-picker-empty {
-  color: var(--pos-text-faint);
-  font-size: 13px;
-}
-
-.service-card {
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-tonal,
+.ticket-submit,
+.worker-btn,
+.worker-actionbar-submit,
+.worker-wizard-back,
+.worker-back-btn,
+.riwayat-search button {
   position: relative;
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 10px;
-  padding: 16px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-}
-
-.service-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  border-color: rgba(var(--pos-ink), 0.15);
-}
-
-.service-card.selected {
-  border-color: var(--pos-blue);
-  box-shadow: 0 0 0 1px var(--pos-blue) inset;
-}
-
-.service-card-qty {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--pos-blue);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.service-card-name {
+  gap: 8px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: var(--md-shape-full);
+  border: 0;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--pos-text);
-  line-height: 1.3;
-}
-
-.service-card-price {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
-
-.ticket-panel {
-  width: 340px;
-  flex: none;
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
-  max-height: calc(100vh - 112px);
-  overflow-y: auto;
-}
-
-.ticket-panel-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin-bottom: 14px;
-}
-
-.ticket-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-}
-
-/* Wash/QC pickers on Transaksi Baru: label above a full-width dropdown, same
-   rhythm as the customer fields' labels. The pickers are right-aligned in
-   Detail Transaksi, so stretch them back out here. */
-.ticket-staff-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ticket-staff-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-}
-
-.ticket-staff-fields .multi-staff-picker {
-  align-items: stretch;
-}
-
-.ticket-staff-fields .staff-picker-select {
-  width: 100%;
-  font-size: 13.5px;
-  padding: 10px 12px;
-}
-
-.ticket-staff-fields .multi-staff-list {
-  min-width: 0;
-}
-
-.ticket-panel label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-}
-
-.ticket-panel input,
-.ticket-panel select,
-.ticket-panel textarea {
-  font-size: 13.5px;
+  line-height: 20px;
   font-weight: 500;
-  color: var(--pos-text);
-  padding: 10px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  background: var(--pos-surface);
-}
-
-.ticket-panel select {
+  letter-spacing: 0.007em;
+  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    box-shadow var(--md-duration-short) var(--md-ease-standard),
+    background-color var(--md-duration-short) var(--md-ease-standard);
 }
 
-.ticket-panel input:focus,
-.ticket-panel select:focus,
-.ticket-panel textarea:focus {
-  outline: none;
-  border-color: var(--pos-blue);
+/* State layer */
+.btn-primary::after,
+.btn-secondary::after,
+.btn-danger::after,
+.btn-tonal::after,
+.ticket-submit::after,
+.worker-btn::after,
+.worker-actionbar-submit::after,
+.worker-wizard-back::after,
+.worker-back-btn::after,
+.riwayat-search button::after,
+.icon-btn::after,
+.segmented-option::after,
+.worker-chip::after,
+.riwayat-payment-toggle::after,
+.service-card::after,
+.service-menu-tile::after,
+.service-category-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-duration-short) var(--md-ease-standard);
 }
 
-.ticket-panel textarea {
-  resize: vertical;
-  min-height: 60px;
-  font-family: inherit;
+:is(
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-tonal,
+    .ticket-submit,
+    .worker-btn,
+    .worker-actionbar-submit,
+    .worker-wizard-back,
+    .worker-back-btn,
+    .riwayat-search button,
+    .icon-btn,
+    .segmented-option,
+    .worker-chip,
+    .riwayat-payment-toggle,
+    .service-card,
+    .service-menu-tile,
+    .service-category-header
+  ):hover:not(:disabled)::after {
+  opacity: var(--md-state-hover);
 }
 
-.ticket-lines {
-  display: flex;
-  flex-direction: column;
+:is(
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-tonal,
+    .ticket-submit,
+    .worker-btn,
+    .worker-actionbar-submit,
+    .worker-wizard-back,
+    .worker-back-btn,
+    .riwayat-search button,
+    .icon-btn,
+    .segmented-option,
+    .worker-chip,
+    .riwayat-payment-toggle,
+    .service-card,
+    .service-menu-tile,
+    .service-category-header
+  ):active:not(:disabled)::after {
+  opacity: var(--md-state-pressed);
 }
 
-.ticket-lines-empty {
-  font-size: 13px;
-  color: var(--pos-text-faint);
-  text-align: center;
-  padding: 18px 0;
+/* Filled */
+.btn-primary,
+.ticket-submit,
+.worker-actionbar-submit,
+.riwayat-search button {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
 }
 
-.ticket-line {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+.btn-primary:hover:not(:disabled),
+.ticket-submit:hover:not(:disabled),
+.worker-actionbar-submit:hover:not(:disabled) {
+  box-shadow: var(--md-elevation-1);
 }
 
-.ticket-line-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+/* Outlined */
+.btn-secondary,
+.worker-wizard-back {
+  background: var(--md-surface-container-high);
+  color: var(--md-primary);
 }
 
-.ticket-line-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--pos-text);
+/* Filled tonal */
+.btn-tonal {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
 }
 
-.ticket-line-unit {
-  font-size: 11.5px;
-  color: var(--pos-text-faint);
+/* Destructive: error-tinted tonal, so it reads as a warning without
+   shouting louder than the primary action next to it. */
+.btn-danger {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
 }
 
-.ticket-line-qty {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* Text button */
+.worker-back-btn {
+  background: transparent;
+  color: var(--md-primary);
+  padding: 0 16px 0 12px;
+  margin: 0 0 8px -12px;
 }
 
-.ticket-line-qty button {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  background: var(--pos-surface);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
+:is(
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .btn-tonal,
+    .ticket-submit,
+    .worker-btn,
+    .worker-actionbar-submit,
+    .worker-wizard-back,
+    .riwayat-search button
+  ):disabled {
+  background: rgb(var(--md-on-surface-rgb) / 0.12);
+  color: rgb(var(--md-on-surface-rgb) / 0.38);
+  box-shadow: none;
+  cursor: default;
+}
+
+.btn-secondary:disabled,
+.worker-wizard-back:disabled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(var(--md-on-surface-rgb) / 0.12);
+}
+
+/* Icon button (standard) */
+.icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  border-radius: var(--md-shape-full);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  flex-shrink: 0;
+}
+
+/* Segmented button (language, price mode, payment method) */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-high);
+  overflow: hidden;
+}
+
+.segmented-option {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-}
-
-.ticket-line-qty span {
-  min-width: 16px;
-  text-align: center;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.ticket-line-total {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--pos-text);
+  gap: 8px;
+  height: 40px;
+  min-width: 48px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--md-on-surface);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.007em;
   white-space: nowrap;
 }
 
-.ticket-line-remove {
-  border: none;
-  background: transparent;
-  color: rgba(var(--pos-ink), 0.55);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
+.segmented-option {
+  border-radius: var(--md-shape-full);
 }
 
-.ticket-line-remove:hover {
-  color: var(--pos-red-text);
+.segmented-option.active {
+  background: var(--md-surface);
+  color: var(--md-primary);
+  box-shadow: var(--md-elevation-1);
 }
 
-.ticket-discount {
-  margin: 14px 0 18px;
+.segmented-option:disabled {
+  color: rgb(var(--md-on-surface-rgb) / 0.38);
+}
+
+.language-toggle .segmented-option {
+  height: 28px;
+  min-width: 44px;
+  padding: 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.payment-method-selector {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ticket-notes {
-  margin-top: 14px;
-}
-
-.transaksi-summary {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(var(--pos-ink), 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.transaksi-summary>div {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
-}
-
-.transaksi-summary .transaksi-total {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin-top: 4px;
-}
-
-.ticket-submit {
-  margin-top: 16px;
   width: 100%;
-  background: var(--pos-blue);
-  color: #fff;
-  border: none;
-  padding: 13px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
 }
 
-.ticket-submit:hover:not(:disabled) {
-  background: var(--pos-blue-dark);
+.payment-method-selector .segmented-option {
+  flex: 1;
+  padding: 0 8px;
 }
 
-.ticket-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* =========================================================================
-   Riwayat Transaksi
-   ========================================================================= */
-
-.riwayat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.riwayat-header h1 {
-  margin: 0;
-}
-
-.riwayat-search {
-  display: flex;
-  gap: 8px;
-}
-
-.riwayat-search input {
-  padding: 9px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  font-size: 13px;
-  min-width: 220px;
-}
-
-.riwayat-search select {
-  padding: 9px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-}
-
-.riwayat-search input:focus {
-  outline: none;
-  border-color: var(--pos-blue);
-}
-
-.riwayat-search button {
-  background: var(--pos-blue);
-  color: #fff;
-  border: none;
-  padding: 9px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.riwayat-search button:hover {
-  background: var(--pos-blue-dark);
-}
-
-/* Payment method toggles — each one independent, matched with OR. Active
-   styling mirrors .worker-chip.active so it inverts correctly in dark mode. */
+/* Filter chips */
+.worker-filters,
 .riwayat-payment-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
+.worker-filters {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -16px 16px;
+  padding: 0 16px;
+}
+
+.worker-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.worker-chip,
 .riwayat-payment-toggle {
-  padding: 7px 14px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 999px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.riwayat-payment-toggle:hover {
-  border-color: rgba(var(--pos-ink), 0.35);
-}
-
-.riwayat-payment-toggle.active {
-  background: var(--pos-text);
-  border-color: var(--pos-text);
-  color: var(--pos-surface);
-}
-
-.riwayat-export {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: var(--md-shape-sm);
+  border: 0;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.007em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.riwayat-period-label {
-  font-size: 13px;
-  color: var(--pos-text-faint);
+.worker-chip.active,
+.riwayat-payment-toggle.active {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  box-shadow: none;
 }
 
-.riwayat-export select {
-  padding: 9px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
+.worker-chip-count {
+  font-weight: 400;
+  opacity: 0.8;
 }
 
-.riwayat-export select:focus {
+/* =========================================================================
+   3. Text fields & selects (outlined)
+   ========================================================================= */
+
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-shape-xs);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
+  font-size: 16px;
+  letter-spacing: 0.03em;
   outline: none;
-  border-color: var(--pos-blue);
+  transition:
+    border-color var(--md-duration-short) var(--md-ease-standard),
+    box-shadow var(--md-duration-short) var(--md-ease-standard);
 }
 
-.riwayat-export .btn-secondary {
-  width: auto;
-  padding: 9px 16px;
-  font-size: 13px;
+textarea {
+  height: auto;
+  min-height: 88px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 24px;
 }
 
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 24px;
+input:not([type='checkbox']):not([type='radio']):hover:not(:disabled),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: var(--md-on-surface);
 }
 
-.stat-card {
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.07);
-  border-radius: 10px;
-  padding: 16px 18px;
+input:not([type='checkbox']):not([type='radio']):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--md-primary);
+  box-shadow: inset 0 0 0 1px var(--md-primary);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--md-on-surface-variant);
+  opacity: 0.7;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  color: rgb(var(--md-on-surface-rgb) / 0.38);
+  border-color: rgb(var(--md-on-surface-rgb) / 0.12);
+  background: transparent;
+}
+
+select {
+  appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2343483e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+}
+
+input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--md-primary);
+  flex-shrink: 0;
+}
+
+input.is-invalid,
+.is-invalid > input {
+  border-color: var(--md-error);
+  box-shadow: inset 0 0 0 1px var(--md-error);
+}
+
+/* "Label above field" pattern used by every form: <label>Text<input/></label> */
+.ticket-fields label,
+.staf-form-grid label,
+.ticket-notes,
+.text-field {
   display: flex;
   flex-direction: column;
-}
-
-.stat-card-label {
-  font-size: 11.5px;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 500;
-  color: var(--pos-text-faint);
-  margin-bottom: 8px;
+  color: var(--md-on-surface-variant);
 }
 
-.stat-card-value {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--pos-text);
+.ticket-fields label.is-invalid {
+  color: var(--md-error);
 }
 
-.stat-card-value-accent {
-  color: var(--pos-blue);
+.text-field-label {
+  padding-left: 2px;
+}
+
+.text-field-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px 0 14px;
+  border: 1px solid var(--md-outline);
+  border-radius: var(--md-shape-xs);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface-variant);
+  transition:
+    border-color var(--md-duration-short) var(--md-ease-standard),
+    box-shadow var(--md-duration-short) var(--md-ease-standard);
+}
+
+.text-field-box:hover {
+  border-color: var(--md-on-surface);
+}
+
+.text-field-box:focus-within {
+  border-color: var(--md-primary);
+  box-shadow: inset 0 0 0 1px var(--md-primary);
+  color: var(--md-primary);
+}
+
+.text-field-box input:not([type='checkbox']) {
+  border: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.text-field-box input:focus {
+  box-shadow: none;
+}
+
+.text-field-support,
+.field-invalid-hint {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  padding-left: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.field-invalid-hint {
+  color: var(--md-error);
+}
+
+/* =========================================================================
+   4. Feedback
+   ========================================================================= */
+
+.form-error,
+.form-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--md-shape-md);
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0 0 16px;
+}
+
+.form-error {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+}
+
+.form-info {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
 }
 
 .riwayat-loading,
-.riwayat-empty {
+.riwayat-empty,
+.service-picker-empty,
+.upah-breakdown-empty {
+  padding: 32px 16px;
   text-align: center;
-  color: var(--pos-text-faint);
-  font-size: 13px;
-  padding: 40px 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface-variant);
 }
 
+.riwayat-empty {
+  border-radius: var(--md-shape-lg);
+  background: var(--md-surface-container-low);
+}
+
+.service-picker-empty,
+.upah-breakdown-empty {
+  padding: 16px;
+}
+
+/* Status badges — small tonal pills. */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--md-shape-sm);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface-variant);
+}
+
+.status-created {
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface-variant);
+}
+
+.status-paid {
+  background: var(--md-tertiary-container);
+  color: var(--md-on-tertiary-container);
+}
+
+.status-diproses,
+.status-qc {
+  background: var(--md-warning-container);
+  color: var(--md-on-warning-container);
+}
+
+.status-selesai {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.status-closed {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.status-voided {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+}
+
+.overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  height: 24px;
+  padding: 0 8px;
+  margin-left: 8px;
+  border-radius: var(--md-shape-sm);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.overdue-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.overdue-alert-icon {
+  color: var(--md-error);
+}
+
+.overdue-alert-link {
+  color: var(--md-on-error-container);
+  font-weight: 600;
+}
+
+/* Wash proof chip (assist chip) */
+.wash-proof-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: var(--md-shape-sm);
+  color: var(--md-on-surface);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color var(--md-duration-short) var(--md-ease-standard);
+}
+
+.wash-proof-btn:hover {
+  background: rgb(var(--md-on-surface-rgb) / var(--md-state-hover));
+}
+
+.wash-proof-btn .icon {
+  color: var(--md-primary);
+}
+
+.wash-proof-btn.has-photo {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  box-shadow: none;
+}
+
+.wash-proof-btn.has-error {
+  box-shadow: inset 0 0 0 1px var(--md-error);
+}
+
+.wash-proof-btn.has-error .icon {
+  color: var(--md-error);
+}
+
+/* =========================================================================
+   5. Cards
+   ========================================================================= */
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  min-width: 0;
+}
+
+.stat-card-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.stat-card-value {
+  font-size: 32px;
+  line-height: 40px;
+  color: var(--md-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-card-value-accent {
+  color: var(--md-primary);
+}
+
+/* Panels / outlined cards */
+.laporan-panel,
+.detail-card,
+.payment-form,
+.worker-wizard-card {
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  padding: 20px;
+}
+
+/* =========================================================================
+   6. Data tables
+   ========================================================================= */
+
 .riwayat-table {
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.07);
-  border-radius: 10px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
   overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  margin-bottom: 24px;
 }
 
 .riwayat-table-row {
   display: grid;
   grid-template-columns: 1.7fr 1fr 1.2fr 0.9fr 0.8fr 1fr;
-  min-width: 640px;
   align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-  text-decoration: none;
-  color: inherit;
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(var(--pos-ink), 0.65);
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 16px;
+  min-width: 760px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface);
+  border-top: 1px solid var(--md-outline-variant);
 }
 
-.riwayat-table-row:last-child {
-  border-bottom: none;
+.riwayat-table-row > span {
+  min-width: 0;
 }
 
-.riwayat-table-row:not(.riwayat-table-head):hover {
-  background: rgba(var(--pos-ink), 0.02);
+.riwayat-table-head {
+  min-height: 48px;
+  border-top: 0;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+  background: var(--md-surface-container-low);
 }
 
+.riwayat-table-row[role='link'],
 .riwayat-row-toggle {
   cursor: pointer;
+  transition: background-color var(--md-duration-short) var(--md-ease-standard);
 }
 
-/* Detail panels and the start popup are mounted on demand, so they ease in
-   with a keyframe animation rather than a transition. */
-@keyframes panel-expand-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.riwayat-table-row[role='link']:hover,
+.riwayat-row-toggle:hover {
+  background: rgb(var(--md-on-surface-rgb) / 0.04);
 }
 
-/* The wrapper grows its row from 0fr to 1fr, which is what makes the rows
-   below slide down in step with the panel instead of jumping. The inner
-   clips the panel while it's still short. Same duration and curve as the
-   panel's own fade, so the two move as one. */
+.riwayat-row-toggle[aria-expanded='true'] {
+  background: var(--md-surface-container-low);
+}
+
+.riwayat-table-row.overdue {
+  box-shadow: inset 3px 0 0 var(--md-error);
+}
+
+.riwayat-service {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.riwayat-plate {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.riwayat-total {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Column templates per table */
+.antrian-table .riwayat-table-row {
+  grid-template-columns: 1.7fr 1.1fr 1fr 0.9fr 0.8fr 1.2fr 0.9fr;
+  min-width: 920px;
+}
+
+.katalog-table .riwayat-table-row {
+  grid-template-columns: 2fr 1fr;
+  min-width: 520px;
+}
+
+.katalog-table.katalog-shelf .riwayat-table-row,
+.katalog-table.katalog-service .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.katalog-table.katalog-shelf-managed .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr 1.6fr;
+  min-width: 720px;
+}
+
+.katalog-table.katalog-service-managed .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr auto;
+  min-width: 640px;
+}
+
+.staf-table .riwayat-table-row {
+  grid-template-columns: 1.4fr 1fr 0.8fr 1fr 0.9fr 2.2fr;
+  min-width: 960px;
+}
+
+.upah-rate-table .riwayat-table-row {
+  grid-template-columns: 2fr 1.2fr auto;
+  min-width: 480px;
+}
+
+.upah-daily-table .riwayat-table-row {
+  grid-template-columns: 1.8fr 1.3fr 1.6fr 1.3fr auto;
+  min-width: 720px;
+}
+
+.antrian-vehicle-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.antrian-vehicle {
+  font-weight: 500;
+}
+
+/* License plates — modelled on the white Indonesian plate: black lettering
+   in a condensed face, framed by a double black rule. The single bold
+   element in the UI; everything around it stays plain M3. */
+.antrian-vehicle-plate,
+.queue-card-plate:not(.queue-card-plate-name),
+.detail-card-plate {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 1px 8px;
+  border: 1.5px solid #000;
+  border-radius: 5px;
+  box-shadow:
+    inset 0 0 0 1.5px #fff,
+    inset 0 0 0 2.5px #000;
+  background: #fff;
+  color: #000;
+  font-family: var(--plate-font);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.antrian-vehicle-plate {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 6px;
+}
+
+/* Expandable row body (Riwayat, Upah) */
+.expand-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: expand-rows var(--md-duration-long) var(--md-ease-emphasized-decelerate);
+  min-width: 760px;
+}
+
+.expand-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 @keyframes expand-rows {
   from {
     grid-template-rows: 0fr;
@@ -1334,79 +1224,1453 @@
   }
 }
 
-.expand-wrap {
+/* =========================================================================
+   7. Dialogs
+   ========================================================================= */
+
+.start-modal-overlay,
+.photo-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
   display: grid;
-  grid-template-rows: 1fr;
-  animation: expand-rows 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  place-items: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 0.32);
+  animation: scrim-in var(--md-duration-medium) var(--md-ease-standard);
 }
 
-.expand-inner {
-  min-height: 0;
+.start-modal {
+  width: min(100%, 520px);
+  max-height: calc(100svh - 48px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--md-shape-xl);
+  background: var(--md-surface-container-high);
+  box-shadow: var(--md-elevation-3);
+  animation: dialog-in var(--md-duration-long) var(--md-ease-emphasized-decelerate);
+  outline: none;
+}
+
+.start-modal-title {
+  font-size: 24px;
+  line-height: 32px;
+  color: var(--md-on-surface);
+}
+
+.start-modal-hint {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.018em;
+  color: var(--md-on-surface-variant);
+}
+
+.start-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+}
+
+/* Missing fields alert dialog */
+.missing-fields-modal {
+  align-items: center;
+  text-align: center;
+}
+
+.missing-fields-icon {
+  color: var(--md-error);
+}
+
+.missing-fields-list {
+  align-self: stretch;
+  margin: 0;
+  padding: 12px 16px 12px 36px;
+  text-align: left;
+  border-radius: var(--md-shape-md);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.missing-fields-modal .start-modal-actions {
+  align-self: stretch;
+}
+
+/* Payment dialog */
+.payment-modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 20px;
+  border-radius: var(--md-shape-lg);
+  background: var(--md-surface-container-low);
+  color: var(--md-on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-modal-total span:last-child {
+  color: var(--md-primary);
+}
+
+.payment-modal-total span:last-child {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.payment-modal-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.payment-modal-proof-img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-highest);
+}
+
+/* =========================================================================
+   8. Service & shelf pickers
+   ========================================================================= */
+
+.transaksi-section-label {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: 0.009em;
+  color: var(--md-on-surface);
+  margin: 24px 0 12px;
+}
+
+.transaksi-section-label-spaced {
+  margin-top: 32px;
+}
+
+/* Section tiles */
+.service-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.service-menu-tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  text-align: left;
+  min-height: 72px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  color: var(--md-on-surface);
+}
+
+.service-menu-tile-icon {
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-shape-md);
+  display: grid;
+  place-items: center;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+}
+
+.service-menu-tile-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.service-menu-tile-meta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.service-menu-tile.has-selection {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.service-menu-tile.has-selection .service-menu-tile-icon {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.service-menu-tile.has-selection .service-menu-tile-meta {
+  color: var(--md-on-secondary-container);
+}
+
+.service-category-count,
+.service-card-qty {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Service / shelf cards */
+.service-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.service-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 96px;
+  padding: 16px;
+  text-align: left;
+  border: 0;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  color: var(--md-on-surface);
+}
+
+.service-card-name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  padding-right: 24px;
+}
+
+.service-card-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: auto;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--md-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.service-card-normal-price {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--md-on-surface-variant);
+  text-decoration: line-through;
+}
+
+.service-card-stock {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.service-card.selected {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.service-card.sold-out {
+  opacity: 0.5;
+}
+
+/* Section popup */
+.service-menu-modal {
+  width: min(100%, 720px);
+}
+
+.service-menu-modal-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+body.service-menu-open {
   overflow: hidden;
 }
 
-@keyframes overlay-fade-in {
+/* Price mode */
+.price-mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 4px;
+}
+
+.price-mode-hint {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+/* Accordion (Katalog, Upah) */
+.service-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.service-category {
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  overflow: hidden;
+}
+
+.service-category.open {
+  background: var(--md-surface-container-low);
+}
+
+.service-category-header {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px 0 20px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--md-on-surface);
+}
+
+.service-category-label {
+  flex: 1;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.service-category-meta {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+.service-category-chevron {
+  color: var(--md-on-surface-variant);
+  transition: transform var(--md-duration-medium) var(--md-ease-standard);
+}
+
+.service-category.open .service-category-chevron {
+  transform: rotate(180deg);
+}
+
+.katalog-category-panel {
+  margin: 0 12px 12px;
+  border-radius: var(--md-shape-sm);
+}
+
+/* =========================================================================
+   9. Screens
+   ========================================================================= */
+
+/* ---- Login ---- */
+
+.login-screen {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 16px;
+  background: var(--md-surface-container-low);
+}
+
+.login-card {
+  box-shadow: none;
+}
+
+.login-card {
+  width: min(100%, 400px);
+  padding: 24px;
+  border-radius: var(--md-shape-xl);
+  background: var(--md-surface-container-lowest);
+  box-shadow: var(--md-elevation-1);
+}
+
+.login-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.login-brand-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--md-shape-lg);
+}
+
+.login-card h1 {
+  font-size: 32px;
+  line-height: 40px;
+  margin: 0;
+}
+
+.login-subtitle {
+  margin: 4px 0 28px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface-variant);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-form .form-error,
+.login-form .form-info {
+  margin: 0;
+}
+
+.login-submit {
+  height: 48px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.login-captcha:empty {
+  display: none;
+}
+
+.login-footer {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+/* ---- Page header row (title + action) ---- */
+
+.riwayat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin: 8px 0 20px;
+}
+
+.riwayat-header h1 {
+  margin: 0;
+}
+
+.antrian-new-link {
+  padding-left: 16px;
+}
+
+/* ---- Transaksi Baru (desk) ---- */
+
+.transaksi-baru-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 24px;
+  align-items: start;
+}
+
+.transaksi-catalog-header h1 {
+  margin-bottom: 16px;
+}
+
+.ticket-panel {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100svh - 88px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--md-shape-lg);
+  background: var(--md-surface-container-low);
+}
+
+.ticket-panel-title {
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--md-on-surface);
+}
+
+.ticket-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ticket-staff-fields {
+  gap: 12px;
+}
+
+.ticket-staff-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ticket-staff-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.ticket-lines {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface);
+}
+
+.ticket-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 10px 16px;
+}
+
+.ticket-line + .ticket-line {
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.ticket-line-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ticket-line-name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.ticket-line-unit {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.ticket-line-qty {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--md-shape-full);
+}
+
+.ticket-line-qty button,
+.ticket-line-remove {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  border-radius: var(--md-shape-full);
+  background: transparent;
+  color: var(--md-on-surface-variant);
+}
+
+.ticket-line-qty button:hover:not(:disabled),
+.ticket-line-remove:hover {
+  background: rgb(var(--md-on-surface-rgb) / var(--md-state-hover));
+}
+
+.ticket-line-qty button:disabled {
+  color: rgb(var(--md-on-surface-rgb) / 0.38);
+}
+
+.ticket-line-qty span {
+  min-width: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ticket-line-total {
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 84px;
+}
+
+.ticket-line-remove:hover {
+  color: var(--md-error);
+}
+
+.ticket-lines-empty {
+  padding: 20px 16px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  text-align: center;
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+.ticket-lines-empty.is-invalid {
+  border-color: var(--md-error);
+  color: var(--md-error);
+  background: var(--md-error-container);
+}
+
+.transaksi-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
+}
+
+.transaksi-summary > div {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+.transaksi-total {
+  align-items: baseline;
+  color: var(--md-on-surface);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.transaksi-total span:last-child {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 400;
+  color: var(--md-primary);
+}
+
+.ticket-submit {
+  height: 56px;
+  width: 100%;
+  border-radius: var(--md-shape-lg);
+  font-size: 16px;
+}
+
+/* ---- Staff pickers ---- */
+
+.multi-staff-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.multi-staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Input chips */
+.multi-staff-list-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 4px 0 12px;
+  border-radius: var(--md-shape-sm);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.multi-staff-list-item button {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--md-shape-full);
+  background: transparent;
+  color: inherit;
+}
+
+.multi-staff-list-item button:hover {
+  background: rgb(var(--md-on-secondary-container-rgb) / var(--md-state-hover));
+}
+
+/* ---- Worker wizard (Transaksi Baru on a phone) ---- */
+
+.worker-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worker-wizard-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.worker-wizard-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Connector line between steps */
+.worker-wizard-step + .worker-wizard-step::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  right: calc(50% + 22px);
+  left: calc(-50% + 22px);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--md-outline-variant);
+}
+
+.worker-wizard-step.active::before,
+.worker-wizard-step.done::before {
+  background: var(--md-primary);
+}
+
+.worker-wizard-step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface-variant);
+}
+
+.worker-wizard-step.active {
+  color: var(--md-on-surface);
+}
+
+.worker-wizard-step.active .worker-wizard-step-dot {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.worker-wizard-step.done .worker-wizard-step-dot {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.worker-wizard-error {
+  margin: 0;
+}
+
+.worker-wizard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: page-in var(--md-duration-long) var(--md-ease-emphasized-decelerate);
+}
+
+@keyframes page-in {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: 1;
+    transform: translateX(24px);
   }
 }
 
-@keyframes modal-pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.worker-wizard-head {
+  margin-bottom: 4px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .expand-wrap,
-  .riwayat-expand,
-  .upah-adjustments-panel {
-    animation: none !important;
-  }
+.worker-wizard-title {
+  font-size: 24px;
+  line-height: 32px;
+}
 
-  /* The popup keeps a plain fade instead of switching off entirely: phones
-     with "remove animations" / battery saver report reduce-motion, and a
-     popup that just appears reads as broken. No movement or scaling. */
-  .start-modal {
-    animation-name: overlay-fade-in !important;
-  }
+.worker-wizard-subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface-variant);
+}
+
+.worker-wizard-page .transaksi-section-label {
+  margin: 12px 0 0;
+}
+
+.worker-wizard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.worker-wizard-card-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.worker-wizard-card .ticket-lines {
+  box-shadow: none;
+  background: transparent;
+  margin: 0 -8px 0 -16px;
+}
+
+.worker-wizard-review {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.worker-wizard-review-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.worker-wizard-review-row + .worker-wizard-review-row {
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.worker-wizard-review-row dt {
+  color: var(--md-on-surface-variant);
+}
+
+.worker-wizard-review-row dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+
+.worker-wizard-review-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.worker-wizard-review-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.worker-wizard-review-item + .worker-wizard-review-item {
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.worker-wizard-review-qty {
+  color: var(--md-primary);
+  font-weight: 700;
+}
+
+.worker-wizard-review-price {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.worker-wizard-card .transaksi-summary {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Bottom action bar — sits on top of the navigation bar. */
+.worker-actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--md-surface-container-low);
+  border-top: 1px solid var(--md-outline-variant);
+}
+
+.worker-actionbar-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.worker-actionbar-count {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.worker-actionbar-total {
+  font-size: 22px;
+  line-height: 28px;
+  color: var(--md-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.worker-wizard-bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.worker-actionbar-submit,
+.worker-wizard-back {
+  height: 48px;
+}
+
+/* ---- Queue cards (worker dashboard) ---- */
+
+.queue-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-card {
+  position: relative;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container-low);
+  overflow: hidden;
+}
+
+/* State stripe */
+.queue-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--md-outline-variant);
+}
+
+.queue-card.queue-card-diproses::before,
+.queue-card.queue-card-qc::before {
+  background: #e0a100;
+}
+
+.queue-card.queue-card-selesai::before {
+  background: var(--md-primary);
+}
+
+.queue-card.overdue {
+  background: #fff5f4;
+}
+
+.queue-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 16px 12px 20px;
+  cursor: pointer;
+}
+
+.queue-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.queue-card-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.queue-card-vehicle {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.queue-card-plate {
+  font-size: 20px;
+  line-height: 28px;
+  padding: 2px 10px;
+}
+
+.queue-card-plate.queue-card-plate-sub {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 22px;
+  padding: 1px 8px;
+}
+
+/* A customer name standing in for a missing plate is just a name. */
+.queue-card-plate-name {
+  padding: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.queue-card-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.queue-card-badges .overdue-badge {
+  margin: 0;
+}
+
+.queue-card-ref {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.queue-card-service {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.queue-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.queue-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 12px 20px;
+}
+
+.worker-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: var(--md-shape-lg);
+  font-size: 15px;
+}
+
+.worker-btn-blue {
+  background: var(--md-surface);
+  color: var(--md-primary);
+  box-shadow: var(--md-elevation-1);
+}
+
+.worker-btn-green {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+
+.worker-btn-ghost {
+  flex: 0 0 48px;
+  padding: 0;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+}
+
+.worker-btn-static {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: var(--md-shape-lg);
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.queue-card-proof-error {
+  margin: 0 12px 12px 20px;
+}
+
+/* ---- Detail Treatment & Struk ---- */
+
+.detail-screen {
+  max-width: 720px;
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 24px;
+}
+
+.detail-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-card-code {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  color: var(--md-on-surface-variant);
+}
+
+.detail-card-code {
+  margin-bottom: 8px;
+}
+
+.detail-card-plate {
+  font-size: 30px;
+  line-height: 40px;
+  padding: 4px 16px;
+  border-width: 2px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 2px #fff,
+    inset 0 0 0 3.5px #000;
+}
+
+.detail-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.struk-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 8px 0;
+  font-size: 14px;
+  line-height: 20px;
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+
+.struk-row > span:first-child {
+  color: var(--md-on-surface-variant);
+  flex-shrink: 0;
+}
+
+.struk-row > span:last-child {
+  text-align: right;
+  font-weight: 500;
+}
+
+.struk-row .staff-picker-select,
+.struk-row .multi-staff-picker {
+  width: min(100%, 280px);
+}
+
+.struk-row-picker {
+  align-items: flex-start;
+}
+
+.struk-row-picker > span:first-child {
+  padding-top: 12px;
+}
+
+.detail-card hr,
+.struk-card hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px dashed var(--md-outline-variant);
+  margin: 12px 0;
+}
+
+.struk-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.struk-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.struk-total {
+  border-bottom: 0;
+  font-size: 16px;
+}
+
+.struk-total > span:last-child {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+  color: var(--md-primary);
+}
+
+.struk-notes {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-surface-container);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.detail-hint {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-warning-container);
+  color: var(--md-on-warning-container);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.payment-form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-card .payment-form {
+  padding: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.payment-form-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.payment-form-trigger {
+  align-self: flex-start;
+}
+
+.detail-card .payment-form-trigger {
+  align-self: stretch;
+  height: 48px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+
+.wash-proof-thumb-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--md-shape-sm);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.wash-proof-thumb {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+}
+
+/* Receipt */
+.struk-screen {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 24px;
+}
+
+.struk-card {
+  width: min(100%, 440px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 32px 24px 24px;
+  border-radius: var(--md-shape-xl);
+  background: var(--md-surface-container-lowest);
+  box-shadow: var(--md-elevation-1);
+  text-align: center;
+}
+
+.struk-check {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.struk-check-pending {
+  background: var(--md-warning-container);
+  color: var(--md-on-warning-container);
+}
+
+.struk-card h1 {
+  margin: 0;
+}
+
+.struk-meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface-variant);
+}
+
+.struk-meta + .struk-row,
+.struk-meta + .struk-meta + .struk-row {
+  margin-top: 16px;
+}
+
+.struk-card .struk-row,
+.struk-card .struk-item {
+  text-align: left;
+}
+
+.struk-done {
+  margin-top: 24px;
+  height: 48px;
+}
+
+/* ---- Riwayat ---- */
+
+.riwayat-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 560px;
+  height: 56px;
+  padding: 0 8px 0 16px;
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+}
+
+.riwayat-search input:not([type='checkbox']) {
+  height: 100%;
+  border: 0;
+  padding: 0 4px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.riwayat-search input:focus {
+  box-shadow: none;
+}
+
+.riwayat-scope-note {
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+}
+
+.riwayat-export {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 20px;
+}
+
+.riwayat-export select {
+  width: auto;
+  min-width: 180px;
+  height: 40px;
+}
+
+.riwayat-period-label {
+  font-size: 14px;
+  color: var(--md-on-surface-variant);
 }
 
 .riwayat-expand {
-  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: 24px;
   justify-content: space-between;
-  padding: 14px 18px 18px;
-  background: var(--pos-bg);
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-  font-size: 13px;
-  color: var(--pos-text);
+  padding: 16px 20px 20px;
+  background: var(--md-surface-container-low);
+  font-size: 14px;
 }
 
 .riwayat-expand dl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 6px 14px;
-  margin: 0 0 14px;
+  gap: 8px 16px;
+  margin: 0 0 16px;
 }
 
 .riwayat-expand dt {
-  color: var(--pos-text-faint);
+  color: var(--md-on-surface-variant);
 }
 
 .riwayat-expand dd {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .riwayat-expand-actions {
@@ -1415,938 +2679,148 @@
   gap: 8px;
 }
 
-.riwayat-expand-actions a {
-  text-decoration: none;
-}
-
 .riwayat-expand-image {
   display: block;
-  max-width: 220px;
-  max-height: 220px;
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: var(--md-shape-md);
   object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--pos-border);
 }
 
-.riwayat-table-head {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--pos-text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: default;
-}
+/* ---- Laporan ---- */
 
-/* Emphasised first column. Kelola Staf and Katalog reuse .riwayat-plate for
-   their own leading column, hence the shared rule. */
-.riwayat-plate,
-.riwayat-service {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--pos-text);
-}
-
-/* Service names are the widest thing in the treatment tables and several can
-   share one ticket, so that column truncates rather than wrapping the row. */
-.riwayat-service {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.riwayat-total {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--pos-text);
-}
-
-/* =========================================================================
-   Struk (receipt) & Detail Treatment
-   ========================================================================= */
-
-.struk-screen,
-.detail-screen {
-  display: flex;
-  justify-content: center;
-}
-
-.detail-screen {
-  flex-direction: column;
-  align-items: center;
-}
-
-.detail-screen h1 {
-  align-self: flex-start;
-  width: 100%;
-  max-width: 480px;
-}
-
-.struk-card,
-.detail-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 14px;
-  padding: 32px;
-}
-
-.struk-card {
-  text-align: center;
-}
-
-.struk-check {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--pos-green-bg);
-  color: var(--pos-green-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  font-weight: 700;
-  margin: 0 auto 16px;
-}
-
-.struk-check-pending {
-  background: #fdecc8;
-  color: #8a5a00;
-  font-size: 22px;
-}
-
-.struk-card h1 {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: normal;
-  margin: 0 0 4px;
-}
-
-.struk-meta {
-  font-size: 13px;
-  color: var(--pos-text-muted);
-  margin: 2px 0;
-}
-
-.struk-card hr,
-.detail-card hr {
-  border: none;
-  border-top: 1px solid rgba(var(--pos-ink), 0.08);
-  margin: 14px 0;
-}
-
-.struk-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text);
-  padding: 5px 0;
-  text-align: left;
-}
-
-.struk-total {
-  font-size: 17px;
-  font-weight: 700;
-  margin-top: 4px;
-}
-
-.struk-items {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 4px 0;
-  text-align: left;
-}
-
-.struk-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text);
-}
-
-.struk-notes {
-  font-size: 12.5px;
-  color: var(--pos-text-muted);
-  text-align: left;
-  background: var(--pos-bg);
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-top: 14px;
-}
-
-.struk-done {
-  margin-top: 20px;
-  width: 100%;
-  padding: 13px;
-  font-size: 14px;
-  border-radius: 10px;
-}
-
-.detail-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 6px;
-}
-
-.detail-card-code {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
-}
-
-.detail-card-plate {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin-top: 2px;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.detail-actions .btn-primary,
-.detail-actions .btn-secondary,
-.detail-actions .btn-danger {
-  flex: 1;
-  min-width: 120px;
-}
-
-/* =========================================================================
-   Antrian (job queue) & Katalog — reuse riwayat-table / stat-card patterns
-   ========================================================================= */
-
-.antrian-new-link {
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-}
-
-.overdue-alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: var(--pos-red-bg);
-  color: var(--pos-red-text);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-
-.overdue-alert-icon {
-  flex: none;
-}
-
-.overdue-alert-link {
-  color: var(--pos-red-text);
-  font-weight: 700;
-  text-decoration: underline;
-}
-
-.overdue-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-left: 8px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--pos-red-bg);
-  color: var(--pos-red-text);
-  font-size: 10.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.antrian-table .riwayat-table-row.overdue {
-  background: var(--pos-red-bg);
-}
-
-.antrian-table .riwayat-table-row.overdue:hover {
-  background: var(--pos-red-bg);
-  filter: brightness(0.97);
-}
-
-.katalog-note {
-  font-size: 13px;
-  color: var(--pos-text-faint);
-  margin: -12px 0 20px;
-}
-
-.riwayat-scope-note {
-  font-size: 13px;
-  color: var(--pos-text-faint);
-  margin: -8px 0 20px;
-}
-
-.katalog-table .riwayat-table-row {
-  grid-template-columns: 2fr 1fr;
-  min-width: 0;
-}
-
-.katalog-section + .katalog-section {
-  margin-top: 32px;
-}
-
-/* Nama | Harga | Stok, plus the restock control for supervisors. */
-.katalog-table.katalog-shelf .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr;
-}
-
-.katalog-table.katalog-shelf-managed .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr 1.4fr;
-}
-
-.katalog-table.katalog-service .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr;
-}
-
-.katalog-table.katalog-service-managed .riwayat-table-row {
-  grid-template-columns: 2fr 1fr 1fr auto;
-}
-
-/* Transaksi Baru: one collapsible section per service category. Headers are
-   full-width and 52px tall so they're an easy thumb target on a phone. */
-.service-category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.service-category {
-  border: 1px solid var(--pos-border);
-  border-radius: 12px;
-  background: var(--pos-surface);
-}
-
-.service-category-header {
-  width: 100%;
-  min-height: 52px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--pos-text);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.service-category-label {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.service-category-meta {
-  font-size: 12.5px;
-  color: var(--pos-text-muted);
-}
-
-.service-category-count {
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--pos-blue);
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 700;
-}
-
-/* Drawn chevron rather than a glyph, so it renders the same everywhere */
-.service-category-chevron {
-  margin-left: auto;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--pos-text-muted);
-  border-bottom: 2px solid var(--pos-text-muted);
-  transform: rotate(45deg) translate(-2px, -2px);
-  transition: transform 0.15s ease;
-}
-
-.service-category.open .service-category-chevron {
-  transform: rotate(-135deg) translate(-2px, -2px);
-}
-
-/* ---- service menu: section tiles + popup ----
-   The ticket picker lists sections only (Cuci Motor, Poles Mobil, …) and
-   opens the matching cards in a popup. Katalog keeps the collapsible
-   sections above; only Transaksi Baru uses these tiles. */
-.service-menu-grid {
+.laporan-panels {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.service-menu-tile {
-  position: relative;
-  min-height: 74px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  border: 1px solid var(--pos-border);
-  border-radius: 12px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.service-menu-tile:hover {
-  border-color: var(--pos-blue);
-}
-
-/* A section that has lines on the ticket reads as active at a glance. */
-.service-menu-tile.has-selection {
-  border-color: var(--pos-blue);
-  background: var(--pos-blue-lighter);
-}
-
-.service-menu-tile-label {
-  font-size: 15px;
-  font-weight: 700;
-  /* Clears the count badge in the corner. */
-  padding-right: 26px;
-}
-
-.service-menu-tile-meta {
-  font-size: 12.5px;
-  color: var(--pos-text-muted);
-}
-
-.service-menu-tile .service-category-count {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-/* Wider than the confirm dialogs .start-modal was written for — it holds a
-   card grid — and capped in height so a long section scrolls inside the
-   popup instead of running off the screen. */
-/* The popup is held inside the band left by the app's own fixed chrome, and
-   the card grid scrolls within it. The overlay's padding is what reserves
-   that band: the modal's max-height is a percentage, so it resolves against
-   the overlay's content box — padding already subtracted. */
-.service-menu-overlay {
-  padding: 14px;
-  /* Over the tab bar (30) and action bar (25) as well as the page. */
-  z-index: 1100;
-}
-
-/* Scroll is frozen behind the popup: the body for the desk layout, and the
-   worker UI's own scroll container, which is what actually scrolls there. */
-body.service-menu-open {
-  overflow: hidden;
-}
-
-body.service-menu-open .worker-content {
-  overflow: hidden;
-}
-
-/* Worker UI: below the fixed top bar and the wizard's step row, above the
-   action bar stacked on the tab bar. Flagged by a class rather than a
-   `.worker-ui` ancestor, because the popup is portalled out to <body>. */
-.service-menu-overlay-worker {
-  padding-top: calc(124px + env(safe-area-inset-top));
-  padding-bottom: calc(128px + env(safe-area-inset-bottom));
-}
-
-/* Qualified with .start-modal so these win over its own narrower max-width,
-   which is defined further down the file. */
-.start-modal.service-menu-modal {
-  max-width: 560px;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Everything but the grid keeps its natural height... */
-.service-menu-modal > .start-modal-title,
-.service-menu-modal > .start-modal-hint,
-.service-menu-modal > .start-modal-actions {
-  flex: none;
-}
-
-/* ...and the grid takes the rest and scrolls. min-height: 0 is what makes
-   that work: a flex item defaults to min-height: auto, so without it the
-   grid refuses to shrink and pushes the popup past its own max-height —
-   which is how the long sections ended up clipped top and bottom. */
-.service-menu-modal-grid {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  /* Room for the qty badge, which sits 8px outside each card's corner. */
-  padding: 8px;
-  margin: -8px;
-}
-
-.service-menu-modal .start-modal-actions {
-  margin-top: 16px;
-}
-
-/* Kembali left, Selesai right — the confirm dialogs' actions row packs both
-   to the right, which here read as two ways of saying the same thing. */
-.service-menu-modal-actions {
-  justify-content: space-between;
-}
-
-/* The portal lands outside .worker-ui, so the worker card sizing has to be
-   restated here rather than inherited from it. */
-.service-menu-overlay-worker .service-card {
-  padding: 14px 12px;
-  min-height: 84px;
-  border-radius: 12px;
-}
-
-.service-menu-overlay-worker .service-card-name {
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
-@media (max-width: 560px) {
-  .service-menu-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Katalog: the table sits inside the collapsible card, so drop its own
-   border/radius and just divide it from the header */
-.service-category .katalog-category-panel {
-  border: none;
-  border-top: 1px solid var(--pos-border);
-  border-radius: 0 0 12px 12px;
-  margin: 0;
-}
-
-/* Katalog Layanan (supervisor): an input in each price column. Prices run
-   to 7 digits (1050000), so give them room. */
-.katalog-price-input input {
-  width: 100%;
-  max-width: 120px;
-  padding: 6px 8px;
-  font-size: 12.5px;
-  border: 1px solid var(--pos-border);
-  border-radius: 6px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-}
-
-/* Room for the qty badge, which sits 8px outside each card's corner */
-.service-category-panel {
-  padding: 10px 14px 16px;
-}
-
-/* Normal price when a promo is running — still shown so staff can quote it */
-.katalog-normal-price-struck,
-.service-card-normal-price {
-  color: var(--pos-text-muted, #8a8f98);
-  text-decoration: line-through;
-  font-weight: 500;
-}
-
-.service-card-normal-price {
-  margin-left: 6px;
-  font-size: 12px;
-}
-
-.katalog-stock-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.katalog-stock-actions input {
-  width: 68px;
-  padding: 6px 8px;
-  font-size: 12.5px;
-  border: 1px solid var(--pos-border);
-  border-radius: 6px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-}
-
-.katalog-stock-actions button {
-  padding: 6px 12px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.transaksi-section-label-spaced {
-  margin-top: 28px;
-}
-
-.service-card-stock {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--pos-text-faint);
-}
-
-.service-card:disabled,
-.service-card.sold-out {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.katalog-service-name {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.katalog-service-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--pos-blue-lighter);
-  color: var(--pos-blue);
-}
-
-.katalog-service-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.antrian-table .riwayat-table-row {
-  grid-template-columns: 1.7fr 1fr 1fr 0.9fr 0.8fr 1fr 0.9fr;
-  min-width: 780px;
-  cursor: pointer;
-}
-
-.wash-proof-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--pos-border);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--pos-text-faint);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.wash-proof-btn.has-photo {
-  border-color: var(--pos-blue);
-  color: var(--pos-blue);
-  background: var(--pos-blue-lighter);
-}
-
-.wash-proof-btn.has-error {
-  border-color: var(--pos-red-text);
-  color: var(--pos-red-text);
-  background: var(--pos-red-bg);
-}
-
-.wash-proof-thumb-btn {
-  display: inline-block;
-  line-height: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: zoom-in;
-}
-
-.wash-proof-thumb {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--pos-border);
-}
-
-.start-modal-overlay {
-  animation: overlay-fade-in 0.2s ease-out;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 1000;
-}
-
-.start-modal {
-  animation: modal-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  width: 100%;
-  max-width: 380px;
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 14px;
-  padding: 22px;
-  color: var(--pos-text);
-}
-
-.start-modal-title {
-  margin: 0 0 6px;
-  font-size: 18px;
-}
-
-.start-modal-hint {
-  margin: 0 0 16px;
-  font-size: 13px;
-  color: var(--pos-text-faint);
-}
-
-/* ---- payment verification modal (reuses .start-modal) ---- */
-.payment-modal-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin: 0 0 14px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--pos-surface-2);
-  font-size: 13px;
-  color: var(--pos-text-muted);
-}
-
-.payment-modal-total span:last-child {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
-
-.payment-modal .payment-method-selector {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
   margin-bottom: 16px;
 }
 
-.payment-modal-proof {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.laporan-panels > .laporan-payments:only-child {
+  grid-column: 1 / -1;
 }
 
-.payment-modal-proof .start-modal-hint {
-  margin: 0;
-}
-
-.payment-modal-proof-img {
-  width: 100%;
-  max-height: 220px;
-  object-fit: contain;
-  border-radius: 10px;
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface-2);
-}
-
-.start-modal .multi-staff-picker select {
-  width: 100%;
-}
-
-.start-modal-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.photo-lightbox-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  z-index: 1000;
-}
-
-.photo-lightbox-image {
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-.photo-lightbox-close {
-  position: fixed;
-  top: 20px;
-  right: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.camera-sheet {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.9);
-  cursor: default;
-}
-
-.camera-stage {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-}
-
-.camera-preview {
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: 12px;
-  background: #000;
-}
-
-.camera-hint {
-  position: absolute;
-  color: #fff;
-  font-size: 14px;
-}
-
-.camera-error {
-  margin: 0;
-  text-align: center;
-  color: var(--pos-red-text);
-  font-size: 13px;
-}
-
-.camera-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-/* =========================================================================
-   Laporan (reports)
-   ========================================================================= */
-
-.laporan-panels {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
-}
-
-.laporan-panel {
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.07);
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.laporan-chart {
-  flex: 1;
-}
-
-.laporan-payments {
-  width: 300px;
-  flex: none;
+.laporan-services,
+.laporan-workers {
+  margin-bottom: 16px;
 }
 
 .laporan-panel-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--pos-text);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   margin-bottom: 16px;
+}
+
+.laporan-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.laporan-panel-header .laporan-panel-title {
+  margin-bottom: 0;
+}
+
+.laporan-panel-header select {
+  width: auto;
+  min-width: 140px;
+  height: 40px;
+}
+
+.laporan-panel-subtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
 }
 
 .rev-bars {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
-  height: 140px;
+  gap: 8px;
+  height: 220px;
 }
 
 .rev-bar-col {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
   gap: 6px;
-  justify-content: flex-end;
-  height: 100%;
-  flex: 1;
 }
 
 .rev-bar {
-  width: 30px;
-  max-width: 60%;
-  background: #c9d8e6;
-  border-radius: 4px 4px 0 0;
+  width: 100%;
+  max-width: 48px;
+  border-radius: var(--md-shape-sm) var(--md-shape-sm) 2px 2px;
+  background: var(--md-surface-container-highest);
+  transition: height var(--md-duration-long) var(--md-ease-emphasized-decelerate);
 }
 
 .rev-bar-today {
-  background: var(--pos-blue);
+  background: var(--md-primary);
+}
+
+.rev-bar-amount {
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .rev-bar-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
 }
 
 .payment-breakdown-bar {
   display: flex;
-  height: 14px;
-  border-radius: 8px;
+  gap: 2px;
+  height: 16px;
+  border-radius: var(--md-shape-full);
   overflow: hidden;
-  margin-bottom: 14px;
-  background: var(--pos-bg);
+  background: var(--md-surface-container-highest);
+  margin-bottom: 16px;
 }
 
 .payment-breakdown-legend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .payment-breakdown-row {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text);
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
 }
 
-.laporan-workers {
-  margin-top: 20px;
+.payment-breakdown-row + .payment-breakdown-row {
+  border-top: 1px solid var(--md-outline-variant);
 }
 
-.laporan-services {
-  margin-top: 20px;
+.payment-breakdown-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-breakdown-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--md-shape-xs);
 }
 
 .popular-services {
@@ -2362,22 +2836,21 @@ body.service-menu-open .worker-content {
 }
 
 .popular-service-rank {
-  flex: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  background: var(--pos-bg);
-  color: var(--pos-text-muted);
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
 }
 
 .popular-service-row.is-top .popular-service-rank {
-  background: var(--pos-blue);
-  color: #fff;
+  background: var(--md-primary);
+  color: var(--md-on-primary);
 }
 
 .popular-service-info {
@@ -2391,169 +2864,84 @@ body.service-menu-open .worker-content {
 .popular-service-head {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .popular-service-name {
-  font-weight: 600;
-  color: var(--pos-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 500;
 }
 
 .popular-service-count {
-  flex: none;
-  font-weight: 700;
-  color: var(--pos-blue);
+  color: var(--md-on-surface-variant);
 }
 
 .popular-service-track {
   height: 8px;
-  border-radius: 4px;
-  background: var(--pos-bg);
+  border-radius: var(--md-shape-full);
+  background: var(--md-surface-container-highest);
   overflow: hidden;
 }
 
 .popular-service-fill {
   height: 100%;
-  border-radius: 4px;
-  background: #c9d8e6;
-}
-
-.popular-service-row.is-top .popular-service-fill {
-  background: var(--pos-blue);
+  border-radius: inherit;
+  background: var(--md-primary);
 }
 
 .popular-service-revenue {
-  font-size: 11.5px;
-  color: var(--pos-text-faint);
-}
-
-.laporan-panel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.laporan-panel-header .laporan-panel-title {
-  margin-bottom: 4px;
-}
-
-.laporan-panel-subtitle {
-  font-size: 12.5px;
-  color: var(--pos-text-faint);
-  margin: 0;
-}
-
-.laporan-panel-header select {
-  padding: 9px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.laporan-panel-header select:focus {
-  outline: none;
-  border-color: var(--pos-blue);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
 }
 
 .worker-leaderboard {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .worker-leaderboard-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border: 1px solid rgba(var(--pos-ink), 0.07);
-  border-radius: 10px;
-  background: var(--pos-surface);
+  padding: 8px 12px;
+  border-radius: var(--md-shape-md);
 }
 
 .worker-leaderboard-row.tier-1 {
-  border-color: rgba(232, 178, 26, 0.4);
-  background: rgba(232, 178, 26, 0.08);
+  background: var(--md-secondary-container);
 }
 
-.worker-leaderboard-row.tier-2 {
-  border-color: rgba(148, 158, 171, 0.35);
-  background: rgba(148, 158, 171, 0.08);
-}
-
-.worker-leaderboard-row.tier-3 {
-  border-color: rgba(200, 138, 79, 0.35);
-  background: rgba(200, 138, 79, 0.08);
-}
-
-.worker-leaderboard-row.is-you {
-  box-shadow: 0 0 0 2px var(--pos-blue) inset;
-}
-
-.worker-you-tag {
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--pos-blue);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  vertical-align: middle;
+.worker-leaderboard-row.is-you .worker-leaderboard-name {
+  color: var(--md-primary);
 }
 
 .worker-rank-badge {
-  flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+  width: 28px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 16px;
   font-weight: 700;
-  background: var(--pos-gray-bg);
-  color: var(--pos-gray-text);
+  color: var(--md-on-surface-variant);
 }
 
 .worker-rank-badge.tier-1 {
-  background: #e8b21a;
-  color: #4a3600;
+  color: var(--md-primary);
 }
 
-.worker-rank-badge.tier-2 {
-  background: #b7bfc9;
-  color: #333a42;
-}
-
-.worker-rank-badge.tier-3 {
-  background: #c88a4f;
-  color: #422a11;
-}
-
-.worker-avatar {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--pos-blue-light);
-  color: var(--pos-blue-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 12px;
+.worker-leaderboard .worker-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-shape-full);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .worker-leaderboard-info {
@@ -2561,314 +2949,211 @@ body.service-menu-open .worker-content {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
 }
 
 .worker-leaderboard-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--pos-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.worker-you-tag {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--md-shape-sm);
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  font-size: 11px;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .worker-leaderboard-sub {
   font-size: 12px;
-  color: var(--pos-text-faint);
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
 }
 
 .worker-leaderboard-total {
-  flex: none;
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--pos-blue);
+  font-size: 22px;
+  line-height: 28px;
+  font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 960px) {
-  .laporan-panels {
-    flex-direction: column;
-  }
+/* ---- Katalog ---- */
 
-  .laporan-payments {
-    width: 100%;
-  }
-
-  .worker-leaderboard-row {
-    padding: 8px 10px;
-    gap: 8px;
-  }
+.katalog-section {
+  margin-bottom: 32px;
 }
 
-/* =========================================================================
-   Payment — method selector, pay-now/later toggle, inline payment form
-   ========================================================================= */
-
-.payment-method-selector {
-  display: flex;
-  gap: 10px;
-  margin: 4px 0 14px;
+.katalog-section .transaksi-section-label,
+.staf-section .transaksi-section-label {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 400;
 }
 
-.payment-method-button {
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+.katalog-note {
+  margin: 4px 0 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--md-on-surface-variant);
+  max-width: 72ch;
 }
 
-.payment-method-button:hover {
-  border-color: var(--pos-blue);
+.katalog-service-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.payment-method-button.selected {
-  border-color: var(--pos-blue);
-  box-shadow: 0 0 0 1px var(--pos-blue) inset;
-  background: var(--pos-blue-light);
-  color: var(--pos-blue-dark);
+.katalog-service-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--md-shape-sm);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
 }
 
-.pay-toggle-note {
-  font-size: 12.5px;
-  color: var(--pos-text-faint);
-  margin: 0 0 14px;
-  line-height: 1.5;
+.katalog-service-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
-.detail-card-badges {
+.katalog-normal-price-struck {
+  color: var(--md-on-surface-variant);
+  text-decoration: line-through;
+}
+
+.katalog-price-input input:not([type='checkbox']),
+.katalog-stock-actions input:not([type='checkbox']),
+.upah-rate-input input:not([type='checkbox']),
+.staf-edit-row input:not([type='checkbox']),
+.staf-edit-row select {
+  height: 40px;
+  font-size: 14px;
+}
+
+.katalog-stock-actions,
+.staf-row-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 
-.payment-form {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--pos-bg);
-  border-radius: 10px;
+.katalog-stock-actions input:not([type='checkbox']) {
+  width: 88px;
+  flex-shrink: 0;
 }
 
-.payment-form-trigger {
-  width: 100%;
+.katalog-stock-actions .btn-secondary,
+.staf-row-actions .btn-secondary,
+.staf-row-actions .btn-primary,
+.staf-row-actions .btn-danger {
+  height: 36px;
+  padding: 0 16px;
 }
 
-.payment-form-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--pos-text);
-  margin-bottom: 10px;
-}
-
-.payment-form .payment-method-selector {
-  margin-bottom: 12px;
-}
-
-.payment-form .detail-actions {
-  margin-top: 0;
-}
-
-/* =========================================================================
-   Kelola Staf (worker management, admin only)
-   ========================================================================= */
+/* ---- Kelola Staf / Upah ---- */
 
 .staf-section {
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 
 .staf-section-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.staf-section-header .transaksi-section-label {
-  margin: 0;
+.staf-section-header input[type='date'] {
+  width: auto;
+  height: 40px;
+}
+
+.staf-section-header .btn-primary {
+  padding-left: 16px;
 }
 
 .staf-section-note {
-  font-size: 12.5px;
-  color: var(--pos-text-faint);
-  margin: 0 0 14px;
-}
-
-/* One roster table since the field-worker/office split went away:
-   Nama | Telepon | Peran | Akun | Status | aksi */
-.staf-table .riwayat-table-row {
-  grid-template-columns: 1.4fr 1fr 0.8fr 1fr 0.9fr 1.9fr;
-  min-width: 680px;
-}
-
-.staf-username {
-  font-size: 12.5px;
-  color: var(--pos-text-faint);
-}
-
-.staf-row-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.staf-row-actions button {
-  padding: 7px 12px;
   font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
 }
 
 .staf-form {
-  margin-bottom: 20px;
-}
-
-.staf-login-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-  cursor: pointer;
-}
-
-.staf-login-toggle input {
-  width: 15px;
-  height: 15px;
-  accent-color: var(--pos-blue);
+  margin: 0 0 20px;
 }
 
 .staf-form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.staf-form-grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-}
-
-.staf-form-grid input,
-.staf-form-grid select {
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--pos-text);
-  padding: 10px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  background: var(--pos-surface);
-}
-
-.staf-edit-row {
+.staf-login-toggle {
+  display: inline-flex;
   align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  width: fit-content;
 }
 
-.staf-edit-row input,
-.staf-edit-row select {
-  font-size: 13px;
-  padding: 7px 10px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 6px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  width: 100%;
+.staf-username {
+  color: var(--md-on-surface-variant);
 }
-
-/* =========================================================================
-   Kelola Upah (wage management, supervisor + admin)
-   ========================================================================= */
 
 .upah-stat-cards {
-  grid-template-columns: 1fr;
-  max-width: 280px;
-}
-
-.staf-section-header input[type='date'] {
-  padding: 9px 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  flex-shrink: 0;
-}
-
-.staf-section-header input[type='date']:focus {
-  outline: none;
-  border-color: var(--pos-blue);
-}
-
-/* Upah per Layanan: Layanan | Upah | aksi */
-.upah-rate-table .riwayat-table-row {
-  grid-template-columns: 2fr 1.2fr 1fr;
-  min-width: 420px;
+  grid-template-columns: minmax(0, 360px);
 }
 
 .upah-rate-input {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.upah-rate-input input {
-  width: 90px;
-  font-size: 13px;
-  padding: 7px 10px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 6px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-}
-
-.upah-rate-input span {
-  font-size: 13px;
-  color: var(--pos-text-faint);
-}
-
-/* Upah Harian: Nama | Upah Jasa | Penyesuaian | Total Upah | aksi */
-.upah-daily-table .riwayat-table-row {
-  grid-template-columns: 1.8fr 1.4fr 1.5fr 1.3fr 0.9fr;
-  min-width: 760px;
-}
-
-.upah-daily-row .status-badge {
-  margin-right: 4px;
+  gap: 8px;
+  color: var(--md-on-surface-variant);
 }
 
 .upah-net-negative {
-  color: var(--pos-red-text) !important;
+  color: var(--md-error);
+}
+
+.upah-daily-row .status-badge + .status-badge {
+  margin-left: 6px;
 }
 
 .upah-adjustments-panel {
-  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  padding: 14px 18px 18px;
-  background: var(--pos-bg);
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px 20px;
+  background: var(--md-surface-container-low);
 }
 
 .upah-breakdown {
   width: 100%;
-  margin-bottom: 14px;
   border-collapse: collapse;
-  font-size: 13px;
-  color: var(--pos-text);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
 .upah-breakdown th,
 .upah-breakdown td {
-  padding: 6px 0;
+  padding: 8px 12px;
   text-align: right;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  border-bottom: 1px solid var(--md-outline-variant);
 }
 
 .upah-breakdown th:first-child,
@@ -2877,1619 +3162,318 @@ body.service-menu-open .worker-content {
 }
 
 .upah-breakdown th {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--pos-text-faint);
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
 }
 
 .upah-breakdown tfoot td {
-  font-weight: 600;
-  border-bottom: none;
-}
-
-.upah-breakdown-empty {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--pos-text-faint);
+  font-weight: 500;
+  border-bottom: 0;
 }
 
 .upah-adjustment-form {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 160px 160px minmax(0, 1fr) auto;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
-.upah-adjustment-form select,
-.upah-adjustment-form input {
-  font-size: 13px;
-  padding: 8px 10px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 6px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-}
-
-.upah-adjustment-form input[type='number'] {
-  width: 130px;
-}
-
-.upah-adjustment-form input[type='text'] {
-  flex: 1;
-  min-width: 160px;
+.upah-adjustment-form input:not([type='checkbox']),
+.upah-adjustment-form select {
+  height: 40px;
+  font-size: 14px;
 }
 
 .upah-adjustments-list {
-  list-style: none;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .upah-adjustment-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-  font-size: 13px;
-  color: var(--pos-text);
+  font-size: 14px;
 }
 
-.upah-adjustment-item:last-child {
-  border-bottom: none;
+.upah-adjustment-item + .upah-adjustment-item {
+  border-top: 1px solid var(--md-outline-variant);
 }
 
 .upah-adjustment-amount {
-  font-weight: 600;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .upah-adjustment-reason {
   flex: 1;
-  color: var(--pos-text-faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--md-on-surface-variant);
 }
 
 .upah-adjustment-item .btn-secondary {
-  padding: 5px 10px;
-  font-size: 11.5px;
+  height: 32px;
+  padding: 0 12px;
 }
 
-@media (max-width: 960px) {
-  .upah-adjustment-form input[type='text'] {
-    min-width: 100%;
-  }
-}
+/* =========================================================================
+   10. Camera & lightbox
+   ========================================================================= */
 
-.staff-picker-select {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text);
-  padding: 6px 10px;
-  border: 1px solid var(--pos-border);
-  border-radius: 8px;
-  background: var(--pos-surface);
-  cursor: pointer;
-}
-
-.staff-picker-select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.multi-staff-picker {
+.camera-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  background: #000;
+  color: #fff;
 }
 
-/* The wash-staff row grows a list under its dropdown, and centering would
-   drift the label down that whole block — keep it level with the dropdown.
-   The padding matches the select's own top padding + border. */
-.struk-row-picker {
-  align-items: flex-start;
+.camera-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
 }
 
-/* .struk-row-picker > span:first-child {
-  padding-top: 7px;
-} */
-
-.multi-staff-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  min-width: 160px;
+.camera-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.multi-staff-list-item {
+.camera-hint {
+  position: absolute;
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.camera-error {
+  margin: 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--md-shape-md);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: 14px;
+}
+
+.camera-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 5px 0;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text);
-  border-bottom: 1px solid var(--pos-border);
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
 }
 
-.multi-staff-list-item:last-child {
-  border-bottom: none;
+.camera-actions .btn-secondary {
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6);
 }
 
-.multi-staff-list-item button {
-  border: none;
-  background: none;
-  padding: 0;
-  color: var(--pos-text-faint);
-  font-size: 11px;
-  line-height: 1;
-  cursor: pointer;
+.camera-actions .btn-primary {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
 }
 
-.multi-staff-list-item button:hover {
-  color: var(--pos-red-text);
+.camera-actions button {
+  height: 48px;
 }
 
-.detail-hint {
-  font-size: 12.5px;
-  color: var(--pos-red-text);
-  margin-top: 14px;
+.photo-lightbox-overlay {
+  background: rgb(0 0 0 / 0.85);
 }
 
-/* ---- responsive ---- */
-@media (max-width: 960px) {
-  .service-picker-grid {
-    grid-template-columns: repeat(2, 1fr);
+.photo-lightbox-image {
+  max-width: 100%;
+  max-height: calc(100svh - 96px);
+  border-radius: var(--md-shape-md);
+  object-fit: contain;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--md-shape-full);
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+}
+
+/* =========================================================================
+   11. Responsive
+   ========================================================================= */
+
+/* Modal navigation drawer below 1024px */
+@media (max-width: 1023px) {
+  .app-drawer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(320px, 85vw);
+    border-radius: 0 var(--md-shape-lg) var(--md-shape-lg) 0;
+    box-shadow: var(--md-elevation-1);
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition:
+      transform var(--md-duration-medium) var(--md-ease-emphasized-accelerate),
+      visibility 0s linear var(--md-duration-medium);
+  }
+
+  .app-drawer.open {
+    transform: translateX(0);
+    visibility: visible;
+    transition:
+      transform var(--md-duration-long) var(--md-ease-emphasized-decelerate),
+      visibility 0s;
+  }
+
+  .app-drawer-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgb(0 0 0 / 0.32);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--md-duration-medium) var(--md-ease-standard);
+  }
+
+  .app-drawer-scrim.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .icon-btn.app-menu-btn {
+    display: inline-grid;
+    margin-left: -8px;
+  }
+
+  .app-topbar {
+    padding: 0 12px 0 16px;
   }
 
   .transaksi-baru-screen {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ticket-panel {
-    width: 100%;
     position: static;
     max-height: none;
   }
 
-  .stat-cards {
-    grid-template-columns: 1fr;
+  .laporan-panels {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (max-width: 480px) {
-  .service-picker-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ---- mobile: off-canvas sidebar nav ---- */
-@media (max-width: 768px) {
-  .app-hamburger {
-    display: flex;
-  }
-
-  .app-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 100;
-    width: 240px;
-    max-width: 82vw;
-    transform: translateX(-100%);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-    transition:
-      transform 0.22s ease,
-      background-color 0.25s ease,
-      border-color 0.25s ease,
-      color 0.25s ease,
-      box-shadow 0.25s ease;
-  }
-
-  .app-sidebar.open {
-    transform: translateX(0);
-    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
-  }
-
-  .app-sidebar-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 99;
-  }
-
-  .app-header {
-    padding: 0 14px;
-  }
-
-  .app-header-date {
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .app-header-name {
-    max-width: 96px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
+@media (max-width: 720px) {
   .app-content {
-    padding: 18px 16px;
+    padding: 4px 16px 32px;
+  }
+
+  .app-topbar-titles .icon {
+    display: none;
+  }
+
+  .app-content h1,
+  .worker-content h1 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .stat-cards {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card-value {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .riwayat-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+
+  .staf-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .upah-adjustment-form {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .upah-adjustment-form input[type='text'] {
+    grid-column: 1 / -1;
+  }
+
+  .start-modal {
+    padding: 20px;
+  }
+
+  .start-modal-overlay {
+    padding: 16px;
+  }
+
+  .ticket-panel {
+    padding: 16px;
   }
 }
 
 @media (max-width: 420px) {
-  .app-header-date {
-    display: none;
-  }
-}
-
-/* ---- mobile: forms and headers that need to wrap instead of overflow ---- */
-@media (max-width: 700px) {
-  .riwayat-header {
-    flex-wrap: wrap;
+  .stat-cards {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .riwayat-search {
-    flex-wrap: wrap;
-    width: 100%;
+  .service-menu-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .riwayat-search input {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .riwayat-export {
-    flex-wrap: wrap;
-  }
-
-  .laporan-panel-header {
-    flex-wrap: wrap;
-  }
-
-  .staf-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .staf-edit-row {
-    grid-template-columns: 1fr !important;
-    min-width: 0 !important;
+  .service-menu-tile {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
     row-gap: 8px;
+    padding: 12px;
   }
-}
 
-/* =========================================================================
-   Dark mode — component-specific accent colors not covered by the --pos-*
-   tokens (redefined in index.css) or the --pos-ink flip used for borders
-   and translucent text throughout this file.
-   ========================================================================= */
-
-:root[data-theme='dark'] .status-diproses,
-:root[data-theme='dark'] .struk-check-pending {
-  background: #4a3a12;
-  color: #f5c76a;
-}
-
-:root[data-theme='dark'] .status-qc {
-  background: #3a2e52;
-  color: #cbb3f0;
-}
-
-:root[data-theme='dark'] .status-selesai {
-  background: #163d2e;
-  color: #7fe3bb;
-}
-
-:root[data-theme='dark'] .rev-bar {
-  background: #33475c;
-}
-
-/* Text with no color of its own inherits :root's legacy --text, a dim gray
-   that reads poorly on the dark surfaces. Inside the app, default to the
-   real body-text token instead. Light mode is left as it was. */
-:root[data-theme='dark'] .app-shell,
-:root[data-theme='dark'] .worker-shell,
-:root[data-theme='dark'] .login-screen {
-  color: var(--pos-text);
-}
-
-:root[data-theme='dark'] input::placeholder,
-:root[data-theme='dark'] textarea::placeholder {
-  color: var(--pos-text-faint);
-  opacity: 1;
-}
-
-.app-header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.theme-toggle-btn {
-  width: 32px;
-  height: 32px;
-  flex: none;
-  border-radius: 50%;
-  border: 1px solid var(--pos-border);
-  background: var(--pos-surface);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-}
-
-.theme-toggle-btn:hover {
-  border-color: rgba(var(--pos-ink), 0.2);
-}
-
-/* =========================================================================
-   Worker UI — the phone treatment for role='staff'
-   -------------------------------------------------------------------------
-   Visual language comes from `design/Worker View Standalone.html`: a left
-   accent stripe per card, large plate type, uppercase status pills, and the
-   chunky 64px action buttons (solid face over a 3px hard shadow) that are the
-   whole point of the design — they are meant to be hit with a thumb, wet
-   hands, in daylight.
-
-   That mockup is a 1280px English/USD demo built around bays, techs and ETAs,
-   none of which exist in this schema. Taken from it: the styling. Not taken:
-   its layout (it is a wide desktop row; this is a phone column) or its
-   concepts. Its hardcoded hex values are mapped onto the --pos-* tokens so
-   dark mode keeps working — see the *-press pair in index.css.
-
-   WorkerShell puts `.worker-ui` on its root, which is the namespace for
-   everything here. Rules are unconditional rather than wrapped in a media
-   query: reaching them at all means a worker is signed in, and a worker is on
-   a phone. That also keeps them clear of the desktop-first breakpoints above.
-   ========================================================================= */
-
-.worker-shell {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100svh;
-  width: 100%;
-  background: var(--pos-bg);
-  overflow: hidden;
-  font-family: var(--pos-font);
-  color: var(--pos-text);
-}
-
-/* ---- topbar ---- */
-
-.worker-topbar {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 64px;
-  padding: 0 16px;
-  padding-top: env(safe-area-inset-top);
-  box-sizing: content-box;
-  background: var(--pos-surface);
-  border-bottom: 1px solid var(--pos-border);
-}
-
-.worker-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-}
-
-.worker-topbar-title {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: var(--pos-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.worker-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-}
-
-/* 44px circle, straight from the mockup — also the minimum touch target, so
-   it doubles as the logout control rather than sitting next to one. */
-.worker-avatar {
-  width: 44px;
-  height: 44px;
-  flex: none;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--pos-blue-light);
-  color: var(--pos-blue-dark);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* 40px both ways, not just min-height: the toggle is a 32px circle, and
-   stretching only its height turned it into an oval. */
-.worker-topbar .theme-toggle-btn {
-  width: 40px;
-  height: 40px;
-  min-height: 40px;
-}
-
-/* ---- content ---- */
-
-.worker-content {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 14px;
-  /* Clear the fixed tab bar, and the action bar that sits on top of it, so
-     the last card is never trapped underneath. */
-  padding-bottom: calc(160px + env(safe-area-inset-bottom));
-  min-width: 0;
-}
-
-/* ---- bottom tab bar ---- */
-
-.worker-tabbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  background: var(--pos-surface);
-  border-top: 1px solid var(--pos-border);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.worker-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-height: 58px;
-  text-decoration: none;
-  color: var(--pos-text-faint);
-  font-weight: 700;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.worker-tab.active {
-  color: var(--pos-blue);
-}
-
-.worker-tab-icon {
-  width: 23px;
-  height: 23px;
-}
-
-.worker-tab-label {
-  font-size: 11.5px;
-  letter-spacing: 0.2px;
-}
-
-/* =========================================================================
-   Worker UI — chunky buttons
-   The signature control from the mockup: a solid face sitting on a 3px hard
-   shadow, which collapses on press so the button physically travels down.
-   ========================================================================= */
-
-.worker-btn {
-  flex: 1;
-  min-width: 0;
-  height: 64px;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  border-radius: 12px;
-  font-family: inherit;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.worker-btn-blue {
-  background: var(--pos-blue);
-  color: #fff;
-  box-shadow: 0 3px 0 var(--pos-blue-press);
-}
-
-.worker-btn-green {
-  background: var(--pos-green-solid);
-  color: #fff;
-  box-shadow: 0 3px 0 var(--pos-green-press);
-}
-
-/* Travel the full 3px down and drop the shadow, so the press reads as the
-   button being pushed into the card rather than as a colour change. */
-.worker-btn-blue:active:not(:disabled),
-.worker-btn-green:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: none;
-}
-
-.worker-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* The square secondary — the mockup's "i". Outline, no lift. */
-.worker-btn-ghost {
-  flex: none;
-  width: 64px;
-  padding: 0;
-  background: transparent;
-  border: 2px solid rgba(var(--pos-ink), 0.15);
-  color: var(--pos-text-muted);
-  font-size: 21px;
-}
-
-.worker-btn-ghost:active {
-  background: var(--pos-surface-2);
-}
-
-/* Not a button — the state a ticket rests in when there is nothing to press.
-   Mockup's "Ready for Pickup" chip. */
-.worker-btn-static {
-  flex: 1;
-  min-width: 0;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border-radius: 12px;
-  background: var(--pos-green-soft);
-  color: var(--pos-green-soft-text);
-  border: 2px solid var(--pos-green-solid);
-  font-size: 16px;
-  font-weight: 700;
-  text-align: center;
-  padding: 0 14px;
-}
-
-/* =========================================================================
-   Worker UI — back button
-   Stands in for the page <h1> on Detail Transaksi: the top bar already names
-   the screen, so the heading was said twice and getting back to the queue
-   meant the browser's own back gesture.
-   ========================================================================= */
-
-.worker-ui .worker-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  margin: -6px 0 10px -10px;
-  padding: 0 12px 0 6px;
-  border: none;
-  border-radius: 10px;
-  background: none;
-  color: var(--pos-text-muted);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.worker-ui .worker-back-btn:active {
-  background: rgba(var(--pos-ink), 0.06);
-  color: var(--pos-text);
-}
-
-.worker-ui .worker-back-btn svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-}
-
-/* =========================================================================
-   Worker UI — filter chips
-   Replaces the two rows of stat cards. Same numbers, but each one is now a
-   filter, which is what the counts were really for.
-   ========================================================================= */
-
-.worker-filters {
-  display: flex;
-  gap: 9px;
-  margin-bottom: 14px;
-  /* Four chips will not fit across a phone; scroll them instead of wrapping
-     to a second row that pushes the queue below the fold. */
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  /* A hidden scrollbar left no way to tell the row scrolls at all — on a
-     phone the cut-off chip just looked clipped. Keep a slim always-visible
-     bar instead; it doubles as the drag handle in a desktop mobile preview,
-     where there is no touch fling. */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(var(--pos-ink), 0.25) transparent;
-  scroll-snap-type: x proximity;
-  /* Bleed to the screen edges so the row reads as scrollable, while the first
-     and last chip still line up with the cards below. */
-  margin-left: -14px;
-  margin-right: -14px;
-  padding: 2px 14px 6px;
-}
-
-.worker-filters::-webkit-scrollbar {
-  height: 4px;
-}
-
-.worker-filters::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.worker-filters::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(var(--pos-ink), 0.25);
-}
-
-.worker-chip {
-  flex: none;
-  scroll-snap-align: start;
-  height: 52px;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--pos-ink), 0.12);
-  background: var(--pos-surface);
-  color: var(--pos-text-muted);
-  font-family: inherit;
-  font-size: 14.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* The mockup's active chip is near-black on white. --pos-text is #16181c in
-   light and #f1f2f4 in dark, so pairing it with --pos-surface inverts the
-   chip correctly in both themes instead of going black-on-black. */
-.worker-chip.active {
-  background: var(--pos-text);
-  border-color: var(--pos-text);
-  color: var(--pos-surface);
-}
-
-.worker-chip-count {
-  font-size: 13px;
-  opacity: 0.75;
-}
-
-/* =========================================================================
-   Worker UI — queue cards
-   ========================================================================= */
-
-.queue-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.queue-card {
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.1);
-  /* The 8px stripe that tells you a card's state before you read it. */
-  border-left: 8px solid var(--pos-wait);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.queue-card-diproses {
-  border-left-color: var(--pos-blue);
-}
-
-.queue-card-qc {
-  border-left-color: var(--pos-green-solid);
-}
-
-/* Work done, waiting on payment verification / close. */
-.queue-card-selesai {
-  border-left-color: var(--pos-green-text);
-}
-
-.queue-card.overdue {
-  border-color: var(--pos-red-text);
-  border-left-color: var(--pos-red-text);
-}
-
-.queue-card-main {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  padding: 16px 16px 14px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.queue-card-main:active {
-  background: var(--pos-surface-2);
-}
-
-.queue-card-main:focus-visible {
-  outline: 2px solid var(--pos-blue);
-  outline-offset: -2px;
-}
-
-.queue-card-head {
-  display: flex;
-  /* The badge column is taller than one pill now — top-align it with the
-     heading rather than centring it against the vehicle/plate block. */
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.queue-card-plate {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.3px;
-  color: var(--pos-text);
-}
-
-/* A name in the heading slot shouldn't wear the plate's wide tracking. */
-.queue-card-plate-name {
-  letter-spacing: -0.2px;
-}
-
-/* Vehicle on top, plate below it. */
-.queue-card-title {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.queue-card-vehicle {
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.3px;
-  color: var(--pos-text);
-  overflow-wrap: anywhere;
-}
-
-.queue-card-plate-sub {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  color: var(--pos-text-muted);
-}
-
-.queue-card-plate-sub.queue-card-plate-name {
-  letter-spacing: -0.1px;
-}
-
-/* Desk queue table: same pairing inside the Merek cell. */
-.antrian-vehicle-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.antrian-vehicle {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
-
-.antrian-vehicle-plate {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  color: var(--pos-text-muted);
-}
-
-/* Treatment code, plus the customer when the heading is a plate rather than
-   their name. Quiet — it's a reference, not something you scan the list by. */
-.queue-card-ref {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 7px;
-  margin-top: -4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--pos-text-faint);
-}
-
-.queue-card-ref > span + span::before {
-  content: '\00b7';
-  margin-right: 7px;
-}
-
-.queue-card-service {
-  font-size: 15.5px;
-  font-weight: 500;
-  line-height: 1.3;
-  color: rgba(var(--pos-ink), 0.7);
-}
-
-/* Brand, staff and time on one wrapping line separated by dots rather than
-   labels — there is no room for a label column on a handset. */
-.queue-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px 7px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(var(--pos-ink), 0.62);
-}
-
-.queue-card-meta > span + span::before {
-  content: '\00b7';
-  margin-right: 7px;
-}
-
-/* The card's badge stack: status on top, payment under it, overdue last.
-   align-items keeps each pill only as wide as its own label while they all
-   hang off the card's right edge; flex-shrink: 0 stops a long status label
-   being squeezed by the heading next to it. */
-.queue-card-badges {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-  flex-shrink: 0;
-  text-align: right;
-}
-
-.queue-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 16px 16px;
-}
-
-/* Upload failure from the main button's photo step. */
-.queue-card-proof-error {
-  margin: -6px 16px 14px;
-}
-
-/* Dashed empty state, straight from the mockup. */
-.worker-ui .riwayat-empty {
-  background: var(--pos-surface);
-  border: 1px dashed rgba(var(--pos-ink), 0.18);
-  border-radius: 12px;
-  padding: 44px 24px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: rgba(var(--pos-ink), 0.6);
-}
-
-.worker-ui .riwayat-loading {
-  text-align: center;
-  padding: 34px 12px;
-  font-weight: 600;
-}
-
-/* =========================================================================
-   Worker UI — shared page overrides
-   ========================================================================= */
-
-/* Status pills go uppercase and gain weight, per the mockup. The colour of
-   each status is inherited from the shared .status-* rules above. Uppercase
-   plus letter-spacing makes them noticeably wider, so they have to be told
-   not to break — 'Belum Dibayar' otherwise wraps to two lines inside its
-   own pill. */
-.worker-ui .status-badge {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  padding: 7px 12px;
-  white-space: nowrap;
-}
-
-/* Detail Treatment's header: on a phone the code, plate and badge row need
-   to stack rather than share a line, and a treatment code is a single token
-   that must not be broken across lines. */
-.worker-ui .detail-card-header {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.worker-ui .detail-card-code {
-  white-space: nowrap;
-}
-
-.worker-ui .detail-card-badges {
-  flex-wrap: wrap;
-}
-
-/* The 56px h1 from index.css is a desktop hero size. */
-.worker-ui h1 {
-  font-size: 22px;
-  letter-spacing: -0.3px;
-  margin: 0 0 4px;
-}
-
-.worker-ui h2 {
-  font-size: 16px;
-}
-
-/* iOS zooms the viewport on focus for any field under 16px. Every desk input
-   here is 13-13.5px, so they all need lifting. */
-.worker-ui input,
-.worker-ui select,
-.worker-ui textarea {
-  font-size: 16px;
-}
-
-/* Real minimum touch targets on anything tappable that isn't already sized. */
-.worker-ui button,
-.worker-ui .btn-primary,
-.worker-ui .btn-secondary,
-.worker-ui .btn-danger {
-  min-height: 44px;
-}
-
-/* The topbar's own controls are deliberately compact and exempt. */
-.worker-topbar button {
-  min-height: 40px;
-}
-
-/* Circles have to grow on both axes. The min-height above only stretches
-   height, which squashes a fixed-width round button into an oval — so each
-   one gets a matching width at its touch size. */
-.worker-ui .ticket-line-qty button {
-  width: 40px;
-  height: 40px;
-  min-height: 40px;
-  flex: none;
-  font-size: 18px;
-}
-
-.worker-ui .photo-lightbox-close {
-  width: 44px;
-  height: 44px;
-}
-
-/* Antrian's own h1 + "Transaksi Baru" link are redundant here: the page title
-   is in the topbar and the destination is a tab. */
-.worker-ui .riwayat-header {
-  display: none;
-}
-
-.worker-ui .overdue-alert {
-  font-size: 13px;
-  padding: 13px 15px;
-  border-radius: 12px;
-  margin-bottom: 14px;
-}
-
-/* ---- Transaksi Baru ---- */
-
-.worker-ui .transaksi-baru-screen {
-  flex-direction: column;
-  gap: 16px;
-}
-
-.worker-ui .transaksi-catalog-header {
-  display: none;
-}
-
-/* Two service cards across is the sweet spot on a handset: the desk grid is
-   3, and the existing 480px override drops to 1, which costs a lot of
-   scrolling on a menu this long. */
-.worker-ui .service-picker-grid {
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.worker-ui .service-card {
-  padding: 14px 12px;
-  min-height: 84px;
-  border-radius: 12px;
-}
-
-.worker-ui .service-card-name {
-  font-size: 13.5px;
-  font-weight: 600;
-}
-
-.worker-ui .ticket-panel {
-  width: 100%;
-  position: static;
-  max-height: none;
-  padding: 16px 14px;
-  border-radius: 12px;
-}
-
-/* The action bar carries the total and the submit, so the panel's own button
-   would just be a second control saying the same thing. */
-.worker-ui .ticket-submit {
-  display: none;
-}
-
-/* ---- fixed action bar (sits directly above the tab bar) ---- */
-
-.worker-actionbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(58px + env(safe-area-inset-bottom));
-  z-index: 25;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  background: var(--pos-surface);
-  border-top: 1px solid var(--pos-border);
-  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
-}
-
-.worker-actionbar-summary {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.worker-actionbar-count {
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  color: var(--pos-text-faint);
-}
-
-.worker-actionbar-total {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
-
-/* Same chunky treatment as the queue actions, sized for the bar. */
-.worker-actionbar-submit {
-  flex: none;
-  min-width: 132px;
-  height: 56px;
-  padding: 0 22px;
-  border: none;
-  border-radius: 12px;
-  background: var(--pos-blue);
-  color: #fff;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 3px 0 var(--pos-blue-press);
-}
-
-.worker-actionbar-submit:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: none;
-}
-
-.worker-actionbar-submit:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ---- Transaksi Baru, three-page wizard ----
-   A worker builds a ticket across three phone pages instead of the desk's
-   single two-column form: items, customer, then a confirmation page. The
-   stepper sits at the top of the flow; the fixed bar below carries the
-   running total and the page's primary action. */
-
-.worker-wizard {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.worker-wizard-steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.worker-wizard-step {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-  color: var(--pos-text-faint);
-}
-
-.worker-wizard-step-dot {
-  width: 26px;
-  height: 26px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid rgba(var(--pos-ink), 0.2);
-  border-radius: 50%;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-
-.worker-wizard-step-label {
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.worker-wizard-step.active {
-  color: var(--pos-text);
-}
-
-.worker-wizard-step.active .worker-wizard-step-dot {
-  background: var(--pos-blue);
-  border-color: var(--pos-blue);
-  color: #fff;
-  box-shadow: 0 0 0 4px var(--pos-blue-light);
-}
-
-.worker-wizard-step.done {
-  color: var(--pos-text-muted);
-}
-
-.worker-wizard-step.done .worker-wizard-step-dot {
-  background: var(--pos-blue-light);
-  border-color: var(--pos-blue);
-  color: var(--pos-blue-dark);
-}
-
-.worker-wizard-page {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  animation: worker-wizard-in 0.18s ease-out both;
-}
-
-@keyframes worker-wizard-in {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
+  .service-menu-tile-icon {
+    grid-row: auto;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  .worker-ui .service-picker-grid,
+  .service-menu-modal-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
-}
 
-.worker-wizard-head {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+  .worker-ui .service-card {
+    padding: 12px;
+    min-height: 88px;
+  }
 
-.worker-wizard-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--pos-text);
-}
+  .detail-card {
+    padding: 16px;
+  }
 
-.worker-wizard-subtitle {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--pos-text-muted);
-}
+  .detail-actions > * {
+    flex: 1 1 auto;
+  }
 
-/* Both section headings sit inside the page's gap, so their own margins
-   would double the spacing. */
-.worker-wizard .transaksi-section-label {
-  margin: 0;
-}
-
-.worker-wizard-card {
-  background: var(--pos-surface);
-  border: 1px solid rgba(var(--pos-ink), 0.08);
-  border-radius: 12px;
-  padding: 16px 14px;
-}
-
-.worker-wizard-card-title {
-  margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--pos-text-faint);
-}
-
-/* The shared field block brings the desk panel's divider and bottom margin;
-   inside a card those are already implied by the card edge and padding. */
-.worker-wizard-card .ticket-fields,
-.worker-wizard-card .ticket-discount {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.worker-wizard-card .ticket-notes {
-  margin-top: 14px;
-}
-
-.worker-wizard-card label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-}
-
-.worker-wizard-card input,
-.worker-wizard-card select,
-.worker-wizard-card textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px 13px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 10px;
-  background: var(--pos-surface);
-  font-family: inherit;
-  font-weight: 500;
-  color: var(--pos-text);
-}
-
-.worker-wizard-card input:focus,
-.worker-wizard-card select:focus,
-.worker-wizard-card textarea:focus {
-  outline: none;
-  border-color: var(--pos-blue);
-}
-
-.worker-wizard-card textarea {
-  resize: vertical;
-  min-height: 72px;
-}
-
-/* Confirmation page — label/value rows and a plain list of ticket lines. */
-.worker-wizard-review {
-  margin: 0;
-}
-
-.worker-wizard-review-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-}
-
-.worker-wizard-review-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.worker-wizard-review-row dt {
-  flex: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--pos-text-muted);
-}
-
-.worker-wizard-review-row dd {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-.worker-wizard-review-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.worker-wizard-review-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: baseline;
-  gap: 9px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
-}
-
-.worker-wizard-review-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.worker-wizard-review-qty {
-  min-width: 26px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--pos-blue-dark);
-}
-
-.worker-wizard-review-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--pos-text);
-  overflow-wrap: anywhere;
-}
-
-.worker-wizard-review-price {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--pos-text);
-  white-space: nowrap;
-}
-
-/* The shared summary has its own top border, which the card already provides. */
-.worker-wizard-card .transaksi-summary {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.worker-wizard-error {
-  margin: 0;
-}
-
-.worker-wizard-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: none;
-}
-
-/* Secondary action, but still a 56px thumb target next to the primary. */
-.worker-wizard-back {
-  height: 56px;
-  padding: 0 18px;
-  border: 1px solid rgba(var(--pos-ink), 0.15);
-  border-radius: 12px;
-  background: var(--pos-surface);
-  color: var(--pos-text);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.worker-wizard-back:active {
-  background: var(--pos-surface-2);
-}
-
-.worker-wizard-bar .worker-actionbar-submit {
-  min-width: 104px;
-}
-
-/* ---- Detail Treatment / Struk ----
-   Reached by tapping a ticket rather than from a tab, but this is where a
-   worker finishes a job, so the desk-width action rows have to collapse and
-   the primary actions get the same weight as the queue's. */
-
-.worker-ui .detail-actions,
-.worker-ui .struk-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.worker-ui .detail-actions button,
-.worker-ui .struk-actions button,
-.worker-ui .struk-actions a {
-  width: 100%;
-}
-
-.worker-ui .detail-actions .btn-primary {
-  height: 60px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  box-shadow: 0 3px 0 var(--pos-blue-press);
-}
-
-.worker-ui .detail-actions .btn-primary:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: none;
-}
-
-/* ---- Transaksi Baru: required fields left empty ---- */
-/* Kept last so the red border wins over the panel/wizard :focus rules, which
-   have the same specificity. */
-.ticket-panel label.is-invalid,
-.worker-wizard-card label.is-invalid {
-  color: var(--pos-red-text);
-}
-
-.ticket-panel input.is-invalid,
-.worker-wizard-card input.is-invalid {
-  border-color: var(--pos-red-text);
-  background: var(--pos-red-bg);
-  box-shadow: 0 0 0 3px rgba(161, 47, 47, 0.12);
-}
-
-.ticket-panel input.is-invalid:focus,
-.worker-wizard-card input.is-invalid:focus {
-  border-color: var(--pos-red-text);
-  background: var(--pos-surface);
-}
-
-.field-invalid-hint {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--pos-red-text);
-}
-
-.ticket-lines-empty.is-invalid {
-  color: var(--pos-red-text);
-  background: var(--pos-red-bg);
-  border: 1px dashed var(--pos-red-text);
-  border-radius: 8px;
-}
-
-.missing-fields-icon {
-  width: 40px;
-  height: 40px;
-  margin-bottom: 12px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--pos-red-text);
-  background: var(--pos-red-bg);
-}
-
-.missing-fields-list {
-  margin: 0;
-  padding: 10px 12px 10px 30px;
-  border-radius: 10px;
-  background: var(--pos-red-bg);
-  color: var(--pos-red-text);
-  font-size: 13.5px;
-  font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.missing-fields-modal .start-modal-actions .btn-primary {
-  min-width: 120px;
-}
-
-/* ---- Transaksi Baru: promo / normal price switch ---- */
-.price-mode {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin: 0 0 18px;
-}
-
-.price-mode-toggle {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--pos-gray-bg);
-  border: 1px solid var(--pos-border);
-}
-
-.price-mode-option {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--pos-text-muted);
-  cursor: pointer;
-}
-
-.price-mode-option.active {
-  background: var(--pos-surface);
-  color: var(--pos-blue-dark);
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
-}
-
-.price-mode-option:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.price-mode-hint {
-  font-size: 12.5px;
-  color: var(--pos-text-faint);
-}
-
-/* Phone wizard: full-width, thumb-sized segments. */
-.worker-wizard .price-mode-toggle {
-  display: flex;
-  width: 100%;
-}
-
-.worker-wizard .price-mode-option {
-  flex: 1;
-  min-height: 44px;
-  font-size: 14px;
-}
-
-/* ---- Bahasa / English switch (login card + both app shells) ---- */
-.language-toggle {
-  display: inline-flex;
-  padding: 2px;
-  border-radius: 8px;
-  background: var(--pos-gray-bg);
-  border: 1px solid var(--pos-border);
-  flex: none;
-}
-
-.language-toggle-option {
-  min-width: 34px;
-  padding: 5px 8px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--pos-text-muted);
-  cursor: pointer;
-}
-
-.language-toggle-option.active {
-  background: var(--pos-surface);
-  color: var(--pos-blue-dark);
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
-}
-
-/* Login: pinned to the card's top-right corner. */
-.login-card {
-  position: relative;
-}
-
-.login-language {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-}
-
-/* Phone top bar: a touch target, not a desktop pill. */
-.language-toggle-compact .language-toggle-option {
-  min-width: 38px;
-  min-height: 34px;
+  .language-toggle-compact .segmented-option {
+    min-width: 36px;
+    padding: 0 8px;
+  }
 }

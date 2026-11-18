@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../context/useLanguage'
 import { startCameraStream, stopCameraStream, captureFrame, describeCameraError } from '../lib/camera'
+import { Icon } from './Icon'
 
 // Full-screen camera sheet: live preview -> shutter -> review the shot ->
 // either keep it (onCapture receives a File) or retake. Camera only — there
@@ -93,9 +94,11 @@ export function CameraCapture({ onCapture, onClose }) {
         {shot ? (
           <>
             <button type="button" className="btn-secondary" onClick={() => replaceShot(null)}>
+              <Icon name="refresh" size={18} />
               {t('Ulangi')}
             </button>
             <button type="button" className="btn-primary" onClick={handleUse}>
+              <Icon name="check" size={18} />
               {t('Pakai Foto')}
             </button>
           </>
@@ -106,6 +109,7 @@ export function CameraCapture({ onCapture, onClose }) {
             onClick={handleShutter}
             disabled={!ready || busy}
           >
+            <Icon name="photo_camera" size={18} />
             {t('Ambil Foto')}
           </button>
         )}

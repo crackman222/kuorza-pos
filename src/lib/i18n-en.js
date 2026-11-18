@@ -424,4 +424,8 @@ export const en = {
   "Poles": "Polish",
   "Coating": "Coating",
   "Ketuk layanan untuk memilih, lalu tekan Selesai untuk menambah ke transaksi.": "Tap a service to pick it, then press Done to add it to the transaction.",
+  "Menu utama": "Main menu",
+  "Masuk untuk mulai bekerja": "Sign in to start working",
+  "6 digit angka": "6 digits",
+  "Kurangi": "Decrease",
 }

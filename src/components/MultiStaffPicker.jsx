@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getActiveProfiles } from '../api'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from './Icon'
 
 // Same roster and same full_name snapshot convention as StaffPicker, but for
 // duties several people share (washing). The dropdown only lists whoever
@@ -43,7 +44,7 @@ export function MultiStaffPicker({ value, onChange, disabled }) {
                   onClick={() => onChange(selected.filter((n) => n !== name))}
                   aria-label={t('Hapus {name}', { name })}
                 >
-                  ✕
+                  <Icon name="close" size={18} />
                 </button>
               )}
             </li>

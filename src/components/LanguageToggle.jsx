@@ -5,13 +5,13 @@ const OPTIONS = [
   { value: 'en', label: 'EN', name: 'English' },
 ]
 
-// Two-segment ID / EN switch. Used on the login card and in both app shells,
-// so the language can be changed before and after signing in.
+// Two-segment ID / EN segmented button. Used on the login card and in both
+// app shells, so the language can be changed before and after signing in.
 export function LanguageToggle({ className = '' }) {
   const { language, setLanguage, t } = useLanguage()
 
   return (
-    <div className={`language-toggle ${className}`} role="radiogroup" aria-label={t('Bahasa')}>
+    <div className={`segmented language-toggle ${className}`} role="radiogroup" aria-label={t('Bahasa')}>
       {OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -20,7 +20,7 @@ export function LanguageToggle({ className = '' }) {
           aria-checked={language === option.value}
           aria-label={option.name}
           title={option.name}
-          className={`language-toggle-option ${language === option.value ? 'active' : ''}`}
+          className={`segmented-option ${language === option.value ? 'active' : ''}`}
           onClick={() => setLanguage(option.value)}
         >
           {option.label}

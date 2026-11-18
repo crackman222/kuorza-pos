@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { getTreatmentDetail } from '../api'
 import { formatRupiah, formatDateTime } from '../lib/format'
 import { useLanguage } from '../context/useLanguage'
+import { Icon } from '../components/Icon'
 
 const PAYMENT_LABELS = { cash: 'Tunai', qris: 'QRIS', transfer: 'Transfer' }
 
@@ -35,7 +36,9 @@ export default function Struk() {
   return (
     <div className="struk-screen">
       <div className="struk-card">
-        <div className={`struk-check ${isPaid ? '' : 'struk-check-pending'}`}>{isPaid ? '✓' : '⏳'}</div>
+        <div className={`struk-check ${isPaid ? '' : 'struk-check-pending'}`}>
+          <Icon name={isPaid ? 'check' : 'hourglass_top'} />
+        </div>
         <h1>Kuorza</h1>
         <p className="struk-meta">{formatDateTime(treatment.created_at)}</p>
         <p className="struk-meta">{treatment.treatment_code}</p>

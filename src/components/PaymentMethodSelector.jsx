@@ -1,3 +1,5 @@
+import { useLanguage } from '../context/useLanguage'
+
 const METHODS = [
   { value: 'cash', label: 'Tunai' },
   { value: 'qris', label: 'QRIS' },
@@ -5,6 +7,7 @@ const METHODS = [
 ]
 
 export function PaymentMethodSelector({ value, onChange }) {
+  const { t } = useLanguage()
   return (
     <div className="payment-method-selector">
       {METHODS.map((method) => (
@@ -14,7 +17,7 @@ export function PaymentMethodSelector({ value, onChange }) {
           className={`payment-method-button ${value === method.value ? 'selected' : ''}`}
           onClick={() => onChange(method.value)}
         >
-          {method.label}
+          {t(method.label)}
         </button>
       ))}
     </div>

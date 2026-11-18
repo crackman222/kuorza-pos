@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getTreatmentDetail } from '../api'
 import { formatRupiah, formatDateTime } from '../lib/format'
+import { useLanguage } from '../context/useLanguage'
 
 const PAYMENT_LABELS = { cash: 'Tunai', qris: 'QRIS', transfer: 'Transfer' }
 
 export default function Struk() {
   const { id } = useParams()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [treatment, setTreatment] = useState(null)
   const [error, setError] = useState('')
@@ -20,12 +22,12 @@ export default function Struk() {
   if (error) {
     return (
       <div className="struk-screen">
-        <p className="form-error">{error}</p>
+        <p className="form-error">{t(error)}</p>
       </div>
     )
   }
   if (!treatment) {
-    return <div className="loading-screen">Memuat...</div>
+    return <div className="loading-screen">{t('Memuat...')}</div>
   }
 
   const isPaid = Boolean(treatment.payment)
@@ -34,20 +36,27 @@ export default function Struk() {
     <div className="struk-screen">
       <div className="struk-card">
         <div className={`struk-check ${isPaid ? '' : 'struk-check-pending'}`}>{isPaid ? '✓' : '⏳'}</div>
-        <h1>Nineteen Details</h1>
+        <h1>Kuorza</h1>
         <p className="struk-meta">{formatDateTime(treatment.created_at)}</p>
         <p className="struk-meta">{treatment.treatment_code}</p>
 
+        {/* No vehicle on the ticket (e.g. Cuci Helm) means no plate and no
+            brand — the rows are left off the receipt entirely rather than
+            printed empty. */}
+        {treatment.plate_number && (
+          <>
+            <div className="struk-row">
+              <span>{t('Plat')}</span>
+              <span>{treatment.plate_number}</span>
+            </div>
+            <div className="struk-row">
+              <span>{t('Kendaraan')}</span>
+              <span>{treatment.treatment_type || '-'}</span>
+            </div>
+          </>
+        )}
         <div className="struk-row">
-          <span>Plat</span>
-          <span>{treatment.plate_number}</span>
-        </div>
-        <div className="struk-row">
-          <span>Kendaraan</span>
-          <span>{treatment.treatment_type || '-'}</span>
-        </div>
-        <div className="struk-row">
-          <span>Staf</span>
+          <span>{t('Staf')}</span>
           <span>{treatment.pic}</span>
         </div>
 
@@ -65,28 +74,32 @@ export default function Struk() {
         <hr />
 
         <div className="struk-row">
-          <span>Subtotal</span>
+          <span>{t('Subtotal')}</span>
           <span>{formatRupiah(treatment.subtotal)}</span>
         </div>
         {treatment.discount > 0 && (
           <div className="struk-row">
-            <span>Diskon</span>
+            <span>{t('Diskon')}</span>
             <span>-{formatRupiah(treatment.discount)}</span>
           </div>
         )}
         <div className="struk-row struk-total">
-          <span>Total</span>
+          <span>{t('Total')}</span>
           <span>{formatRupiah(treatment.total)}</span>
         </div>
         <div className="struk-row">
-          <span>Pembayaran</span>
-          <span>{isPaid ? PAYMENT_LABELS[treatment.payment.payment_method] : 'Belum dibayar'}</span>
+          <span>{t('Pembayaran')}</span>
+          <span>{isPaid ? t(PAYMENT_LABELS[treatment.payment.payment_method]) : t('Belum dibayar')}</span>
         </div>
 
-        {treatment.notes && <p className="struk-notes">Catatan: {treatment.notes}</p>}
+        {treatment.notes && (
+          <p className="struk-notes">
+            {t('Catatan')}: {treatment.notes}
+          </p>
+        )}
 
         <button type="button" className="btn-primary struk-done" onClick={() => navigate('/')}>
-          Selesai
+          {t('Kembali')}
         </button>
       </div>
     </div>

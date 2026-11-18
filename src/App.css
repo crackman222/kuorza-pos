@@ -11,6 +11,7 @@
   &:hover {
     border-color: var(--accent-border);
   }
+
   &:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -42,8 +43,7 @@
     z-index: 1;
     top: 34px;
     height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg) scale(1.4);
   }
 
   .vite {
@@ -51,8 +51,7 @@
     top: 107px;
     height: 26px;
     width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg) scale(0.8);
   }
 }
 
@@ -75,9 +74,10 @@
   border-top: 1px solid var(--border);
   text-align: left;
 
-  & > div {
+  &>div {
     flex: 1 1 0;
     padding: 32px;
+
     @media (max-width: 1024px) {
       padding: 24px 20px;
     }
@@ -130,6 +130,7 @@
     &:hover {
       box-shadow: var(--shadow);
     }
+
     .button-icon {
       height: 18px;
       width: 18px;
@@ -156,6 +157,7 @@
 #spacer {
   height: 88px;
   border-top: 1px solid var(--border);
+
   @media (max-width: 1024px) {
     height: 48px;
   }
@@ -177,6 +179,7 @@
     left: 0;
     border-left-color: var(--border);
   }
+
   &::after {
     right: 0;
     border-right-color: var(--border);
@@ -184,7 +187,7 @@
 }
 
 /* =========================================================================
-   Nineteen Details POS — application UI
+   Kuorza POS — application UI
    Everything below styles the actual product screens (login, dashboard
    shell, transactions, receipt, history). The rules above this line are the
    original Vite starter styles, left in place per project convention.
@@ -217,6 +220,7 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
+  height: 100svh;
   width: 100%;
   background: var(--pos-bg);
   color: var(--pos-text-muted);
@@ -247,6 +251,7 @@
 .app-shell {
   display: flex;
   height: 100vh;
+  height: 100svh;
   width: 100%;
   background: var(--pos-bg);
   overflow: hidden;
@@ -260,6 +265,50 @@
   display: flex;
   flex-direction: column;
   padding: 22px 0;
+}
+
+.app-hamburger {
+  display: none;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-surface);
+  cursor: pointer;
+  padding: 0;
+}
+
+.app-hamburger span,
+.app-hamburger span::before,
+.app-hamburger span::after {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--pos-text);
+  position: relative;
+}
+
+.app-hamburger span::before,
+.app-hamburger span::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+.app-hamburger span::before {
+  top: -5px;
+}
+
+.app-hamburger span::after {
+  top: 5px;
+}
+
+.app-sidebar-backdrop {
+  display: none;
 }
 
 .app-sidebar-brand {
@@ -276,13 +325,7 @@
   height: 36px;
   flex: none;
   border-radius: 8px;
-  background: var(--pos-blue);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
+  object-fit: cover;
 }
 
 .app-sidebar-brand-name {
@@ -305,7 +348,7 @@
   gap: 10px;
   padding: 9px 12px;
   border-radius: 8px;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(var(--pos-ink), 0.7);
   font-weight: 500;
   font-size: 13px;
   text-decoration: none;
@@ -313,7 +356,7 @@
 }
 
 .app-sidebar-link:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(var(--pos-ink), 0.04);
 }
 
 .app-sidebar-link.active {
@@ -327,7 +370,7 @@
   height: 8px;
   flex: none;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--pos-ink), 0.25);
 }
 
 .app-sidebar-link.active .app-sidebar-link-dot {
@@ -347,9 +390,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 0 28px;
   border-bottom: 1px solid var(--pos-border);
   background: var(--pos-surface);
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .app-header-date {
@@ -384,10 +435,19 @@
   color: var(--pos-text);
 }
 
+.app-header-role {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--pos-border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pos-text-faint);
+}
+
 .app-header-logout {
   margin-left: 4px;
   border: 1px solid var(--pos-border);
-  background: #fff;
+  background: var(--pos-surface);
   color: var(--pos-text-muted);
   font-size: 12px;
   font-weight: 600;
@@ -397,7 +457,7 @@
 }
 
 .app-header-logout:hover {
-  border-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(var(--pos-ink), 0.2);
   color: var(--pos-text);
 }
 
@@ -405,6 +465,7 @@
   flex: 1;
   padding: 26px 28px;
   overflow: auto;
+  min-width: 0;
 }
 
 /* =========================================================================
@@ -427,23 +488,26 @@
   background: var(--pos-blue);
   color: #fff;
 }
+
 .btn-primary:hover:not(:disabled) {
   background: var(--pos-blue-dark);
 }
 
 .btn-secondary {
-  background: #fff;
+  background: var(--pos-surface);
   color: var(--pos-text);
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: rgba(var(--pos-ink), 0.15);
 }
+
 .btn-secondary:hover:not(:disabled) {
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(var(--pos-ink), 0.3);
 }
 
 .btn-danger {
   background: var(--pos-red-bg);
   color: var(--pos-red-text);
 }
+
 .btn-danger:hover:not(:disabled) {
   filter: brightness(0.96);
 }
@@ -465,6 +529,16 @@
   margin: 8px 0;
 }
 
+.form-info {
+  color: var(--pos-blue-dark);
+  background: var(--pos-blue-light);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 8px 0;
+}
+
 .status-badge {
   display: inline-flex;
   width: fit-content;
@@ -474,22 +548,37 @@
   border-radius: 20px;
   line-height: 1;
 }
+
 .status-created {
   background: var(--pos-gray-bg);
   color: var(--pos-gray-text);
 }
+
 .status-paid {
   background: var(--pos-blue-light);
   color: var(--pos-blue-dark);
 }
-.status-completed {
+
+.status-diproses {
   background: #fdecc8;
   color: #8a5a00;
 }
+
+.status-qc {
+  background: #ede4fb;
+  color: #5b3a8f;
+}
+
+.status-selesai {
+  background: #d8f3e8;
+  color: #1f7a5c;
+}
+
 .status-closed {
   background: var(--pos-green-bg);
   color: var(--pos-green-text);
 }
+
 .status-voided {
   background: var(--pos-red-bg);
   color: var(--pos-red-text);
@@ -504,7 +593,10 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  min-height: 100svh;
   width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
   background: var(--pos-bg);
 }
 
@@ -523,13 +615,7 @@
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: var(--pos-blue);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
+  object-fit: cover;
   margin: 0 auto 14px;
 }
 
@@ -557,6 +643,49 @@
   margin: 0 0 14px;
 }
 
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.login-form input {
+  padding: 11px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.12);
+  border-radius: 10px;
+  background: var(--pos-surface);
+  font-size: 14px;
+  color: var(--pos-text);
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+.login-submit {
+  margin-top: 4px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+/* Empty and full-width when Cloudflare passes a login through silently
+   (the normal case); only takes visible space if it renders a challenge. */
+.login-captcha:not(:empty) {
+  display: flex;
+  justify-content: center;
+}
+
 .name-picker-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -565,9 +694,9 @@
 
 .name-picker-button {
   padding: 14px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(var(--pos-ink), 0.12);
   border-radius: 10px;
-  background: #fff;
+  background: var(--pos-surface);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--pos-text);
@@ -605,7 +734,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(var(--pos-ink), 0.2);
   background: transparent;
 }
 
@@ -632,8 +761,8 @@
   width: 64px;
   height: 56px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fafafa;
+  border: 1px solid rgba(var(--pos-ink), 0.1);
+  background: var(--pos-surface-2);
   font-size: 18px;
   font-weight: 600;
   color: var(--pos-text);
@@ -689,8 +818,8 @@
 
 .service-card {
   position: relative;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
   border-radius: 10px;
   padding: 16px;
   cursor: pointer;
@@ -702,7 +831,7 @@
 
 .service-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.15);
+  border-color: rgba(var(--pos-ink), 0.15);
 }
 
 .service-card.selected {
@@ -742,8 +871,8 @@
 .ticket-panel {
   width: 340px;
   flex: none;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -767,7 +896,36 @@
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+/* Wash/QC pickers on Transaksi Baru: label above a full-width dropdown, same
+   rhythm as the customer fields' labels. The pickers are right-aligned in
+   Detail Transaksi, so stretch them back out here. */
+.ticket-staff-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ticket-staff-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.ticket-staff-fields .multi-staff-picker {
+  align-items: stretch;
+}
+
+.ticket-staff-fields .staff-picker-select {
+  width: 100%;
+  font-size: 13.5px;
+  padding: 10px 12px;
+}
+
+.ticket-staff-fields .multi-staff-list {
+  min-width: 0;
 }
 
 .ticket-panel label {
@@ -780,17 +938,23 @@
 }
 
 .ticket-panel input,
+.ticket-panel select,
 .ticket-panel textarea {
   font-size: 13.5px;
   font-weight: 500;
   color: var(--pos-text);
   padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--pos-ink), 0.15);
   border-radius: 8px;
-  background: #fff;
+  background: var(--pos-surface);
+}
+
+.ticket-panel select {
+  cursor: pointer;
 }
 
 .ticket-panel input:focus,
+.ticket-panel select:focus,
 .ticket-panel textarea:focus {
   outline: none;
   border-color: var(--pos-blue);
@@ -820,7 +984,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
 }
 
 .ticket-line-info {
@@ -850,8 +1014,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #fff;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  background: var(--pos-surface);
   font-size: 13px;
   font-weight: 600;
   line-height: 1;
@@ -879,7 +1043,7 @@
 .ticket-line-remove {
   border: none;
   background: transparent;
-  color: rgba(0, 0, 0, 0.35);
+  color: rgba(var(--pos-ink), 0.55);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -891,7 +1055,10 @@
 }
 
 .ticket-discount {
-  margin-top: 14px;
+  margin: 14px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .ticket-notes {
@@ -901,13 +1068,13 @@
 .transaksi-summary {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(var(--pos-ink), 0.08);
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.transaksi-summary > div {
+.transaksi-summary>div {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
@@ -920,6 +1087,59 @@
   font-weight: 700;
   color: var(--pos-text);
   margin-top: 4px;
+}
+
+/* Laporan: title with the day picker beside it */
+.laporan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.laporan-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Promo checkbox under the subtotal, with what the promo saves beside it */
+.transaksi-summary .transaksi-promo-row {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Two classes so this beats `.ticket-panel label` / `.worker-wizard-card label`,
+   which stack a label's children in a column. */
+.transaksi-summary .transaksi-promo-check {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pos-text);
+  cursor: pointer;
+}
+
+.transaksi-promo-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--pos-blue);
+  cursor: pointer;
+}
+
+.transaksi-promo-saving {
+  font-weight: 600;
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard .transaksi-promo-check input {
+  width: 22px;
+  height: 22px;
 }
 
 .ticket-submit {
@@ -967,10 +1187,19 @@
 
 .riwayat-search input {
   padding: 9px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--pos-ink), 0.15);
   border-radius: 8px;
   font-size: 13px;
   min-width: 220px;
+}
+
+.riwayat-search select {
+  padding: 9px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
 }
 
 .riwayat-search input:focus {
@@ -993,6 +1222,68 @@
   background: var(--pos-blue-dark);
 }
 
+/* Payment method toggles — each one independent, matched with OR. Active
+   styling mirrors .worker-chip.active so it inverts correctly in dark mode. */
+.riwayat-payment-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.riwayat-payment-toggle {
+  padding: 7px 14px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 999px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.riwayat-payment-toggle:hover {
+  border-color: rgba(var(--pos-ink), 0.35);
+}
+
+.riwayat-payment-toggle.active {
+  background: var(--pos-text);
+  border-color: var(--pos-text);
+  color: var(--pos-surface);
+}
+
+.riwayat-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.riwayat-period-label {
+  font-size: 13px;
+  color: var(--pos-text-faint);
+}
+
+.riwayat-export select {
+  padding: 9px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+}
+
+.riwayat-export select:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+.riwayat-export .btn-secondary {
+  width: auto;
+  padding: 9px 16px;
+  font-size: 13px;
+}
+
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1001,8 +1292,8 @@
 }
 
 .stat-card {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.07);
   border-radius: 10px;
   padding: 16px 18px;
   display: flex;
@@ -1035,24 +1326,27 @@
 }
 
 .riwayat-table {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.07);
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .riwayat-table-row {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 1.2fr 0.9fr 0.8fr 1fr;
+  grid-template-columns: 1.7fr 1fr 1.2fr 0.9fr 0.8fr 1fr;
+  min-width: 640px;
   align-items: center;
   gap: 10px;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
   text-decoration: none;
   color: inherit;
   font-size: 13px;
   font-weight: 400;
-  color: rgba(0, 0, 0, 0.65);
+  color: rgba(var(--pos-ink), 0.65);
 }
 
 .riwayat-table-row:last-child {
@@ -1060,7 +1354,131 @@
 }
 
 .riwayat-table-row:not(.riwayat-table-head):hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(var(--pos-ink), 0.02);
+}
+
+.riwayat-row-toggle {
+  cursor: pointer;
+}
+
+/* Detail panels and the start popup are mounted on demand, so they ease in
+   with a keyframe animation rather than a transition. */
+@keyframes panel-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The wrapper grows its row from 0fr to 1fr, which is what makes the rows
+   below slide down in step with the panel instead of jumping. The inner
+   clips the panel while it's still short. Same duration and curve as the
+   panel's own fade, so the two move as one. */
+@keyframes expand-rows {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+.expand-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: expand-rows 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.expand-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expand-wrap,
+  .riwayat-expand,
+  .upah-adjustments-panel {
+    animation: none !important;
+  }
+
+  /* The popup keeps a plain fade instead of switching off entirely: phones
+     with "remove animations" / battery saver report reduce-motion, and a
+     popup that just appears reads as broken. No movement or scaling. */
+  .start-modal {
+    animation-name: overlay-fade-in !important;
+  }
+}
+
+.riwayat-expand {
+  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 14px 18px 18px;
+  background: var(--pos-bg);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  font-size: 13px;
+  color: var(--pos-text);
+}
+
+.riwayat-expand dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  margin: 0 0 14px;
+}
+
+.riwayat-expand dt {
+  color: var(--pos-text-faint);
+}
+
+.riwayat-expand dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.riwayat-expand-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.riwayat-expand-actions a {
+  text-decoration: none;
+}
+
+.riwayat-expand-image {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--pos-border);
 }
 
 .riwayat-table-head {
@@ -1072,10 +1490,21 @@
   cursor: default;
 }
 
-.riwayat-plate {
+/* Emphasised first column. Kelola Staf and Katalog reuse .riwayat-plate for
+   their own leading column, hence the shared rule. */
+.riwayat-plate,
+.riwayat-service {
   font-size: 13px;
   font-weight: 600;
   color: var(--pos-text);
+}
+
+/* Service names are the widest thing in the treatment tables and several can
+   share one ticket, so that column truncates rather than wrapping the row. */
+.riwayat-service {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .riwayat-total {
@@ -1109,8 +1538,8 @@
 .detail-card {
   width: 100%;
   max-width: 420px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
   border-radius: 14px;
   padding: 32px;
 }
@@ -1155,14 +1584,14 @@
 .struk-card hr,
 .detail-card hr {
   border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(var(--pos-ink), 0.08);
   margin: 14px 0;
 }
 
 .struk-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   font-size: 13px;
   font-weight: 500;
   color: var(--pos-text);
@@ -1254,14 +1683,625 @@
   align-items: center;
 }
 
+.overdue-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--pos-red-bg);
+  color: var(--pos-red-text);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.overdue-alert-icon {
+  flex: none;
+}
+
+.overdue-alert-link {
+  color: var(--pos-red-text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--pos-red-bg);
+  color: var(--pos-red-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.antrian-table .riwayat-table-row.overdue {
+  background: var(--pos-red-bg);
+}
+
+.antrian-table .riwayat-table-row.overdue:hover {
+  background: var(--pos-red-bg);
+  filter: brightness(0.97);
+}
+
 .katalog-note {
   font-size: 13px;
   color: var(--pos-text-faint);
   margin: -12px 0 20px;
 }
 
+.riwayat-scope-note {
+  font-size: 13px;
+  color: var(--pos-text-faint);
+  margin: -8px 0 20px;
+}
+
 .katalog-table .riwayat-table-row {
   grid-template-columns: 2fr 1fr;
+  min-width: 0;
+}
+
+.katalog-section + .katalog-section {
+  margin-top: 32px;
+}
+
+/* Nama | Harga | Stok, plus the restock control for supervisors. */
+.katalog-table.katalog-shelf .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.katalog-table.katalog-shelf-managed .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr 1.4fr;
+}
+
+.katalog-table.katalog-service .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.katalog-table.katalog-service-managed .riwayat-table-row {
+  grid-template-columns: 2fr 1fr 1fr auto;
+}
+
+/* Transaksi Baru: one collapsible section per service category. Headers are
+   full-width and 52px tall so they're an easy thumb target on a phone. */
+.service-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-category {
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: var(--pos-surface);
+}
+
+.service-category-header {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--pos-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.service-category-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.service-category-meta {
+  font-size: 12.5px;
+  color: var(--pos-text-muted);
+}
+
+.service-category-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--pos-blue);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* Drawn chevron rather than a glyph, so it renders the same everywhere */
+.service-category-chevron {
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--pos-text-muted);
+  border-bottom: 2px solid var(--pos-text-muted);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.15s ease;
+}
+
+.service-category.open .service-category-chevron {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+/* ---- service menu: section tiles + popup ----
+   The ticket picker lists sections only (Cuci Motor, Poles Mobil, …) and
+   opens the matching cards in a popup. Katalog keeps the collapsible
+   sections above; only Transaksi Baru uses these tiles. */
+.service-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.service-menu-tile {
+  position: relative;
+  min-height: 74px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.service-menu-tile:hover {
+  border-color: var(--pos-blue);
+}
+
+/* A section that has lines on the ticket reads as active at a glance. */
+.service-menu-tile.has-selection {
+  border-color: var(--pos-blue);
+  background: var(--pos-blue-lighter);
+}
+
+.service-menu-tile-label {
+  font-size: 15px;
+  font-weight: 700;
+  /* Clears the count badge in the corner. */
+  padding-right: 26px;
+}
+
+.service-menu-tile-meta {
+  font-size: 12.5px;
+  color: var(--pos-text-muted);
+}
+
+.service-menu-tile .service-category-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Wider than the confirm dialogs .start-modal was written for — it holds a
+   card grid — and capped in height so a long section scrolls inside the
+   popup instead of running off the screen. */
+/* The popup is held inside the band left by the app's own fixed chrome, and
+   the card grid scrolls within it. The overlay's padding is what reserves
+   that band: the modal's max-height is a percentage, so it resolves against
+   the overlay's content box — padding already subtracted. */
+.service-menu-overlay {
+  padding: 14px;
+  /* Over the tab bar (30) and action bar (25) as well as the page. */
+  z-index: 1100;
+}
+
+/* Scroll is frozen behind the popup: the body for the desk layout, and the
+   worker UI's own scroll container, which is what actually scrolls there. */
+body.service-menu-open {
+  overflow: hidden;
+}
+
+body.service-menu-open .worker-content {
+  overflow: hidden;
+}
+
+/* Worker UI: below the fixed top bar and the wizard's step row, above the
+   action bar stacked on the tab bar. Flagged by a class rather than a
+   `.worker-ui` ancestor, because the popup is portalled out to <body>. */
+.service-menu-overlay-worker {
+  padding-top: calc(124px + env(safe-area-inset-top));
+  padding-bottom: calc(128px + env(safe-area-inset-bottom));
+}
+
+/* Qualified with .start-modal so these win over its own narrower max-width,
+   which is defined further down the file. */
+.start-modal.service-menu-modal {
+  max-width: 560px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Everything but the grid keeps its natural height... */
+.service-menu-modal > .start-modal-title,
+.service-menu-modal > .start-modal-hint,
+.service-menu-modal > .start-modal-actions {
+  flex: none;
+}
+
+/* ...and the grid takes the rest and scrolls. min-height: 0 is what makes
+   that work: a flex item defaults to min-height: auto, so without it the
+   grid refuses to shrink and pushes the popup past its own max-height —
+   which is how the long sections ended up clipped top and bottom. */
+.service-menu-modal-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Room for the qty badge, which sits 8px outside each card's corner. */
+  padding: 8px;
+  margin: -8px;
+}
+
+.service-menu-modal .start-modal-actions {
+  margin-top: 16px;
+}
+
+/* Kembali left, Selesai right — the confirm dialogs' actions row packs both
+   to the right, which here read as two ways of saying the same thing. */
+.service-menu-modal-actions {
+  justify-content: space-between;
+}
+
+/* The portal lands outside .worker-ui, so the worker card sizing has to be
+   restated here rather than inherited from it. */
+.service-menu-overlay-worker .service-card {
+  padding: 14px 12px;
+  min-height: 84px;
+  border-radius: 12px;
+}
+
+.service-menu-overlay-worker .service-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .service-menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Katalog: the table sits inside the collapsible card, so drop its own
+   border/radius and just divide it from the header */
+.service-category .katalog-category-panel {
+  border: none;
+  border-top: 1px solid var(--pos-border);
+  border-radius: 0 0 12px 12px;
+  margin: 0;
+}
+
+/* Katalog Layanan (supervisor): an input in each price column. Prices run
+   to 7 digits (1050000), so give them room. */
+.katalog-price-input input {
+  width: 100%;
+  max-width: 120px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  border: 1px solid var(--pos-border);
+  border-radius: 6px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+}
+
+/* Room for the qty badge, which sits 8px outside each card's corner */
+.service-category-panel {
+  padding: 10px 14px 16px;
+}
+
+/* Normal price when a promo is running — still shown so staff can quote it */
+.katalog-normal-price-struck,
+.service-card-normal-price {
+  color: var(--pos-text-muted, #8a8f98);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.service-card-normal-price {
+  margin-left: 6px;
+  font-size: 12px;
+}
+
+.katalog-stock-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.katalog-stock-actions input {
+  width: 68px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  border: 1px solid var(--pos-border);
+  border-radius: 6px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+}
+
+.katalog-stock-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.transaksi-section-label-spaced {
+  margin-top: 28px;
+}
+
+.service-card-stock {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pos-text-faint);
+}
+
+.service-card:disabled,
+.service-card.sold-out {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.katalog-service-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.katalog-service-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--pos-blue-lighter);
+  color: var(--pos-blue);
+}
+
+.katalog-service-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.antrian-table .riwayat-table-row {
+  grid-template-columns: 1.7fr 1fr 1fr 0.9fr 0.8fr 1fr 0.9fr;
+  min-width: 780px;
+  cursor: pointer;
+}
+
+.wash-proof-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--pos-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-faint);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wash-proof-btn.has-photo {
+  border-color: var(--pos-blue);
+  color: var(--pos-blue);
+  background: var(--pos-blue-lighter);
+}
+
+.wash-proof-btn.has-error {
+  border-color: var(--pos-red-text);
+  color: var(--pos-red-text);
+  background: var(--pos-red-bg);
+}
+
+.wash-proof-thumb-btn {
+  display: inline-block;
+  line-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.wash-proof-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--pos-border);
+}
+
+.start-modal-overlay {
+  animation: overlay-fade-in 0.2s ease-out;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.start-modal {
+  animation: modal-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+  max-width: 380px;
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
+  border-radius: 14px;
+  padding: 22px;
+  color: var(--pos-text);
+}
+
+.start-modal-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.start-modal-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--pos-text-faint);
+}
+
+/* ---- payment verification modal (reuses .start-modal) ---- */
+.payment-modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--pos-surface-2);
+  font-size: 13px;
+  color: var(--pos-text-muted);
+}
+
+.payment-modal-total span:last-child {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.payment-modal .payment-method-selector {
+  margin-bottom: 16px;
+}
+
+.payment-modal-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-modal-proof .start-modal-hint {
+  margin: 0;
+}
+
+.payment-modal-proof-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-surface-2);
+}
+
+.start-modal .multi-staff-picker select {
+  width: 100%;
+}
+
+.start-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.photo-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 1000;
+}
+
+.photo-lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.photo-lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.camera-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  cursor: default;
+}
+
+.camera-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.camera-preview {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  background: #000;
+}
+
+.camera-hint {
+  position: absolute;
+  color: #fff;
+  font-size: 14px;
+}
+
+.camera-error {
+  margin: 0;
+  text-align: center;
+  color: var(--pos-red-text);
+  font-size: 13px;
+}
+
+.camera-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* =========================================================================
@@ -1275,8 +2315,8 @@
 }
 
 .laporan-panel {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.07);
   border-radius: 10px;
   padding: 20px;
 }
@@ -1354,12 +2394,262 @@
   color: var(--pos-text);
 }
 
+.laporan-workers {
+  margin-top: 20px;
+}
+
+.laporan-services {
+  margin-top: 20px;
+}
+
+.popular-services {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.popular-service-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.popular-service-rank {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--pos-bg);
+  color: var(--pos-text-muted);
+}
+
+.popular-service-row.is-top .popular-service-rank {
+  background: var(--pos-blue);
+  color: #fff;
+}
+
+.popular-service-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popular-service-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.popular-service-name {
+  font-weight: 600;
+  color: var(--pos-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popular-service-count {
+  flex: none;
+  font-weight: 700;
+  color: var(--pos-blue);
+}
+
+.popular-service-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--pos-bg);
+  overflow: hidden;
+}
+
+.popular-service-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: #c9d8e6;
+}
+
+.popular-service-row.is-top .popular-service-fill {
+  background: var(--pos-blue);
+}
+
+.popular-service-revenue {
+  font-size: 11.5px;
+  color: var(--pos-text-faint);
+}
+
+.laporan-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.laporan-panel-header .laporan-panel-title {
+  margin-bottom: 4px;
+}
+
+.laporan-panel-subtitle {
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+  margin: 0;
+}
+
+.laporan-panel-header select {
+  padding: 9px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.laporan-panel-header select:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+.worker-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.worker-leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(var(--pos-ink), 0.07);
+  border-radius: 10px;
+  background: var(--pos-surface);
+}
+
+.worker-leaderboard-row.tier-1 {
+  border-color: rgba(232, 178, 26, 0.4);
+  background: rgba(232, 178, 26, 0.08);
+}
+
+.worker-leaderboard-row.tier-2 {
+  border-color: rgba(148, 158, 171, 0.35);
+  background: rgba(148, 158, 171, 0.08);
+}
+
+.worker-leaderboard-row.tier-3 {
+  border-color: rgba(200, 138, 79, 0.35);
+  background: rgba(200, 138, 79, 0.08);
+}
+
+.worker-leaderboard-row.is-you {
+  box-shadow: 0 0 0 2px var(--pos-blue) inset;
+}
+
+.worker-you-tag {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--pos-blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+}
+
+.worker-rank-badge {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--pos-gray-bg);
+  color: var(--pos-gray-text);
+}
+
+.worker-rank-badge.tier-1 {
+  background: #e8b21a;
+  color: #4a3600;
+}
+
+.worker-rank-badge.tier-2 {
+  background: #b7bfc9;
+  color: #333a42;
+}
+
+.worker-rank-badge.tier-3 {
+  background: #c88a4f;
+  color: #422a11;
+}
+
+.worker-avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pos-blue-light);
+  color: var(--pos-blue-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.worker-leaderboard-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.worker-leaderboard-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pos-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worker-leaderboard-sub {
+  font-size: 12px;
+  color: var(--pos-text-faint);
+}
+
+.worker-leaderboard-total {
+  flex: none;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pos-blue);
+}
+
 @media (max-width: 960px) {
   .laporan-panels {
     flex-direction: column;
   }
+
   .laporan-payments {
     width: 100%;
+  }
+
+  .worker-leaderboard-row {
+    padding: 8px 10px;
+    gap: 8px;
   }
 }
 
@@ -1377,8 +2667,8 @@
   flex: 1;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #fff;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  background: var(--pos-surface);
   color: var(--pos-text);
   font-size: 13px;
   font-weight: 600;
@@ -1390,31 +2680,8 @@
 }
 
 .payment-method-button.selected {
-  border: 2px solid var(--pos-blue);
-  background: var(--pos-blue-light);
-  color: var(--pos-blue-dark);
-}
-
-.pay-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.pay-toggle button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #fff;
-  color: var(--pos-text-muted);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.pay-toggle button.active {
-  border: 2px solid var(--pos-blue);
+  border-color: var(--pos-blue);
+  box-shadow: 0 0 0 1px var(--pos-blue) inset;
   background: var(--pos-blue-light);
   color: var(--pos-blue-dark);
 }
@@ -1458,6 +2725,561 @@
   margin-top: 0;
 }
 
+/* =========================================================================
+   Kelola Staf (worker management, admin only)
+   ========================================================================= */
+
+.staf-section {
+  margin-bottom: 36px;
+}
+
+.staf-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.staf-section-header .transaksi-section-label {
+  margin: 0;
+}
+
+.staf-section-note {
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+  margin: 0 0 14px;
+}
+
+/* One roster table since the field-worker/office split went away:
+   Nama | Telepon | Peran | Akun | Status | aksi */
+.staf-table .riwayat-table-row {
+  grid-template-columns: 1.4fr 1fr 0.8fr 1fr 0.9fr 1.9fr;
+  min-width: 680px;
+}
+
+.staf-username {
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+}
+
+.staf-row-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.staf-row-actions button {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.staf-form {
+  margin-bottom: 20px;
+}
+
+.staf-login-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+  cursor: pointer;
+}
+
+.staf-login-toggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--pos-blue);
+}
+
+.staf-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.staf-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.staf-form-grid input,
+.staf-form-grid select {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--pos-text);
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  background: var(--pos-surface);
+}
+
+.staf-edit-row {
+  align-items: center;
+}
+
+.staf-edit-row input,
+.staf-edit-row select {
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 6px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  width: 100%;
+}
+
+/* =========================================================================
+   Kelola Upah (wage management, supervisor + admin)
+   ========================================================================= */
+
+.upah-stat-cards {
+  grid-template-columns: 1fr;
+  max-width: 280px;
+}
+
+.staf-section-header input[type='date'] {
+  padding: 9px 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  flex-shrink: 0;
+}
+
+.staf-section-header input[type='date']:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+/* Upah per Layanan: Layanan | Upah | aksi */
+.upah-rate-table .riwayat-table-row {
+  grid-template-columns: 2fr 1.2fr 1fr;
+  min-width: 420px;
+}
+
+.upah-rate-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upah-rate-input input {
+  width: 90px;
+  font-size: 13px;
+  padding: 7px 10px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 6px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+}
+
+.upah-rate-input span {
+  font-size: 13px;
+  color: var(--pos-text-faint);
+}
+
+/* Upah Harian: Nama | Upah Jasa | Penyesuaian | Total Upah | aksi */
+.upah-daily-table .riwayat-table-row {
+  grid-template-columns: 1.6fr 0.6fr 1.2fr 1.2fr 1.4fr 1.2fr 0.9fr;
+  min-width: 960px;
+}
+
+.upah-present-check {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--pos-blue);
+  cursor: pointer;
+}
+
+.upah-kasbon-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(var(--pos-ink), 0.1);
+  border-radius: 10px;
+}
+
+.upah-kasbon-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  font-size: 13px;
+  color: var(--pos-text-muted);
+}
+
+.upah-kasbon-head strong {
+  color: var(--pos-text);
+}
+
+.upah-kasbon-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+}
+
+/* ---- Keuangan: tabs + Setoran Harian ---- */
+.keuangan-tabs {
+  display: inline-flex;
+  padding: 3px;
+  margin: 0 0 18px;
+  border-radius: 10px;
+  background: var(--pos-gray-bg);
+  border: 1px solid var(--pos-border);
+}
+
+.keuangan-tab {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+  cursor: pointer;
+}
+
+.keuangan-tab.active {
+  background: var(--pos-surface);
+  color: var(--pos-blue-dark);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+.setoran-block {
+  margin: 0 0 22px;
+}
+
+.setoran-block-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.setoran-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+  font-size: 13px;
+  color: var(--pos-text-muted);
+}
+
+.setoran-lines > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setoran-lines-title {
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.setoran-line-total {
+  padding-top: 6px;
+  border-top: 1px solid rgba(var(--pos-ink), 0.1);
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.setoran-recap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.setoran-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.setoran-count-input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.setoran-difference {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.setoran-difference.ok {
+  color: var(--pos-blue-dark);
+}
+
+.setoran-difference.off {
+  color: var(--pos-red-text);
+}
+
+.setoran-actions,
+.setoran-closed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.setoran-warning {
+  margin-left: 8px;
+  font-size: 12.5px;
+  color: var(--pos-red-text);
+}
+
+.setoran-expense-table .riwayat-table-row {
+  grid-template-columns: 1.1fr 2fr 1.1fr 1.2fr 0.8fr;
+  min-width: 640px;
+}
+
+.setoran-wage-table .riwayat-table-row {
+  grid-template-columns: 1.4fr 1fr 2fr 2fr;
+  min-width: 640px;
+}
+
+.kasbon-table .riwayat-table-row {
+  grid-template-columns: 2fr 1.4fr 1fr;
+  min-width: 480px;
+}
+
+.kasbon-clear {
+  color: var(--pos-text-faint);
+}
+
+.kasbon-percent {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.kasbon-percent label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.upah-meal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upah-daily-row .status-badge {
+  margin-right: 4px;
+}
+
+.upah-net-negative {
+  color: var(--pos-red-text) !important;
+}
+
+.upah-adjustments-panel {
+  animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 14px 18px 18px;
+  background: var(--pos-bg);
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.upah-breakdown {
+  width: 100%;
+  margin-bottom: 14px;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--pos-text);
+}
+
+.upah-breakdown th,
+.upah-breakdown td {
+  padding: 6px 0;
+  text-align: right;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.upah-breakdown th:first-child,
+.upah-breakdown td:first-child {
+  text-align: left;
+}
+
+.upah-breakdown th {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pos-text-faint);
+}
+
+.upah-breakdown tfoot td {
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.upah-breakdown-empty {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--pos-text-faint);
+}
+
+.upah-adjustment-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.upah-adjustment-form select,
+.upah-adjustment-form input {
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 6px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+}
+
+.upah-adjustment-form input[type='number'] {
+  width: 130px;
+}
+
+.upah-adjustment-form input[type='text'] {
+  flex: 1;
+  min-width: 160px;
+}
+
+.upah-adjustments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.upah-adjustment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  font-size: 13px;
+  color: var(--pos-text);
+}
+
+.upah-adjustment-item:last-child {
+  border-bottom: none;
+}
+
+.upah-adjustment-amount {
+  font-weight: 600;
+}
+
+.upah-adjustment-reason {
+  flex: 1;
+  color: var(--pos-text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upah-adjustment-item .btn-secondary {
+  padding: 5px 10px;
+  font-size: 11.5px;
+}
+
+@media (max-width: 960px) {
+  .upah-adjustment-form input[type='text'] {
+    min-width: 100%;
+  }
+}
+
+.staff-picker-select {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pos-text);
+  padding: 6px 10px;
+  border: 1px solid var(--pos-border);
+  border-radius: 8px;
+  background: var(--pos-surface);
+  cursor: pointer;
+}
+
+.staff-picker-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.multi-staff-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* The wash-staff row grows a list under its dropdown, and centering would
+   drift the label down that whole block — keep it level with the dropdown.
+   The padding matches the select's own top padding + border. */
+.struk-row-picker {
+  align-items: flex-start;
+}
+
+/* .struk-row-picker > span:first-child {
+  padding-top: 7px;
+} */
+
+.multi-staff-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 160px;
+}
+
+.multi-staff-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pos-text);
+  border-bottom: 1px solid var(--pos-border);
+}
+
+.multi-staff-list-item:last-child {
+  border-bottom: none;
+}
+
+.multi-staff-list-item button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--pos-text-faint);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.multi-staff-list-item button:hover {
+  color: var(--pos-red-text);
+}
+
 .detail-hint {
   font-size: 12.5px;
   color: var(--pos-red-text);
@@ -1469,19 +3291,1452 @@
   .service-picker-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .transaksi-baru-screen {
     flex-direction: column;
   }
+
   .ticket-panel {
     width: 100%;
     position: static;
     max-height: none;
   }
+
   .stat-cards {
     grid-template-columns: 1fr;
   }
-  .riwayat-table-row {
-    grid-template-columns: 1fr 1fr;
-    row-gap: 4px;
+}
+
+@media (max-width: 480px) {
+  .service-picker-grid {
+    grid-template-columns: 1fr;
   }
+}
+
+/* ---- mobile: off-canvas sidebar nav ---- */
+@media (max-width: 768px) {
+  .app-hamburger {
+    display: flex;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    width: 240px;
+    max-width: 82vw;
+    transform: translateX(-100%);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    transition:
+      transform 0.22s ease,
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .app-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+  }
+
+  .app-header {
+    padding: 0 14px;
+  }
+
+  .app-header-date {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-header-name {
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-content {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-header-date {
+    display: none;
+  }
+}
+
+/* ---- mobile: forms and headers that need to wrap instead of overflow ---- */
+@media (max-width: 700px) {
+  .riwayat-header {
+    flex-wrap: wrap;
+  }
+
+  .riwayat-search {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .riwayat-search input {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .riwayat-export {
+    flex-wrap: wrap;
+  }
+
+  .laporan-panel-header {
+    flex-wrap: wrap;
+  }
+
+  .staf-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staf-edit-row {
+    grid-template-columns: 1fr !important;
+    min-width: 0 !important;
+    row-gap: 8px;
+  }
+}
+
+/* =========================================================================
+   Dark mode — component-specific accent colors not covered by the --pos-*
+   tokens (redefined in index.css) or the --pos-ink flip used for borders
+   and translucent text throughout this file.
+   ========================================================================= */
+
+:root[data-theme='dark'] .status-diproses,
+:root[data-theme='dark'] .struk-check-pending {
+  background: #4a3a12;
+  color: #f5c76a;
+}
+
+:root[data-theme='dark'] .status-qc {
+  background: #3a2e52;
+  color: #cbb3f0;
+}
+
+:root[data-theme='dark'] .status-selesai {
+  background: #163d2e;
+  color: #7fe3bb;
+}
+
+:root[data-theme='dark'] .rev-bar {
+  background: #33475c;
+}
+
+/* Text with no color of its own inherits :root's legacy --text, a dim gray
+   that reads poorly on the dark surfaces. Inside the app, default to the
+   real body-text token instead. Light mode is left as it was. */
+:root[data-theme='dark'] .app-shell,
+:root[data-theme='dark'] .worker-shell,
+:root[data-theme='dark'] .login-screen {
+  color: var(--pos-text);
+}
+
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: var(--pos-text-faint);
+  opacity: 1;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-surface);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-toggle-btn:hover {
+  border-color: rgba(var(--pos-ink), 0.2);
+}
+
+/* =========================================================================
+   Worker UI — the phone treatment for role='staff'
+   -------------------------------------------------------------------------
+   Visual language comes from `design/Worker View Standalone.html`: a left
+   accent stripe per card, large plate type, uppercase status pills, and the
+   chunky 64px action buttons (solid face over a 3px hard shadow) that are the
+   whole point of the design — they are meant to be hit with a thumb, wet
+   hands, in daylight.
+
+   That mockup is a 1280px English/USD demo built around bays, techs and ETAs,
+   none of which exist in this schema. Taken from it: the styling. Not taken:
+   its layout (it is a wide desktop row; this is a phone column) or its
+   concepts. Its hardcoded hex values are mapped onto the --pos-* tokens so
+   dark mode keeps working — see the *-press pair in index.css.
+
+   WorkerShell puts `.worker-ui` on its root, which is the namespace for
+   everything here. Rules are unconditional rather than wrapped in a media
+   query: reaching them at all means a worker is signed in, and a worker is on
+   a phone. That also keeps them clear of the desktop-first breakpoints above.
+   ========================================================================= */
+
+.worker-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  background: var(--pos-bg);
+  overflow: hidden;
+  font-family: var(--pos-font);
+  color: var(--pos-text);
+}
+
+/* ---- topbar ---- */
+
+.worker-topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 64px;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: content-box;
+  background: var(--pos-surface);
+  border-bottom: 1px solid var(--pos-border);
+}
+
+.worker-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.worker-topbar-title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--pos-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+/* 44px circle, straight from the mockup — also the minimum touch target, so
+   it doubles as the logout control rather than sitting next to one. */
+.worker-avatar {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--pos-blue-light);
+  color: var(--pos-blue-dark);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 40px both ways, not just min-height: the toggle is a 32px circle, and
+   stretching only its height turned it into an oval. */
+.worker-topbar .theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+}
+
+/* ---- content ---- */
+
+.worker-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px;
+  /* Clear the fixed tab bar, and the action bar that sits on top of it, so
+     the last card is never trapped underneath. */
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
+  min-width: 0;
+}
+
+/* ---- bottom tab bar ---- */
+
+.worker-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: var(--pos-surface);
+  border-top: 1px solid var(--pos-border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.worker-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 58px;
+  text-decoration: none;
+  color: var(--pos-text-faint);
+  font-weight: 700;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.worker-tab.active {
+  color: var(--pos-blue);
+}
+
+.worker-tab-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.worker-tab-label {
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+
+/* =========================================================================
+   Worker UI — chunky buttons
+   The signature control from the mockup: a solid face sitting on a 3px hard
+   shadow, which collapses on press so the button physically travels down.
+   ========================================================================= */
+
+.worker-btn {
+  flex: 1;
+  min-width: 0;
+  height: 64px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.worker-btn-blue {
+  background: var(--pos-blue);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--pos-blue-press);
+}
+
+.worker-btn-green {
+  background: var(--pos-green-solid);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--pos-green-press);
+}
+
+/* Travel the full 3px down and drop the shadow, so the press reads as the
+   button being pushed into the card rather than as a colour change. */
+.worker-btn-blue:active:not(:disabled),
+.worker-btn-green:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.worker-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* The square secondary — the mockup's "i". Outline, no lift. */
+.worker-btn-ghost {
+  flex: none;
+  width: 64px;
+  padding: 0;
+  background: transparent;
+  border: 2px solid rgba(var(--pos-ink), 0.15);
+  color: var(--pos-text-muted);
+  font-size: 21px;
+}
+
+.worker-btn-ghost:active {
+  background: var(--pos-surface-2);
+}
+
+/* Not a button — the state a ticket rests in when there is nothing to press.
+   Mockup's "Ready for Pickup" chip. */
+.worker-btn-static {
+  flex: 1;
+  min-width: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--pos-green-soft);
+  color: var(--pos-green-soft-text);
+  border: 2px solid var(--pos-green-solid);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 14px;
+}
+
+/* =========================================================================
+   Worker UI — back button
+   Stands in for the page <h1> on Detail Transaksi: the top bar already names
+   the screen, so the heading was said twice and getting back to the queue
+   meant the browser's own back gesture.
+   ========================================================================= */
+
+.worker-ui .worker-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin: -6px 0 10px -10px;
+  padding: 0 12px 0 6px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--pos-text-muted);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.worker-ui .worker-back-btn:active {
+  background: rgba(var(--pos-ink), 0.06);
+  color: var(--pos-text);
+}
+
+.worker-ui .worker-back-btn svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+/* =========================================================================
+   Worker UI — filter chips
+   Replaces the two rows of stat cards. Same numbers, but each one is now a
+   filter, which is what the counts were really for.
+   ========================================================================= */
+
+.worker-filters {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 14px;
+  /* Four chips will not fit across a phone; scroll them instead of wrapping
+     to a second row that pushes the queue below the fold. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  /* A hidden scrollbar left no way to tell the row scrolls at all — on a
+     phone the cut-off chip just looked clipped. Keep a slim always-visible
+     bar instead; it doubles as the drag handle in a desktop mobile preview,
+     where there is no touch fling. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--pos-ink), 0.25) transparent;
+  scroll-snap-type: x proximity;
+  /* Bleed to the screen edges so the row reads as scrollable, while the first
+     and last chip still line up with the cards below. */
+  margin-left: -14px;
+  margin-right: -14px;
+  padding: 2px 14px 6px;
+}
+
+.worker-filters::-webkit-scrollbar {
+  height: 4px;
+}
+
+.worker-filters::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.worker-filters::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(var(--pos-ink), 0.25);
+}
+
+.worker-chip {
+  flex: none;
+  scroll-snap-align: start;
+  height: 52px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--pos-ink), 0.12);
+  background: var(--pos-surface);
+  color: var(--pos-text-muted);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The mockup's active chip is near-black on white. --pos-text is #16181c in
+   light and #f1f2f4 in dark, so pairing it with --pos-surface inverts the
+   chip correctly in both themes instead of going black-on-black. */
+.worker-chip.active {
+  background: var(--pos-text);
+  border-color: var(--pos-text);
+  color: var(--pos-surface);
+}
+
+.worker-chip-count {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* =========================================================================
+   Worker UI — queue cards
+   ========================================================================= */
+
+.queue-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-card {
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.1);
+  /* The 8px stripe that tells you a card's state before you read it. */
+  border-left: 8px solid var(--pos-wait);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.queue-card-diproses {
+  border-left-color: var(--pos-blue);
+}
+
+.queue-card-qc {
+  border-left-color: var(--pos-green-solid);
+}
+
+/* Work done, waiting on payment verification / close. */
+.queue-card-selesai {
+  border-left-color: var(--pos-green-text);
+}
+
+.queue-card.overdue {
+  border-color: var(--pos-red-text);
+  border-left-color: var(--pos-red-text);
+}
+
+.queue-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px 16px 14px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.queue-card-main:active {
+  background: var(--pos-surface-2);
+}
+
+.queue-card-main:focus-visible {
+  outline: 2px solid var(--pos-blue);
+  outline-offset: -2px;
+}
+
+.queue-card-head {
+  display: flex;
+  /* The badge column is taller than one pill now — top-align it with the
+     heading rather than centring it against the vehicle/plate block. */
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.queue-card-plate {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  color: var(--pos-text);
+}
+
+/* A name in the heading slot shouldn't wear the plate's wide tracking. */
+.queue-card-plate-name {
+  letter-spacing: -0.2px;
+}
+
+/* Vehicle on top, plate below it. */
+.queue-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.queue-card-vehicle {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  color: var(--pos-text);
+  overflow-wrap: anywhere;
+}
+
+.queue-card-plate-sub {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--pos-text-muted);
+}
+
+.queue-card-plate-sub.queue-card-plate-name {
+  letter-spacing: -0.1px;
+}
+
+/* Desk queue table: same pairing inside the Merek cell. */
+.antrian-vehicle-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.antrian-vehicle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.antrian-vehicle-plate {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--pos-text-muted);
+}
+
+/* Treatment code, plus the customer when the heading is a plate rather than
+   their name. Quiet — it's a reference, not something you scan the list by. */
+.queue-card-ref {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 7px;
+  margin-top: -4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pos-text-faint);
+}
+
+.queue-card-ref > span + span::before {
+  content: '\00b7';
+  margin-right: 7px;
+}
+
+.queue-card-service {
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgba(var(--pos-ink), 0.7);
+}
+
+/* Brand, staff and time on one wrapping line separated by dots rather than
+   labels — there is no room for a label column on a handset. */
+.queue-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(var(--pos-ink), 0.62);
+}
+
+.queue-card-meta > span + span::before {
+  content: '\00b7';
+  margin-right: 7px;
+}
+
+/* The card's badge stack: status on top, payment under it, overdue last.
+   align-items keeps each pill only as wide as its own label while they all
+   hang off the card's right edge; flex-shrink: 0 stops a long status label
+   being squeezed by the heading next to it. */
+.queue-card-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.queue-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+/* Upload failure from the main button's photo step. */
+.queue-card-proof-error {
+  margin: -6px 16px 14px;
+}
+
+/* Dashed empty state, straight from the mockup. */
+.worker-ui .riwayat-empty {
+  background: var(--pos-surface);
+  border: 1px dashed rgba(var(--pos-ink), 0.18);
+  border-radius: 12px;
+  padding: 44px 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(var(--pos-ink), 0.6);
+}
+
+.worker-ui .riwayat-loading {
+  text-align: center;
+  padding: 34px 12px;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   Worker UI — shared page overrides
+   ========================================================================= */
+
+/* Status pills go uppercase and gain weight, per the mockup. The colour of
+   each status is inherited from the shared .status-* rules above. Uppercase
+   plus letter-spacing makes them noticeably wider, so they have to be told
+   not to break — 'Belum Dibayar' otherwise wraps to two lines inside its
+   own pill. */
+.worker-ui .status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  white-space: nowrap;
+}
+
+/* Detail Treatment's header: on a phone the code, plate and badge row need
+   to stack rather than share a line, and a treatment code is a single token
+   that must not be broken across lines. */
+.worker-ui .detail-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.worker-ui .detail-card-code {
+  white-space: nowrap;
+}
+
+.worker-ui .detail-card-badges {
+  flex-wrap: wrap;
+}
+
+/* The 56px h1 from index.css is a desktop hero size. */
+.worker-ui h1 {
+  font-size: 22px;
+  letter-spacing: -0.3px;
+  margin: 0 0 4px;
+}
+
+.worker-ui h2 {
+  font-size: 16px;
+}
+
+/* iOS zooms the viewport on focus for any field under 16px. Every desk input
+   here is 13-13.5px, so they all need lifting. */
+.worker-ui input,
+.worker-ui select,
+.worker-ui textarea {
+  font-size: 16px;
+}
+
+/* Real minimum touch targets on anything tappable that isn't already sized. */
+.worker-ui button,
+.worker-ui .btn-primary,
+.worker-ui .btn-secondary,
+.worker-ui .btn-danger {
+  min-height: 44px;
+}
+
+/* The topbar's own controls are deliberately compact and exempt. */
+.worker-topbar button {
+  min-height: 40px;
+}
+
+/* Circles have to grow on both axes. The min-height above only stretches
+   height, which squashes a fixed-width round button into an oval — so each
+   one gets a matching width at its touch size. */
+.worker-ui .ticket-line-qty button {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  flex: none;
+  font-size: 18px;
+}
+
+.worker-ui .photo-lightbox-close {
+  width: 44px;
+  height: 44px;
+}
+
+/* Antrian's own h1 + "Transaksi Baru" link are redundant here: the page title
+   is in the topbar and the destination is a tab. */
+.worker-ui .riwayat-header {
+  display: none;
+}
+
+.worker-ui .overdue-alert {
+  font-size: 13px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+/* ---- Transaksi Baru ---- */
+
+.worker-ui .transaksi-baru-screen {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worker-ui .transaksi-catalog-header {
+  display: none;
+}
+
+/* Two service cards across is the sweet spot on a handset: the desk grid is
+   3, and the existing 480px override drops to 1, which costs a lot of
+   scrolling on a menu this long. */
+.worker-ui .service-picker-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.worker-ui .service-card {
+  padding: 14px 12px;
+  min-height: 84px;
+  border-radius: 12px;
+}
+
+.worker-ui .service-card-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.worker-ui .ticket-panel {
+  width: 100%;
+  position: static;
+  max-height: none;
+  padding: 16px 14px;
+  border-radius: 12px;
+}
+
+/* The action bar carries the total and the submit, so the panel's own button
+   would just be a second control saying the same thing. */
+.worker-ui .ticket-submit {
+  display: none;
+}
+
+/* ---- fixed action bar (sits directly above the tab bar) ---- */
+
+.worker-actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--pos-surface);
+  border-top: 1px solid var(--pos-border);
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.worker-actionbar-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.worker-actionbar-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--pos-text-faint);
+}
+
+.worker-actionbar-total {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+/* Same chunky treatment as the queue actions, sized for the bar. */
+.worker-actionbar-submit {
+  flex: none;
+  min-width: 132px;
+  height: 56px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: var(--pos-blue);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--pos-blue-press);
+}
+
+.worker-actionbar-submit:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.worker-actionbar-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---- Transaksi Baru, three-page wizard ----
+   A worker builds a ticket across three phone pages instead of the desk's
+   single two-column form: items, customer, then a confirmation page. The
+   stepper sits at the top of the flow; the fixed bar below carries the
+   running total and the page's primary action. */
+
+.worker-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worker-wizard-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.worker-wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--pos-text-faint);
+}
+
+.worker-wizard-step-dot {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(var(--pos-ink), 0.2);
+  border-radius: 50%;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.worker-wizard-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worker-wizard-step.active {
+  color: var(--pos-text);
+}
+
+.worker-wizard-step.active .worker-wizard-step-dot {
+  background: var(--pos-blue);
+  border-color: var(--pos-blue);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--pos-blue-light);
+}
+
+.worker-wizard-step.done {
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-step.done .worker-wizard-step-dot {
+  background: var(--pos-blue-light);
+  border-color: var(--pos-blue);
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: worker-wizard-in 0.18s ease-out both;
+}
+
+@keyframes worker-wizard-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.worker-wizard-head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.worker-wizard-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.worker-wizard-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--pos-text-muted);
+}
+
+/* Both section headings sit inside the page's gap, so their own margins
+   would double the spacing. */
+.worker-wizard .transaksi-section-label {
+  margin: 0;
+}
+
+.worker-wizard-card {
+  background: var(--pos-surface);
+  border: 1px solid rgba(var(--pos-ink), 0.08);
+  border-radius: 12px;
+  padding: 16px 14px;
+}
+
+.worker-wizard-card-title {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--pos-text-faint);
+}
+
+/* The shared field block brings the desk panel's divider and bottom margin;
+   inside a card those are already implied by the card edge and padding. */
+.worker-wizard-card .ticket-fields,
+.worker-wizard-card .ticket-discount {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.worker-wizard-card .ticket-notes {
+  margin-top: 14px;
+}
+
+.worker-wizard-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-card input,
+.worker-wizard-card select,
+.worker-wizard-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 10px;
+  background: var(--pos-surface);
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--pos-text);
+}
+
+.worker-wizard-card input:focus,
+.worker-wizard-card select:focus,
+.worker-wizard-card textarea:focus {
+  outline: none;
+  border-color: var(--pos-blue);
+}
+
+.worker-wizard-card textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+/* Confirmation page — label/value rows and a plain list of ticket lines. */
+.worker-wizard-review {
+  margin: 0;
+}
+
+.worker-wizard-review-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.worker-wizard-review-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.worker-wizard-review-row dt {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pos-text-muted);
+}
+
+.worker-wizard-review-row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.worker-wizard-review-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.worker-wizard-review-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 9px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+}
+
+.worker-wizard-review-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.worker-wizard-review-qty {
+  min-width: 26px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pos-blue-dark);
+}
+
+.worker-wizard-review-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pos-text);
+  overflow-wrap: anywhere;
+}
+
+.worker-wizard-review-price {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--pos-text);
+  white-space: nowrap;
+}
+
+/* The shared summary has its own top border, which the card already provides. */
+.worker-wizard-card .transaksi-summary {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.worker-wizard-error {
+  margin: 0;
+}
+
+.worker-wizard-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+/* Secondary action, but still a 56px thumb target next to the primary. */
+.worker-wizard-back {
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 12px;
+  background: var(--pos-surface);
+  color: var(--pos-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.worker-wizard-back:active {
+  background: var(--pos-surface-2);
+}
+
+.worker-wizard-bar .worker-actionbar-submit {
+  min-width: 104px;
+}
+
+/* ---- Detail Treatment / Struk ----
+   Reached by tapping a ticket rather than from a tab, but this is where a
+   worker finishes a job, so the desk-width action rows have to collapse and
+   the primary actions get the same weight as the queue's. */
+
+.worker-ui .detail-actions,
+.worker-ui .struk-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.worker-ui .detail-actions button,
+.worker-ui .struk-actions button,
+.worker-ui .struk-actions a {
+  width: 100%;
+}
+
+.worker-ui .detail-actions .btn-primary {
+  height: 60px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--pos-blue-press);
+}
+
+.worker-ui .detail-actions .btn-primary:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+/* ---- Transaksi Baru: required fields left empty ---- */
+/* Kept last so the red border wins over the panel/wizard :focus rules, which
+   have the same specificity. */
+.ticket-panel label.is-invalid,
+.worker-wizard-card label.is-invalid {
+  color: var(--pos-red-text);
+}
+
+.ticket-panel input.is-invalid,
+.worker-wizard-card input.is-invalid {
+  border-color: var(--pos-red-text);
+  background: var(--pos-red-bg);
+  box-shadow: 0 0 0 3px rgba(161, 47, 47, 0.12);
+}
+
+.ticket-panel input.is-invalid:focus,
+.worker-wizard-card input.is-invalid:focus {
+  border-color: var(--pos-red-text);
+  background: var(--pos-surface);
+}
+
+.field-invalid-hint {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pos-red-text);
+}
+
+.ticket-lines-empty.is-invalid {
+  color: var(--pos-red-text);
+  background: var(--pos-red-bg);
+  border: 1px dashed var(--pos-red-text);
+  border-radius: 8px;
+}
+
+.missing-fields-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--pos-red-text);
+  background: var(--pos-red-bg);
+}
+
+.missing-fields-list {
+  margin: 0;
+  padding: 10px 12px 10px 30px;
+  border-radius: 10px;
+  background: var(--pos-red-bg);
+  color: var(--pos-red-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.missing-fields-modal .start-modal-actions .btn-primary {
+  min-width: 120px;
+}
+
+/* ---- Transaksi Baru: promo / normal price switch ---- */
+.price-mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 18px;
+}
+
+.price-mode-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--pos-gray-bg);
+  border: 1px solid var(--pos-border);
+}
+
+.price-mode-option {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pos-text-muted);
+  cursor: pointer;
+}
+
+.price-mode-option.active {
+  background: var(--pos-surface);
+  color: var(--pos-blue-dark);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+.price-mode-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.price-mode-hint {
+  font-size: 12.5px;
+  color: var(--pos-text-faint);
+}
+
+/* Phone wizard: full-width, thumb-sized segments. */
+.worker-wizard .price-mode-toggle {
+  display: flex;
+  width: 100%;
+}
+
+.worker-wizard .price-mode-option {
+  flex: 1;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+/* ---- Bahasa / English switch (login card + both app shells) ---- */
+.language-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--pos-gray-bg);
+  border: 1px solid var(--pos-border);
+  flex: none;
+}
+
+.language-toggle-option {
+  min-width: 34px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--pos-text-muted);
+  cursor: pointer;
+}
+
+.language-toggle-option.active {
+  background: var(--pos-surface);
+  color: var(--pos-blue-dark);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+/* Login: pinned to the card's top-right corner. */
+.login-card {
+  position: relative;
+}
+
+.login-language {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+/* Phone top bar: a touch target, not a desktop pill. */
+.language-toggle-compact .language-toggle-option {
+  min-width: 38px;
+  min-height: 34px;
 }

@@ -1,27 +1,30 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { logout } from '../api'
+import { initials } from '../lib/format'
 import { useAuth } from '../context/useAuth'
+import { useTheme } from '../context/useTheme'
+import { isAdmin, isStaff, isSupervisor, ROLE_LABELS } from '../lib/roles'
+import { WorkerShell } from './WorkerShell'
+import { LanguageToggle } from './LanguageToggle'
+import { useLanguage } from '../context/useLanguage'
+import { dateLocale } from '../lib/i18n'
 
+// `access` mirrors the route guards in App.jsx — keep the two in step, since
+// this only decides what's shown and the guards decide what's reachable.
 const NAV_ITEMS = [
-  { to: '/', label: 'Antrian Hari Ini', end: true },
-  { to: '/transaksi-baru', label: 'Transaksi Baru', end: false },
-  { to: '/katalog', label: 'Katalog Layanan', end: false },
-  { to: '/riwayat', label: 'Riwayat Transaksi', end: false },
-  { to: '/laporan', label: 'Laporan', end: false },
+  { to: '/', label: 'Dashboard', end: true, access: 'all' },
+  { to: '/transaksi-baru', label: 'Transaksi Baru', end: false, access: 'all' },
+  { to: '/katalog', label: 'Katalog Layanan', end: false, access: 'supervisor' },
+  { to: '/riwayat', label: 'Riwayat Transaksi', end: false, access: 'supervisor' },
+  { to: '/laporan', label: 'Laporan Harian', end: false, access: 'supervisor' },
+  { to: '/upah', label: 'Kelola Upah', end: false, access: 'supervisor' },
+  { to: '/keuangan', label: 'Keuangan', end: false, access: 'supervisor' },
+  { to: '/staf', label: 'Kelola Staf', end: false, access: 'admin' },
 ]
 
-function initials(fullName) {
-  return fullName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
-
 function todayLabel() {
-  const label = new Date().toLocaleDateString('id-ID', {
+  const label = new Date().toLocaleDateString(dateLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -31,7 +34,22 @@ function todayLabel() {
 
 export function AppShell() {
   const { profile, setProfile } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+  const { t } = useLanguage()
   const navigate = useNavigate()
+  const [navOpen, setNavOpen] = useState(false)
+
+  // Workers are on a phone, so they get a different shell entirely — bottom
+  // tabs instead of a sidebar. Same routes underneath: this swaps the chrome
+  // around <Outlet/>, it is not a second route table. Placed after the hooks
+  // above so the hook order stays identical either way.
+  if (isStaff(profile)) return <WorkerShell />
+
+  function canSee(item) {
+    if (item.access === 'admin') return isAdmin(profile)
+    if (item.access === 'supervisor') return isSupervisor(profile)
+    return true
+  }
 
   async function handleLogout() {
     await logout()
@@ -41,37 +59,65 @@ export function AppShell() {
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
+      {navOpen && (
+        <div className="app-sidebar-backdrop" onClick={() => setNavOpen(false)} />
+      )}
+      <aside className={`app-sidebar ${navOpen ? 'open' : ''}`}>
         <div className="app-sidebar-brand">
-          <span className="app-sidebar-brand-mark">ND</span>
-          <span className="app-sidebar-brand-name">Nineteen Details</span>
+          <img src="/favicon.png" alt="Kuorza" className="app-sidebar-brand-mark" />
+          <span className="app-sidebar-brand-name">Kuorza</span>
         </div>
         <nav className="app-sidebar-nav">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.filter(canSee).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
+              onClick={() => setNavOpen(false)}
               className={({ isActive }) => `app-sidebar-link ${isActive ? 'active' : ''}`}
             >
               <span className="app-sidebar-link-dot" />
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
             </NavLink>
           ))}
         </nav>
       </aside>
       <div className="app-main">
         <header className="app-header">
-          <span className="app-header-date">{todayLabel()}</span>
-          {profile && (
-            <div className="app-header-user">
-              <span className="app-header-avatar">{initials(profile.full_name)}</span>
-              <span className="app-header-name">{profile.full_name}</span>
-              <button type="button" className="app-header-logout" onClick={handleLogout}>
-                Keluar
-              </button>
-            </div>
-          )}
+          <div className="app-header-left">
+            <button
+              type="button"
+              className="app-hamburger"
+              onClick={() => setNavOpen((open) => !open)}
+              aria-label={navOpen ? t('Tutup menu') : t('Buka menu')}
+              aria-expanded={navOpen}
+            >
+              <span />
+            </button>
+            <span className="app-header-date">{todayLabel()}</span>
+          </div>
+          <div className="app-header-right">
+            <LanguageToggle />
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? t('Mode Terang') : t('Mode Gelap')}
+              aria-label={theme === 'dark' ? t('Aktifkan mode terang') : t('Aktifkan mode gelap')}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+            {profile && (
+              <div className="app-header-user">
+                <span className="app-header-avatar">{initials(profile.full_name)}</span>
+                <span className="app-header-name">{profile.full_name}</span>
+                <span className="app-header-role">{t(ROLE_LABELS[profile.role] || profile.role)}</span>
+                <button type="button" className="app-header-logout" onClick={handleLogout}>
+                  {t('Keluar')}
+                </button>
+              </div>
+            )}
+          </div>
         </header>
         <main className="app-content">
           <Outlet />

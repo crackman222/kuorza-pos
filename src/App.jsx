@@ -1,7 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { LanguageProvider } from './context/LanguageContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { AdminRoute } from './components/AdminRoute'
+import { SupervisorRoute } from './components/SupervisorRoute'
 import { AppShell } from './components/AppShell'
 import Login from './pages/Login'
 import Antrian from './pages/Antrian'
@@ -11,30 +15,48 @@ import Struk from './pages/Struk'
 import RiwayatTransaksi from './pages/RiwayatTransaksi'
 import Laporan from './pages/Laporan'
 import DetailTreatment from './pages/DetailTreatment'
+import KelolaStaf from './pages/KelolaStaf'
+import KelolaUpah from './pages/KelolaUpah'
+import Keuangan from './pages/Keuangan'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
+    <ThemeProvider>
+      <LanguageProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<Antrian />} />
-              <Route path="/transaksi-baru" element={<TransaksiBaru />} />
-              <Route path="/katalog" element={<Katalog />} />
-              <Route path="/riwayat" element={<RiwayatTransaksi />} />
-              <Route path="/laporan" element={<Laporan />} />
-              <Route path="/treatment/:id" element={<DetailTreatment />} />
-              <Route path="/struk/:id" element={<Struk />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Antrian />} />
+                <Route path="/transaksi-baru" element={<TransaksiBaru />} />
+                {/* Treatment detail and the receipt stay open to staff — they
+                    are where a ticket is actually worked (assigning workers,
+                    the wash photo, taking payment). Saving a new ticket from
+                    Transaksi Baru returns to the dashboard queue. */}
+                <Route path="/treatment/:id" element={<DetailTreatment />} />
+                <Route path="/struk/:id" element={<Struk />} />
+                <Route element={<SupervisorRoute />}>
+                  <Route path="/katalog" element={<Katalog />} />
+                  <Route path="/riwayat" element={<RiwayatTransaksi />} />
+                  <Route path="/laporan" element={<Laporan />} />
+                  <Route path="/upah" element={<KelolaUpah />} />
+                  <Route path="/keuangan" element={<Keuangan />} />
+                </Route>
+                <Route element={<AdminRoute />}>
+                  <Route path="/staf" element={<KelolaStaf />} />
+                </Route>
+              </Route>
             </Route>
-          </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }
 

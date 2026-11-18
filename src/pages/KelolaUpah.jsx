@@ -349,7 +349,7 @@ function DailyWageSection({ ratesVersion, onError }) {
                 <span>{t('Upah Jasa')}</span>
                 <span>{t('Uang Makan')}</span>
                 <span>{t('Penyesuaian')}</span>
-                <span>{t('Total Upah')}</span>
+                <span>{t('Total')}</span>
                 <span></span>
               </div>
               {summary.map((row) => (

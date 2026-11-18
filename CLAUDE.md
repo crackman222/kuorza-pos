@@ -564,3 +564,23 @@ All SQL migrations have been run against the Supabase project in order:
   is set per person per day on Kelola Upah and is deducted from net wage.
   Known gap: a deactivated person's balance isn't listed (supervisors can
   only read active names)
+- 023_add_setoran_harian — the end-of-day cash reconciliation, as the
+  **Setoran Harian** tab of Keuangan. Income is never entered: it is read from
+  `payments` (same numbers as Laporan). New tables `cash_days` (opening cash;
+  at closing a snapshot of income, expected cash, counted cash, difference)
+  and `cash_expenses` (wages paid — `category='gaji'`, one per person per day —
+  plus `operasional`/`lain`), both supervisor-read-only. Channels are `cash`
+  and `transfer`, where `transfer` is the whole non-cash side (QRIS + bank
+  transfer, the sheet's "TF/QR"). `kasbon_entries.channel` says where an
+  advance (`pinjam`, required) was paid from, so advances count as outflows
+  from the ledger and are never entered twice. Writes: `set_opening_cash`,
+  `add_cash_expense`, `pay_wage` (replaces that person's payout for the day),
+  `delete_cash_expense`, `close_cash_day`, `reopen_cash_day` (admin only).
+  `close_cash_day` works out expected cash itself (opening + cash payments −
+  cash outflows) over the 04:00–04:00 shop-time window. **Closing a day locks
+  it**: `set_attendance`, `add_kasbon_entry`, `set_kasbon_repayment`, the
+  expense functions and a trigger on `wage_adjustments` all refuse that date
+  ("Hari ini sudah ditutup"). A payment made after closing still shows in the
+  live income, but the stored snapshot never moves. The wage amount recorded
+  by `pay_wage` is sent by the client (the database can't see wages); the
+  page flags a payout whose wage has since changed

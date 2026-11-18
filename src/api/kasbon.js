@@ -52,14 +52,17 @@ export async function setKasbonRepayPercent(percent) {
 }
 
 // type: saldo_awal (once per person), pinjam, or koreksi (needs a note).
-// date is a "YYYY-MM-DD" string.
-export async function addKasbonEntry({ profileId, date, type, amount, note }) {
+// A pinjam also needs `channel` ('cash' or 'transfer'): where the money was
+// paid from, so Setoran Harian counts it as an outflow without a second
+// entry. date is a "YYYY-MM-DD" string.
+export async function addKasbonEntry({ profileId, date, type, amount, note, channel = null }) {
   const { error } = await supabase.rpc('add_kasbon_entry', {
     p_profile_id: profileId,
     p_date: date,
     p_type: type,
     p_amount: amount,
     p_note: note?.trim() || null,
+    p_channel: type === KASBON_TYPES.LOAN ? channel : null,
   })
   if (error) throw new Error(error.message || 'Gagal menyimpan kasbon')
 }

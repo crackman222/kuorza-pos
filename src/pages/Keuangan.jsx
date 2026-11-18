@@ -11,20 +11,46 @@ import {
 import { formatRupiah } from '../lib/format'
 import { todayDateInput } from '../lib/dateRange'
 import { useLanguage } from '../context/useLanguage'
+import SetoranHarian from './SetoranHarian'
+
+const TABS = [
+  { key: 'setoran', label: 'Setoran Harian' },
+  { key: 'kasbon', label: 'Kasbon' },
+]
 
 // Supervisor/admin only (see SupervisorRoute in App.jsx). One menu for the
-// shop's money records; for now that is Kasbon. The repayment itself is
-// decided on Kelola Upah while looking at that day's pay — this page is the
-// ledger: who owes what, new advances, and the history behind every balance.
+// shop's money records. Setoran Harian is the end-of-day cash reconciliation;
+// Kasbon is the ledger — who owes what, new advances, and the history behind
+// every balance. The kasbon repayment itself is decided on Kelola Upah while
+// looking at that day's pay.
 export default function Keuangan() {
   const { t } = useLanguage()
   const [error, setError] = useState('')
+  const [tab, setTab] = useState('setoran')
 
   return (
     <div className="upah-screen">
       <h1>{t('Keuangan')}</h1>
+      <div className="keuangan-tabs" role="tablist">
+        {TABS.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            role="tab"
+            aria-selected={tab === item.key}
+            className={`keuangan-tab ${tab === item.key ? 'active' : ''}`}
+            onClick={() => {
+              setError('')
+              setTab(item.key)
+            }}
+          >
+            {t(item.label)}
+          </button>
+        ))}
+      </div>
       {error && <p className="form-error">{t(error)}</p>}
-      <KasbonSection onError={setError} />
+      {tab === 'setoran' && <SetoranHarian onError={setError} />}
+      {tab === 'kasbon' && <KasbonSection onError={setError} />}
     </div>
   )
 }
@@ -190,6 +216,9 @@ function AddKasbonForm({ profileId, hasEntries, balance, onAdded, onError }) {
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(todayDateInput())
   const [note, setNote] = useState('')
+  // Where an advance is paid from — Setoran Harian counts it as an outflow of
+  // that side, so it is only asked for on a new loan.
+  const [channel, setChannel] = useState('cash')
   const [busy, setBusy] = useState(false)
 
   const needsNote = type === KASBON_TYPES.CORRECTION
@@ -212,7 +241,7 @@ function AddKasbonForm({ profileId, hasEntries, balance, onAdded, onError }) {
     }
     setBusy(true)
     try {
-      await addKasbonEntry({ profileId, date, type, amount: value, note })
+      await addKasbonEntry({ profileId, date, type, amount: value, note, channel })
       setAmount('')
       setNote('')
       onAdded()
@@ -234,6 +263,12 @@ function AddKasbonForm({ profileId, hasEntries, balance, onAdded, onError }) {
           {t('Koreksi')}
         </option>
       </select>
+      {type === KASBON_TYPES.LOAN && (
+        <select value={channel} onChange={(e) => setChannel(e.target.value)} disabled={busy} aria-label={t('Sumber dana')}>
+          <option value="cash">{t('Tunai')}</option>
+          <option value="transfer">{t('Transfer/QR')}</option>
+        </select>
+      )}
       <input
         type="number"
         min="0"

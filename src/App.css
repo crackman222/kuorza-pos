@@ -2842,12 +2842,140 @@ body.service-menu-open .worker-content {
    ========================================================================= */
 
 .upah-stat-cards {
-  grid-template-columns: 1fr;
-  max-width: 280px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-bottom: 16px;
+}
+
+.upah-stat-cards .stat-card-value {
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+.upah-stat-card-main {
+  background: var(--pos-blue-lighter);
+  border-color: var(--pos-blue-light);
+}
+
+.upah-stat-card-main .stat-card-value {
+  font-size: 24px;
+}
+
+.upah-stat-sub {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pos-text-faint);
+}
+
+/* Settings row: Upah per Layanan + Uang Makan as two compact cards. The rate
+   card takes the full row once opened, since its tables need the width. */
+.upah-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.upah-settings-card {
+  flex: 1 1 320px;
+  min-width: 0;
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: var(--pos-surface);
+}
+
+.upah-settings-card.open {
+  flex-basis: 100%;
+}
+
+.upah-settings-toggle {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--pos-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.upah-settings-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.upah-settings-card.open .service-category-chevron {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.upah-rate-panel {
+  padding: 0 12px 12px;
+}
+
+.upah-meal-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 10px 16px;
+}
+
+.upah-meal-text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.upah-meal-text .staf-section-note {
+  margin: 2px 0 0;
+}
+
+/* Date controls: step a day back/forward, or jump to today */
+.upah-daily-header {
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.upah-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upah-date-step {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.upah-today-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pos-green-text);
+  background: var(--pos-green-bg);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.upah-today-btn {
+  width: auto;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .staf-section-header input[type='date'] {
-  padding: 9px 12px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
   border: 1px solid rgba(var(--pos-ink), 0.15);
   border-radius: 8px;
   font-size: 13px;
@@ -2888,10 +3016,215 @@ body.service-menu-open .worker-content {
   color: var(--pos-text-faint);
 }
 
-/* Upah Harian: Nama | Upah Jasa | Penyesuaian | Total Upah | aksi */
+/* Upah Harian, read as a sum:
+   Nama | Hadir | Jasa | + Makan | + Bonus | − Potongan | − Kasbon | = Bersih | chevron */
 .upah-daily-table .riwayat-table-row {
-  grid-template-columns: 1.6fr 0.6fr 1.2fr 1.2fr 1.4fr 1.2fr 0.9fr;
-  min-width: 960px;
+  grid-template-columns: minmax(170px, 1.9fr) 116px repeat(5, minmax(84px, 1fr)) minmax(104px, 1.1fr) 40px;
+  min-width: 1020px;
+}
+
+.upah-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.upah-zero {
+  color: var(--pos-text-faint);
+}
+
+.upah-plus {
+  color: var(--pos-green-text);
+}
+
+.upah-minus {
+  color: var(--pos-red-text);
+}
+
+.upah-net {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.upah-daily-row {
+  cursor: pointer;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  min-height: 58px;
+}
+
+.upah-daily-row.expanded,
+.upah-daily-row.expanded:hover {
+  background: var(--pos-blue-lighter) !important;
+}
+
+.upah-daily-row.idle {
+  opacity: 0.65;
+}
+
+.upah-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.upah-name-sub {
+  font-size: 12px;
+  color: var(--pos-text-faint);
+}
+
+.upah-present-pill {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px dashed rgba(var(--pos-ink), 0.25);
+  border-radius: 999px;
+  background: var(--pos-surface);
+  color: var(--pos-text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.upah-present-pill.on {
+  border: 1px solid transparent;
+  background: var(--pos-green-bg);
+  color: var(--pos-green-text);
+}
+
+.upah-present-pill:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.upah-chevron-cell {
+  display: flex;
+  justify-content: center;
+}
+
+.upah-row-toggle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.upah-row-toggle:hover {
+  background: rgba(var(--pos-ink), 0.05);
+}
+
+.upah-row-toggle .service-category-chevron {
+  margin: 0;
+}
+
+.upah-daily-row.expanded .upah-row-toggle .service-category-chevron {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.upah-total-row,
+.upah-total-row:hover {
+  background: var(--pos-bg) !important;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.upah-total-present {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pos-text-faint);
+}
+
+/* Detail panel cards: Rincian Jasa · Slip · Cicilan Kasbon · Bonus & Potongan */
+.upah-detail-card {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--pos-border);
+  border-radius: 10px;
+  background: var(--pos-surface);
+}
+
+.upah-detail-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pos-text);
+}
+
+.upah-detail-breakdown .upah-breakdown {
+  margin-bottom: 0;
+}
+
+.upah-slip-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--pos-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.upah-slip-line.upah-zero {
+  color: var(--pos-text-faint);
+}
+
+.upah-slip-total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--pos-ink), 0.12);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.upah-type-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(var(--pos-ink), 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.upah-type-toggle button {
+  padding: 0 12px;
+  min-height: 36px;
+  border: none;
+  background: var(--pos-surface);
+  color: var(--pos-text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.upah-type-toggle button + button {
+  border-left: 1px solid rgba(var(--pos-ink), 0.15);
+}
+
+.upah-type-toggle button.on.bonus {
+  background: var(--pos-green-bg);
+  color: var(--pos-green-text);
+  font-weight: 600;
+}
+
+.upah-type-toggle button.on.deduction {
+  background: var(--pos-red-bg);
+  color: var(--pos-red-text);
+  font-weight: 600;
+}
+
+.upah-link-danger {
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: var(--pos-red-text);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
 }
 
 .upah-present-check {
@@ -2906,16 +3239,21 @@ body.service-menu-open .worker-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 12px 0;
-  padding: 12px;
-  border: 1px solid rgba(var(--pos-ink), 0.1);
-  border-radius: 10px;
+}
+
+.upah-kasbon-panel .upah-detail-title {
+  margin: 0;
+}
+
+.upah-kasbon-panel .upah-adjustment-form {
+  margin-bottom: 0;
 }
 
 .upah-kasbon-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: 4px 16px;
   font-size: 13px;
   color: var(--pos-text-muted);
@@ -3098,9 +3436,20 @@ body.service-menu-open .worker-content {
 
 .upah-adjustments-panel {
   animation: panel-expand-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  padding: 14px 18px 18px;
-  background: var(--pos-bg);
-  border-bottom: 1px solid rgba(var(--pos-ink), 0.06);
+  padding: 6px 18px 18px;
+  background: var(--pos-blue-lighter);
+  border-bottom: 1px solid var(--pos-blue-light);
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .upah-adjustments-panel {
+    grid-template-columns: 1fr;
+    padding: 6px 12px 14px;
+  }
 }
 
 .upah-breakdown {

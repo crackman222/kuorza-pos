@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { formatStaffNames, parseStaffNames } from '../lib/staffNames'
 import { getBusinessDayRange, getDayRange } from '../lib/dateRange'
-import { uploadPaymentProofPhoto } from './photos'
+import { uploadPaymentProofPhoto, uploadPromoProofPhoto, PROMO_PROOF_TYPE } from './photos'
 import { PRICE_MODES } from '../lib/servicePrice'
 
 // Payment verification: a ticket can only be closed once its payment is
@@ -17,6 +17,24 @@ export function paymentNeedsProof(method) {
 export function isPaymentVerified(payment) {
   if (!payment) return false
   return !paymentNeedsProof(payment.payment_method) || Boolean(payment.proof_url)
+}
+
+// Promo verification: a ticket with a service sold below its list price
+// (unit_price < normal_unit_price, migration 020) needs a photo proving the
+// customer qualified for the promo before it can close — see migration 024,
+// which enforces the same rule. Lines from before 020 (normal_unit_price
+// null) never count, and neither do tickets created before 024
+// (treatments.requires_promo_proof = false).
+export function isPromoLine(item) {
+  return (
+    item.shelf_item_id == null &&
+    item.normal_unit_price != null &&
+    Number(item.unit_price) < Number(item.normal_unit_price)
+  )
+}
+
+export function needsPromoProof(treatment, items) {
+  return Boolean(treatment?.requires_promo_proof) && (items ?? []).some(isPromoLine)
 }
 
 async function logAction(treatmentId, action) {
@@ -78,6 +96,25 @@ export async function createTreatment({
     throw error
   }
   return data
+}
+
+// Creates a ticket and, when it was sold at promo price, attaches the promo
+// eligibility photo. The ticket has to exist first since the photo is filed
+// under its id. If the upload fails the ticket is still saved — the error
+// carries treatmentId so the caller can send staff to retry it from Detail
+// Transaksi (closing stays blocked until then).
+export async function createTreatmentWithPromoProof(fields, promoProofFile) {
+  const treatment = await createTreatment(fields)
+  if (promoProofFile) {
+    try {
+      await uploadPromoProofPhoto(treatment.id, promoProofFile)
+    } catch {
+      const error = new Error('Transaksi tersimpan, tapi foto bukti promo gagal diunggah — ulangi dari sini')
+      error.treatmentId = treatment.id
+      throw error
+    }
+  }
+  return treatment
 }
 
 // Over-the-counter sale: a ticket with only shelf items has no work to queue,
@@ -218,19 +255,31 @@ export async function assignQcStaff(id, staffName) {
 export async function closeTreatment(id) {
   // Same pattern as markSelesai: the screens gate the button, this re-reads
   // the payment so nothing closes on a stale copy.
-  const { data: payments, error: readError } = await supabase
-    .from('payments')
-    .select('payment_method, proof_url')
-    .eq('treatment_id', id)
-    .order('paid_at', { ascending: false })
-    .limit(1)
-  if (readError) throw readError
+  const [treatmentResult, paymentsResult, itemsResult, promoPhotoResult] = await Promise.all([
+    supabase.from('treatments').select('requires_promo_proof').eq('id', id).single(),
+    supabase
+      .from('payments')
+      .select('payment_method, proof_url')
+      .eq('treatment_id', id)
+      .order('paid_at', { ascending: false })
+      .limit(1),
+    supabase.from('treatment_items').select('shelf_item_id, unit_price, normal_unit_price').eq('treatment_id', id),
+    supabase.from('photos').select('id').eq('treatment_id', id).eq('photo_type', PROMO_PROOF_TYPE).limit(1),
+  ])
+  if (treatmentResult.error) throw treatmentResult.error
+  if (paymentsResult.error) throw paymentsResult.error
+  if (itemsResult.error) throw itemsResult.error
+  if (promoPhotoResult.error) throw promoPhotoResult.error
+  const payments = paymentsResult.data
   if (!isPaymentVerified(payments?.[0])) {
     throw new Error(
       payments?.[0]
         ? 'Bukti pembayaran belum diunggah — transaksi belum bisa ditutup'
         : 'Pembayaran belum dicatat — transaksi belum bisa ditutup'
     )
+  }
+  if (needsPromoProof(treatmentResult.data, itemsResult.data) && !promoPhotoResult.data?.length) {
+    throw new Error('Bukti promo belum diunggah — transaksi belum bisa ditutup')
   }
 
   const { error } = await supabase
@@ -266,7 +315,8 @@ export async function voidTreatment(id) {
 // The list views (queue, history) all need the same shape: paid-or-not plus a
 // readable summary of what was ordered, so they share one select and one
 // mapper.
-const LIST_SELECT = '*, payments(payment_method, proof_url, paid_at), treatment_items(service_name)'
+const LIST_SELECT =
+  '*, payments(payment_method, proof_url, paid_at), treatment_items(service_name, shelf_item_id, unit_price, normal_unit_price), photos(photo_type)'
 
 function mapTreatmentRow(t) {
   const payment =
@@ -276,6 +326,8 @@ function mapTreatmentRow(t) {
     payment,
     isPaid: Boolean(payment),
     isPaymentVerified: isPaymentVerified(payment),
+    needsPromoProof: needsPromoProof(t, t.treatment_items),
+    hasPromoProof: (t.photos ?? []).some((photo) => photo.photo_type === PROMO_PROOF_TYPE),
     serviceSummary: (t.treatment_items ?? []).map((item) => item.service_name).join(', '),
   }
 }

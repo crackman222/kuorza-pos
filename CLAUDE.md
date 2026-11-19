@@ -584,3 +584,14 @@ All SQL migrations have been run against the Supabase project in order:
   live income, but the stored snapshot never moves. The wage amount recorded
   by `pay_wage` is sent by the client (the database can't see wages); the
   page flags a payout whose wage has since changed
+- 024_require_promo_proof — promo eligibility photo. A ticket with a service
+  line sold below list price (`shelf_item_id is null and unit_price <
+  normal_unit_price`, helper `treatment_has_promo()`) can't become 'closed'
+  without a `photos` row of `photo_type = 'bukti_promo'`
+  (`treatments_require_promo_proof` trigger). Taken on Transaksi Baru when the
+  Promo box is ticked (camera only), uploaded through `upload-wash-proof` with
+  `kind=promo` right after `create_treatment()`; Detail Transaksi and the
+  queue card offer a retake when the upload failed. Mirrors
+  `needsPromoProof()` in `src/api/treatments.js`. Only tickets created after
+  024 are held to it: `treatments.requires_promo_proof` was added false for
+  existing rows, default true for new ones. Applied to dev; prod pending

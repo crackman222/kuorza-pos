@@ -260,6 +260,7 @@ export default function Antrian() {
               hasPhoto={Boolean(photoMap[row.id])}
               busy={busyId === row.id}
               onUploaded={markPhotoUploaded}
+              onPromoUploaded={loadQueue}
               onAdvance={handleAdvance}
               onPay={handlePay}
             />

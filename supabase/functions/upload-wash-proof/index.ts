@@ -1,19 +1,22 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const BUCKET = 'foto_kendaraan'
-const WASH_PROOF_TYPE = 'bukti_cuci'
 
-// Two kinds of proof go through here, both camera-only and both compressed
+// Three kinds of proof go through here, all camera-only and all compressed
 // the same way:
 //   'wash'    (default) — the wash-proof photo; stored at <id>/bukti-cuci and
 //             tracked by a photos row (photo_type 'bukti_cuci')
+//   'promo'   — proof the customer qualifies for the promo price; stored at
+//             <id>/bukti-promo and tracked by a photos row (photo_type
+//             'bukti_promo'). Closing a promo ticket requires it (migration 024)
 //   'payment' — a photo of the QRIS/transfer confirmation screen; stored at
 //             <id>/bukti-bayar and written to the treatment's latest
 //             payments.proof_url. Done here rather than from the client
 //             because payments has no UPDATE policy — staff can record a
 //             payment but not edit one afterwards.
 const KINDS = {
-  wash: { path: (id) => `${id}/bukti-cuci` },
+  wash: { path: (id) => `${id}/bukti-cuci`, photoType: 'bukti_cuci' },
+  promo: { path: (id) => `${id}/bukti-promo`, photoType: 'bukti_promo' },
   payment: { path: (id) => `${id}/bukti-bayar` },
 }
 
@@ -179,11 +182,12 @@ Deno.serve(async (req) => {
       return jsonResponse({ path })
     }
 
+    const photoType = KINDS[kind].photoType
     const { data: existing, error: fetchError } = await supabaseAdmin
       .from('photos')
       .select('id')
       .eq('treatment_id', treatmentId)
-      .eq('photo_type', WASH_PROOF_TYPE)
+      .eq('photo_type', photoType)
       .maybeSingle()
     if (fetchError) throw fetchError
 
@@ -196,8 +200,13 @@ Deno.serve(async (req) => {
     } else {
       const { error } = await supabaseAdmin
         .from('photos')
-        .insert({ treatment_id: treatmentId, image_url: path, photo_type: WASH_PROOF_TYPE })
+        .insert({ treatment_id: treatmentId, image_url: path, photo_type: photoType })
       if (error) throw error
+    }
+    if (kind === 'promo') {
+      await supabaseAdmin
+        .from('treatment_logs')
+        .insert({ treatment_id: treatmentId, action: 'promo proof uploaded' })
     }
 
     return jsonResponse({

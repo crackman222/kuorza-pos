@@ -12,11 +12,15 @@ import { isCameraSupported } from '../lib/camera'
 // Returns the handler plus `capture`, the camera sheet the caller has to
 // render somewhere in its own tree.
 //
+// `uploadFn` swaps in another proof kind with the same camera flow — the
+// promo eligibility photo passes uploadPromoProofPhoto. Defaults to the wash
+// proof.
+//
 // Camera only, by design: the proof has to be a photo taken on the spot, not
 // something picked from the gallery. There is deliberately no file input —
 // even with capture="environment", some Android browsers still offer the
 // gallery from it.
-export function useWashProofUpload({ treatmentId, onUploaded, onError }) {
+export function useWashProofUpload({ treatmentId, onUploaded, onError, uploadFn = uploadWashProofPhoto }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [cameraOpen, setCameraOpen] = useState(false)
@@ -31,10 +35,10 @@ export function useWashProofUpload({ treatmentId, onUploaded, onError }) {
     setUploading(true)
     setError('')
     try {
-      await uploadWashProofPhoto(treatmentId, file)
+      await uploadFn(treatmentId, file)
       onUploaded?.(treatmentId)
     } catch (err) {
-      console.error('Upload bukti foto cuci gagal:', err)
+      console.error('Upload bukti foto gagal:', err)
       fail(err.message || 'Gagal mengunggah foto')
     } finally {
       setUploading(false)

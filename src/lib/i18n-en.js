@@ -530,4 +530,15 @@ export const en = {
   "Poles": "Polish",
   "Coating": "Coating",
   "Ketuk layanan untuk memilih, lalu tekan Selesai untuk menambah ke transaksi.": "Tap a service to pick it, then press Done to add it to the transaction.",
+
+  // ---- Promo eligibility proof ----
+  "Foto Bukti Promo": "Promo Proof Photo",
+  "Bukti Promo": "Promo Proof",
+  "Bukti promo": "Promo proof",
+  "Perbesar bukti promo": "Enlarge promo proof",
+  "Foto bukti pelanggan berhak mendapat promo.": "Take a photo proving the customer qualifies for the promo.",
+  "Foto bukti promo diperlukan sebelum transaksi bisa ditutup.": "A promo proof photo is required before the transaction can be closed.",
+  "Bukti promo belum diunggah — transaksi belum bisa ditutup": "Promo proof not uploaded yet — the transaction cannot be closed",
+  "Gagal mengunggah bukti promo": "Failed to upload the promo proof",
+  "Transaksi tersimpan, tapi foto bukti promo gagal diunggah — ulangi dari sini": "Transaction saved, but the promo proof photo failed to upload — retake it here",
 }

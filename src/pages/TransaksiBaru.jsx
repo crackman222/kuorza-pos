@@ -1,12 +1,20 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getActiveServices, getAvailableShelfItems, getActiveProfiles, createTreatment, checkoutTreatment } from '../api'
+import {
+  getActiveServices,
+  getAvailableShelfItems,
+  getActiveProfiles,
+  createTreatmentWithPromoProof,
+  checkoutTreatment,
+} from '../api'
 import { ServicePicker } from '../components/ServicePicker'
 import { ShelfItemPicker } from '../components/ShelfItemPicker'
 import { StaffPicker } from '../components/StaffPicker'
 import { MultiStaffPicker } from '../components/MultiStaffPicker'
 import { MissingFieldsModal } from '../components/MissingFieldsModal'
 import { PaymentModal } from '../components/PaymentModal'
+import { CameraCapture } from '../components/CameraCapture'
+import { isCameraSupported } from '../lib/camera'
 import { formatRupiah } from '../lib/format'
 import { hasPromo, PRICE_MODES } from '../lib/servicePrice'
 import { findDefaultQcStaff } from '../lib/staffDefaults'
@@ -285,6 +293,9 @@ function TicketSummary({
   usePromo,
   promoSaving,
   onTogglePromo,
+  promoProofUrl,
+  promoProofInvalid,
+  onTakePromoProof,
   /* discountValue, */
 }) {
   const { t } = useLanguage()
@@ -307,6 +318,24 @@ function TicketSummary({
           {usePromo && (
             <span className="transaksi-promo-saving">-{formatRupiah(promoSaving)}</span>
           )}
+        </div>
+      )}
+      {/* A promo price needs proof the customer qualifies for it (migration
+          024) — camera only, same as the other proof photos. */}
+      {hasPromoLines && usePromo && (
+        <div
+          className={`transaksi-promo-proof ${promoProofInvalid ? 'is-invalid' : ''}`}
+          data-field="promoProof"
+        >
+          <span className="transaksi-promo-proof-hint">
+            {t('Foto bukti pelanggan berhak mendapat promo.')}
+          </span>
+          {promoProofUrl && (
+            <img src={promoProofUrl} alt={t('Bukti promo')} className="transaksi-promo-proof-img" />
+          )}
+          <button type="button" className="btn-secondary" onClick={onTakePromoProof}>
+            📷 {promoProofUrl ? t('Ulangi Foto') : t('Foto Bukti Promo')}
+          </button>
         </div>
       )}
       {/* Discount row — disabled along with DiscountFields.
@@ -364,6 +393,15 @@ export default function TransaksiBaru() {
   const [showInvalid, setShowInvalid] = useState(false)
   // The issues listed in the popup, or null when it's closed.
   const [missingPopup, setMissingPopup] = useState(null)
+  // Promo eligibility photo, taken here and uploaded right after the ticket
+  // is created. Only sent while the promo box is ticked.
+  const [promoProofFile, setPromoProofFile] = useState(null)
+  const [promoCameraOpen, setPromoCameraOpen] = useState(false)
+  const promoProofUrl = useMemo(
+    () => (promoProofFile ? URL.createObjectURL(promoProofFile) : ''),
+    [promoProofFile]
+  )
+  useEffect(() => () => promoProofUrl && URL.revokeObjectURL(promoProofUrl), [promoProofUrl])
   // Checkout payment popup for an item-only sale (see itemOnly).
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [paymentError, setPaymentError] = useState('')
@@ -454,6 +492,16 @@ export default function TransaksiBaru() {
   )
   const hasPromoLines = selectedItems.some((item) => item.promoPrice != null)
   const usePromo = priceMode === PRICE_MODES.PROMO
+  const promoApplied = hasPromoLines && usePromo
+
+  function openPromoCamera() {
+    if (!isCameraSupported()) {
+      setError('Kamera tidak tersedia di browser ini — buka aplikasi lewat https')
+      return
+    }
+    setError('')
+    setPromoCameraOpen(true)
+  }
 
   function removeLine(key) {
     setSelectedItems((items) => items.filter((item) => item.key !== key))
@@ -540,6 +588,9 @@ export default function TransaksiBaru() {
       if (!customerName.trim()) {
         issues.push({ key: 'customerName', label: t('Nama Pelanggan'), kind: 'missing' })
       }
+    }
+    if (scope === 'all' && promoApplied && !promoProofFile) {
+      issues.push({ key: 'promoProof', label: t('Foto Bukti Promo'), kind: 'missing' })
     }
     return issues
   }
@@ -644,7 +695,7 @@ export default function TransaksiBaru() {
       // No paymentMethod — a new ticket is always queued unpaid and settled
       // later from Detail Transaksi, so it lands at status 'created' with no
       // payment row.
-      await createTreatment({
+      await createTreatmentWithPromoProof({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         // treatments.plate_number is one text column, so several vehicles'
@@ -658,9 +709,15 @@ export default function TransaksiBaru() {
         discount: 0, // was: discountValue
         washStaffNames: washStaff,
         qcStaff: qcStaff ?? null,
-      })
+      }, promoApplied ? promoProofFile : null)
       navigate('/')
     } catch (err) {
+      // Saved, but the promo photo didn't upload — send staff to the ticket
+      // to retake it there rather than letting them submit it twice.
+      if (err.treatmentId) {
+        navigate(`/treatment/${err.treatmentId}`)
+        return
+      }
       // Stock can run out between loading this form and submitting it, and
       // that message names the actual problem — don't bury it.
       setError(err.message?.includes('Stok') ? err.message : 'Gagal menyimpan transaksi, coba lagi')
@@ -735,6 +792,9 @@ export default function TransaksiBaru() {
       usePromo={usePromo}
       promoSaving={promoSaving}
       onTogglePromo={(checked) => setPriceMode(checked ? PRICE_MODES.PROMO : PRICE_MODES.NORMAL)}
+      promoProofUrl={promoProofUrl}
+      promoProofInvalid={Boolean(isInvalid('promoProof'))}
+      onTakePromoProof={openPromoCamera}
       /* discountValue={discountValue} */
     />
   )
@@ -752,6 +812,15 @@ export default function TransaksiBaru() {
   const missingFieldsModal = (
     <>
       {missingPopup && <MissingFieldsModal issues={missingPopup} onClose={closeMissingPopup} />}
+      {promoCameraOpen && (
+        <CameraCapture
+          onCapture={(file) => {
+            setPromoCameraOpen(false)
+            setPromoProofFile(file)
+          }}
+          onClose={() => setPromoCameraOpen(false)}
+        />
+      )}
       {paymentOpen && (
         <PaymentModal
           total={total}

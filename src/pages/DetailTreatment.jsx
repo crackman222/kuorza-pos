@@ -14,9 +14,12 @@ import {
   assignQcStaff,
   getWashProofPhoto,
   getWashProofSignedUrl,
+  getPromoProofPhoto,
+  uploadPromoProofPhoto,
+  needsPromoProof,
 } from '../api'
+import { useWashProofUpload } from '../components/useWashProofUpload'
 import { PaymentModal } from '../components/PaymentModal'
-import { WashProofButton } from '../components/WashProofButton'
 import { StaffPicker } from '../components/StaffPicker'
 import { MultiStaffPicker } from '../components/MultiStaffPicker'
 import { StartProcessModal } from '../components/StartProcessModal'
@@ -56,6 +59,10 @@ export default function DetailTreatment() {
   const [hasPhoto, setHasPhoto] = useState(false)
   const [photoUrl, setPhotoUrl] = useState(null)
   const [paymentProofUrl, setPaymentProofUrl] = useState(null)
+  // Promo eligibility photo (migration 024): hasPromoPhoto gates closing,
+  // promoPhotoUrl is the signed URL for the thumbnail.
+  const [hasPromoPhoto, setHasPromoPhoto] = useState(false)
+  const [promoPhotoUrl, setPromoPhotoUrl] = useState(null)
   // Which photo the lightbox is showing (wash proof or payment proof), or null.
   const [lightboxUrl, setLightboxUrl] = useState(null)
   const [error, setError] = useState('')
@@ -80,7 +87,32 @@ export default function DetailTreatment() {
         setPhotoUrl(path ? await getWashProofSignedUrl(path) : null)
       })
       .catch(() => {})
+    getPromoProofPhoto(id)
+      .then(async (path) => {
+        setHasPromoPhoto(Boolean(path))
+        setPromoPhotoUrl(path ? await getWashProofSignedUrl(path).catch(() => null) : null)
+      })
+      .catch(() => {})
   }, [id])
+
+  const washProof = useWashProofUpload({
+    treatmentId: id,
+    onUploaded: () => {
+      setPhotoError('')
+      load()
+    },
+    onError: setPhotoError,
+  })
+
+  const promoProof = useWashProofUpload({
+    treatmentId: id,
+    uploadFn: uploadPromoProofPhoto,
+    onUploaded: () => {
+      setPhotoError('')
+      load()
+    },
+    onError: setPhotoError,
+  })
 
   useEffect(() => {
     load()
@@ -208,6 +240,9 @@ export default function DetailTreatment() {
   // Closing needs a verified payment: cash, or QRIS/transfer with a proof photo.
   const paymentVerified = isPaymentVerified(treatment.payment)
   const staffReady = hasRequiredStaff(treatment)
+  // A promo ticket also needs the promo eligibility photo to close.
+  const promoTicket = needsPromoProof(treatment, treatment.items)
+  const promoVerified = !promoTicket || hasPromoPhoto
   // In progress → done. 'qc' is a retired stage; old tickets still in it
   // finish the same way.
   const canFinish = treatment.status === 'diproses' || treatment.status === 'qc'
@@ -242,15 +277,6 @@ export default function DetailTreatment() {
             >
               {paymentVerified ? t('Lunas') : isPaid ? t('Bukti Bayar Belum Ada') : t('Belum Dibayar')}
             </span>
-            <WashProofButton
-              treatmentId={treatment.id}
-              hasPhoto={hasPhoto}
-              onUploaded={() => {
-                setPhotoError('')
-                load()
-              }}
-              onError={setPhotoError}
-            />
           </div>
         </div>
 
@@ -286,19 +312,59 @@ export default function DetailTreatment() {
         </div>
         <div className="struk-row">
           <span>{t('Bukti Foto')}</span>
-          {photoUrl ? (
+          <span className="detail-promo-proof">
+            {photoUrl ? (
+              <button
+                type="button"
+                className="wash-proof-thumb-btn"
+                onClick={() => setLightboxUrl(photoUrl)}
+                aria-label={t('Perbesar bukti foto cuci')}
+              >
+                <img src={photoUrl} alt={t('Bukti foto cuci')} className="wash-proof-thumb" />
+              </button>
+            ) : (
+              <span>{t('Belum ada foto')}</span>
+            )}
             <button
               type="button"
-              className="wash-proof-thumb-btn"
-              onClick={() => setLightboxUrl(photoUrl)}
-              aria-label={t('Perbesar bukti foto cuci')}
+              className="wash-proof-btn"
+              onClick={washProof.open}
+              disabled={busy || washProof.uploading}
+              aria-label={hasPhoto ? t('Ganti bukti foto cuci') : t('Unggah bukti foto cuci')}
             >
-              <img src={photoUrl} alt={t('Bukti foto cuci')} className="wash-proof-thumb" />
+              {washProof.uploading ? '…' : hasPhoto ? `📷 ${t('Ulangi Foto')}` : `📷 ${t('Foto')}`}
             </button>
-          ) : (
-            <span>{t('Belum ada foto')}</span>
-          )}
+          </span>
         </div>
+        {promoTicket && (
+          <div className="struk-row">
+            <span>{t('Bukti Promo')}</span>
+            <span className="detail-promo-proof">
+              {promoPhotoUrl ? (
+                <button
+                  type="button"
+                  className="wash-proof-thumb-btn"
+                  onClick={() => setLightboxUrl(promoPhotoUrl)}
+                  aria-label={t('Perbesar bukti promo')}
+                >
+                  <img src={promoPhotoUrl} alt={t('Bukti promo')} className="wash-proof-thumb" />
+                </button>
+              ) : (
+                <span>{t('Belum ada foto')}</span>
+              )}
+              {!isFinal && (
+                <button
+                  type="button"
+                  className="wash-proof-btn"
+                  onClick={promoProof.open}
+                  disabled={busy || promoProof.uploading}
+                >
+                  {promoProof.uploading ? '…' : hasPromoPhoto ? `📷 ${t('Ulangi Foto')}` : `📷 ${t('Foto')}`}
+                </button>
+              )}
+            </span>
+          </div>
+        )}
         {photoError && <p className="form-error">{t(photoError)}</p>}
         {isPaid && (
           <div className="struk-row">
@@ -373,6 +439,10 @@ export default function DetailTreatment() {
           </p>
         )}
 
+        {treatment.status === 'selesai' && !promoVerified && (
+          <p className="detail-hint">{t('Foto bukti promo diperlukan sebelum transaksi bisa ditutup.')}</p>
+        )}
+
         {canFinish && !hasPhoto && (
           <p className="detail-hint">{t('Unggah bukti foto cuci terlebih dahulu sebelum menandai selesai.')}</p>
         )}
@@ -415,7 +485,7 @@ export default function DetailTreatment() {
                   {t('Tandai Selesai')}
                 </button>
               )}
-              {treatment.status === 'selesai' && paymentVerified && (
+              {treatment.status === 'selesai' && paymentVerified && promoVerified && (
                 <button type="button" className="btn-primary" onClick={handleClose} disabled={busy}>
                   {t('Tutup Transaksi')}
                 </button>
@@ -457,6 +527,9 @@ export default function DetailTreatment() {
           onConfirm={handlePay}
         />
       )}
+
+      {washProof.capture}
+      {promoProof.capture}
 
       {lightboxUrl && (
         <div className="photo-lightbox-overlay" onClick={() => setLightboxUrl(null)}>

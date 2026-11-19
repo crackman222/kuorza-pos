@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useWashProofUpload } from './useWashProofUpload'
 import { StartProcessModal } from './StartProcessModal'
 import { PaymentModal } from './PaymentModal'
-import { hasRequiredStaff } from '../api'
+import { hasRequiredStaff, uploadPromoProofPhoto } from '../api'
 import { formatDateTime, ticketLabel } from '../lib/format'
 import { daysOpen, isOverdue } from '../lib/taskReminder'
 import { useLanguage } from '../context/useLanguage'
@@ -29,7 +29,7 @@ const ACCENTS = {
   selesai: 'queue-card-selesai',
 }
 
-export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, onAdvance, onPay }) {
+export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, onPromoUploaded, onAdvance, onPay }) {
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [startOpen, setStartOpen] = useState(false)
@@ -57,6 +57,15 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
   // the payment step itself.
   const needsPayment = step?.action === 'close' && !treatment.isPaid
   const needsPaymentProof = step?.action === 'close' && treatment.isPaid && !treatment.isPaymentVerified
+  // A promo ticket also needs the promo eligibility photo before it closes
+  // (migration 024). Normally taken on Transaksi Baru; this is the retry when
+  // that upload failed.
+  const needsPromoPhoto = step?.action === 'close' && treatment.needsPromoProof && !treatment.hasPromoProof
+  const promoProof = useWashProofUpload({
+    treatmentId: treatment.id,
+    onUploaded: onPromoUploaded,
+    uploadFn: uploadPromoProofPhoto,
+  })
 
   async function handlePay({ paymentMethod, proofFile }) {
     setPayError('')
@@ -170,6 +179,15 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
           >
             📷 {t('Foto Bukti Bayar')}
           </button>
+        ) : needsPromoPhoto ? (
+          <button
+            type="button"
+            className="worker-btn worker-btn-blue"
+            onClick={promoProof.open}
+            disabled={busy || promoProof.uploading}
+          >
+            {promoProof.uploading ? t('Mengunggah…') : `📷 ${t('Foto Bukti Promo')}`}
+          </button>
         ) : step ? (
           <button
             type="button"
@@ -188,6 +206,7 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
         {/* Outside .queue-card-main on purpose: that area navigates on click,
             and a stray navigation mid-capture would drop the photo. */}
         {proof.capture}
+        {promoProof.capture}
       </div>
       {startOpen && (
         <StartProcessModal
@@ -215,6 +234,7 @@ export function QueueCard({ treatment, statusLabel, hasPhoto, busy, onUploaded, 
         />
       )}
       {proof.error && <p className="form-error queue-card-proof-error">{t(proof.error)}</p>}
+      {promoProof.error && <p className="form-error queue-card-proof-error">{t(promoProof.error)}</p>}
     </article>
   )
 }

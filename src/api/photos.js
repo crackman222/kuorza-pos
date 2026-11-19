@@ -34,6 +34,34 @@ export async function uploadPaymentProofPhoto(treatmentId, file) {
   return data.path
 }
 
+// Proof the customer qualifies for the promo price (migration 024). Same
+// function and storage as the wash proof, tracked by a photos row with
+// photo_type 'bukti_promo'; re-uploading replaces it. A promo ticket can't
+// close without it.
+export const PROMO_PROOF_TYPE = 'bukti_promo'
+
+export async function uploadPromoProofPhoto(treatmentId, file) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('treatmentId', String(treatmentId))
+  form.append('kind', 'promo')
+
+  const { data, error } = await supabase.functions.invoke('upload-wash-proof', { body: form })
+  if (error) throw new Error(await extractFunctionErrorMessage(error, 'Gagal mengunggah bukti promo'))
+  return data.path
+}
+
+export async function getPromoProofPhoto(treatmentId) {
+  const { data, error } = await supabase
+    .from('photos')
+    .select('image_url')
+    .eq('treatment_id', treatmentId)
+    .eq('photo_type', PROMO_PROOF_TYPE)
+    .maybeSingle()
+  if (error) throw error
+  return data?.image_url ?? null
+}
+
 export async function getWashProofPhoto(treatmentId) {
   const { data, error } = await supabase
     .from('photos')

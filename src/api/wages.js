@@ -72,12 +72,21 @@ async function getServiceWageByName() {
   return new Map(servicesResult.data.map((s) => [s.name, wageByServiceId.get(s.id) ?? 0]))
 }
 
+// Splits a whole-rupiah amount into `parts` integer shares that add back up
+// to exactly `amount` — no float arithmetic. The leftover rupiah (at most
+// parts - 1) go one each to the first shares, i.e. the first names listed.
+function splitEvenly(amount, parts) {
+  const base = Math.floor(amount / parts)
+  const remainder = amount - base * parts
+  return Array.from({ length: parts }, (_, i) => base + (i < remainder ? 1 : 0))
+}
+
 // What each vehicle's wash staff earned that day: every service line on the
 // ticket (never shelf items) pays its own fixed wage times quantity. Keyed
 // by staff *name*, the same way getWorkerOrderCounts() tallies wash counts:
-// wash_staff is a comma-separated text snapshot, not a live FK, and a
-// shared wash credits every name listed in full rather than splitting the
-// wage between them.
+// wash_staff is a comma-separated text snapshot, not a live FK. A shared
+// wash splits each line's wage (and its sale value) evenly between the names
+// listed, so the ticket pays out its wage once in total, not once per person.
 async function getServiceEarningsByName(date) {
   const { start, end } = getDayRange(date)
   const [wageByName, treatmentsResult] = await Promise.all([
@@ -91,32 +100,37 @@ async function getServiceEarningsByName(date) {
   ])
   if (treatmentsResult.error) throw treatmentsResult.error
 
-  // name -> { earnings, services: Map(serviceName -> { count, nominal }) }.
-  // nominal is the sale value of those lines (what the customer paid for
-  // them), not the wage — the wage is count x the service's fixed rate.
+  // name -> { earnings, services: Map(serviceName -> { count, sharedCount,
+  // nominal, wage }) }. count is every unit they worked on, shared or not;
+  // sharedCount is how many of those were split with someone else. nominal
+  // is their share of the sale value (what the customer paid for those
+  // lines), wage their share of the fixed wage.
   const byName = new Map()
   for (const t of treatmentsResult.data) {
     const names = parseStaffNames(t.wash_staff)
     if (names.length === 0) continue
     const serviceLines = (t.treatment_items ?? []).filter((item) => item.shelf_item_id == null)
     if (serviceLines.length === 0) continue
-    const ticketWage = serviceLines.reduce(
-      (sum, item) => sum + (wageByName.get(item.service_name) ?? 0) * item.quantity,
-      0,
-    )
     for (const name of names) {
       if (!byName.has(name)) byName.set(name, { earnings: 0, services: new Map() })
-      const entry = byName.get(name)
-      entry.earnings += ticketWage
-      for (const item of serviceLines) {
-        const line = entry.services.get(item.service_name) ?? { count: 0, nominal: 0 }
+    }
+    const shared = names.length > 1
+    for (const item of serviceLines) {
+      const wageShares = splitEvenly((wageByName.get(item.service_name) ?? 0) * item.quantity, names.length)
+      const nominalShares = splitEvenly(Number(item.subtotal || 0), names.length)
+      names.forEach((name, i) => {
+        const entry = byName.get(name)
+        const line = entry.services.get(item.service_name) ?? { count: 0, sharedCount: 0, nominal: 0, wage: 0 }
         line.count += item.quantity
-        line.nominal += Number(item.subtotal || 0)
+        if (shared) line.sharedCount += item.quantity
+        line.nominal += nominalShares[i]
+        line.wage += wageShares[i]
+        entry.earnings += wageShares[i]
         entry.services.set(item.service_name, line)
-      }
+      })
     }
   }
-  return { byName, wageByName }
+  return { byName }
 }
 
 // Uang makan: the flat daily meal allowance paid to everyone marked present
@@ -154,7 +168,7 @@ export async function setAttendance(profileId, date, present) {
 // bonus/deduction logged against that day, and the net wage. date is a
 // "YYYY-MM-DD" string.
 export async function getDailyWageSummary(date) {
-  const [roster, { byName: washByName, wageByName }, adjustmentsResult, attendanceResult, kasbonEntries, repayPercent] =
+  const [roster, { byName: washByName }, adjustmentsResult, attendanceResult, kasbonEntries, repayPercent] =
     await Promise.all([
       getWageStaffRoster(),
       getServiceEarningsByName(date),
@@ -189,8 +203,9 @@ export async function getDailyWageSummary(date) {
       .map(([serviceName, line]) => ({
         serviceName,
         count: line.count,
+        sharedCount: line.sharedCount,
         nominal: line.nominal,
-        wage: (wageByName.get(serviceName) ?? 0) * line.count,
+        wage: line.wage,
       }))
       .sort((a, b) => b.count - a.count || a.serviceName.localeCompare(b.serviceName))
     const adjustments = adjustmentsByProfile.get(worker.id) || []

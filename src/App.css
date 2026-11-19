@@ -3140,6 +3140,11 @@ body.service-menu-open .worker-content {
   color: var(--pos-text-faint);
 }
 
+.upah-breakdown-shared {
+  font-size: 12px;
+  color: var(--pos-text-faint);
+}
+
 .upah-adjustment-form {
   display: flex;
   flex-wrap: wrap;

@@ -480,6 +480,7 @@ export const en = {
   "Penyesuaian": "Adjustments",
   "Detail": "Details",
   "Belum ada layanan dikerjakan pada tanggal ini": "No services done on this date",
+  "{count} dibagi": "{count} shared",
   "Jumlah": "Count",
   "Nominal": "Amount",
   "Jumlah harus lebih dari nol": "Amount must be above zero",

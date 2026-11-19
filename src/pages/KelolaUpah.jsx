@@ -562,7 +562,8 @@ function KasbonRepaymentForm({ row, date, onSaved, onError }) {
 }
 
 // Per-service tally behind one worker's Upah Jasa: how many of each service
-// they washed that day, the sale value of those lines, and the wage they paid.
+// they washed that day, their share of the sale value of those lines, and
+// their share of the wage — a wash shared by several staff is split evenly.
 function ServiceBreakdown({ rows }) {
   const { t } = useLanguage()
   if (rows.length === 0) {
@@ -585,7 +586,12 @@ function ServiceBreakdown({ rows }) {
         {rows.map((r) => (
           <tr key={r.serviceName}>
             <td>{r.serviceName}</td>
-            <td>{r.count}</td>
+            <td>
+              {r.count}
+              {r.sharedCount > 0 && (
+                <span className="upah-breakdown-shared"> ({t('{count} dibagi', { count: r.sharedCount })})</span>
+              )}
+            </td>
             <td>{formatRupiah(r.nominal)}</td>
             <td>{formatRupiah(r.wage)}</td>
           </tr>
